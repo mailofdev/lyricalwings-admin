@@ -1,0 +1,263 @@
+
+/* - - - - - - - - - - required classes - - - - - - - - - -  */
+
+/* .centered-box {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
+} */
+
+.centered-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%
+}
+
+
+.logo-icon {
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+}
+
+.mt-75{
+  margin-top: 75px;
+}
+
+.ml-250{
+margin-left: 250px;
+}
+
+.sidebar-width{
+  width: 245px;
+}
+
+.sidebar-button {
+  color: #ffffff;
+  background-color: #1F2335;
+  border: none;
+} 
+.sidebar-button.selected {
+  border: 0.1px solid lightgray;
+}
+
+/* - - - - - - - - - - required classes - - - - - - - - - -  */
+
+
+/* - - - - - - - - - - border - - - - - - - - - -  */
+.border-none {
+  border: none;
+} 
+.border-gray {
+  border: 1px solid gray;
+} 
+.border-red {
+  border: 1px solid red;
+} 
+/* - - - - - - - - - - border - - - - - - - - - -  */
+
+/* - - - - - - - - - - font size - - - - - - - - - -  */
+
+.font-xs {
+    font-size: 12px;
+}
+
+.font-sm {
+    font-size: 14px;
+}
+
+.font-md {
+    font-size: 16px;
+}
+
+.font-normal {
+    font-size: 18px;
+}
+
+.font-lg {
+    font-size: 20px;
+}
+
+.font-xl {
+    font-size: 24px;
+}
+
+/* - - - - - - - - - - font size - - - - - - - - - -  */
+
+
+/* - - - - - - - - - - color & background color - - - - - - - - - -  */
+
+.text-white {
+    color: #ffffff;
+}
+.text-primary {
+    color: #007bff;
+}
+
+.text-secondary {
+    color: #6c757d;
+}
+
+.text-success {
+    color: #28a745;
+}
+
+.text-danger {
+    color: #dc3545;
+}
+
+.text-warning {
+    color: #ffc107;
+}
+
+.text-info {
+    color: #17a2b8;
+}
+
+.text-light {
+    color: #f8f9fa;
+}
+
+.text-dark {
+    color: #343a40;
+}
+
+.bg-primary {
+    background-color: #1F2335 !important;
+}
+
+.bg-secondary {
+    background-color: #6c757d;
+}
+
+.bg-success {
+    background-color: #28a745;
+}
+
+.bg-danger {
+    background-color: #dc3545;
+}
+
+.bg-warning {
+    background-color: #ffc107;
+}
+
+.bg-info {
+    background-color: #17a2b8;
+}
+
+.bg-light {
+    background-color: #f8f9fa;
+}
+
+.bg-dark {
+    background-color: #343a40;
+}
+.bg-none {
+  background: none;
+}
+/* - - - - - - - - - - color & background color - - - - - - - - - -  */
+
+/* - - - - - - - - - - Border Radius - - - - - - - - - - */
+
+.br-sm {
+    border-radius: 4px;
+}
+
+.br-md {
+    border-radius: 8px;
+}
+
+.br-lg {
+    border-radius: 12px;
+}
+
+.br-xl {
+    border-radius: 16px;
+}
+
+/* - - - - - - - - - - Border Radius - - - - - - - - - - */
+
+/* - - - - - - - - - - Font Weight - - - - - - - - - - */
+
+.fw-light {
+    font-weight: 300;
+}
+
+.fw-normal {
+    font-weight: 400;
+}
+
+.fw-medium {
+    font-weight: 500;
+}
+
+.fw-bold {
+    font-weight: 700;
+}
+
+/* - - - - - - - - - - Font Weight - - - - - - - - - - */
+
+  /* - - - - - - - - - - Font family - - - - - - - - - -  */
+
+.playfair {
+    font-family: 'Playfair Display';
+  }
+  
+  .merriweather {
+    font-family: 'Merriweather';
+  }
+  
+  .didot {
+    font-family: 'Didot';
+  }
+  
+  .montserrat {
+    font-family: 'Montserrat';
+  }
+  
+  .open-sans {
+    font-family: 'Open Sans';
+  }
+  
+  .pt-serif {
+    font-family: 'PT Serif';
+  }
+  
+  .raleway {
+    font-family: 'Raleway';
+  }
+  
+  .pacifico {
+    font-family: 'Pacifico';
+  }
+  
+  .great-vibes {
+    font-family: 'Great Vibes';
+  }
+  
+  .sacramento {
+    font-family: 'Sacramento';
+  }
+  
+  .dancing-script {
+    font-family: 'Dancing Script';
+  }
+  
+  .poppins {
+    font-family: 'Poppins';
+  }
+  
+  .noto-sans {
+    font-family: 'Noto Sans';
+  }
+  
+  .georgia {
+    font-family: 'Georgia';
+  }
+  
+  /* - - - - - - - - - - Font family - - - - - - - - - -  */
