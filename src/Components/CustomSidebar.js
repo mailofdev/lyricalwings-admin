@@ -1,7 +1,7 @@
 import React from 'react';
 import { Sidebar } from 'primereact/sidebar';
-import { GiHamburgerMenu } from "react-icons/gi";
-import "../App.css"
+
+
 function CustomSidebar({ visible, onHide, sidebarItems, handleSidebarToggle }) {
   return (
     <Sidebar visible={visible} onHide={onHide} className="p-sidebar">

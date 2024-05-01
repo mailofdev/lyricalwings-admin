@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import './App.css';
 import { GiHamburgerMenu } from "react-icons/gi";
-import { Dropdown } from 'primereact/dropdown';
-import { Button } from 'primereact/button';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import CustomSidebar from './Components/CustomSidebar';
 import Happiness from "./Screens/Happiness";
+import './css/customSidebar.css'
+
 
 function App() {
   const [visible, setVisible] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
+
 
   const sidebarItems = [
     // {

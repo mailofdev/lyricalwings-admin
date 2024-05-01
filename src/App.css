@@ -1,106 +1,60 @@
-/* App.css */
-.dropdown-container {
-  position: fixed;
-  top: 10px;
-  right: 10px;
+
+@media (max-width: 576px) {
+  .form-height {
+    align-self: unset;
+    justify-content: unset;
+    align-items: unset;
+    height: unset;
+  }
+  .form-padding{
+    padding: 0rem 0rem 0.5rem 0rem;
+  }
 }
 
-.dropdown {
-  position: relative;
-  display: inline-block;
+@media (min-width: 577px) and (max-width: 992px) {
+  .form-height {
+    align-self: unset;
+    justify-content: unset;
+    align-items: unset;
+    height: unset;
+  }
+  .form-padding{
+    padding: 0rem 0rem 0.5rem 0rem;
+  }
 }
 
-.dropdown-content {
-  position: absolute;
-  top: 40px;
-  right: 0;
-  background-color: white;
-  min-width: 160px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  z-index: 1;
+@media (min-width: 993px) {
+  .form-height {
+    display: flex;
+    align-self: center;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .form-padding{
+    padding: 0.5rem 0.25rem 0.5rem 0.5rem;
+  }
 }
 
-.user-info {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
+/* Style the scrollbar */
+::-webkit-scrollbar {
+  width: 0px !important; /* Width of the scrollbar */
 }
 
-.user-info p {
-  margin: 0;
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Color of the track */
 }
 
-.p-button-secondary {
-  width: 100%;
-  border: none;
-  text-align: left;
-  border-top: 1px solid #ddd;
-  cursor: pointer;
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888; /* Color of the handle */
 }
 
-.p-button-secondary:hover {
-  background-color: #ddd;
-}
-
-.App {
-  position: relative;
-}
-
-/* App.css */
-
-/* Sidebar Styles */
-.p-sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  height: auto;
-  width: 250px;
-  background-color: lightgray; /* Wheat background color */
-  padding: 10px;
-  margin: 10px; /* Margin around the sidebar */
-  border-radius: 10px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
-  z-index: 999;
-}
-
-/* Toggle Button Styles */
-.toggle-button {
-  /* position: absolute; */
-  top: 10px;
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  /* margin-left: 260px; */
-}
-
-.toggle-button:focus {
-  outline: none;
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Color of the handle on hover */
 }
 
 
-.p-sidebar ul {
-  list-style: none;
-  padding: 0;
-}
 
-.p-sidebar ul li {
-  margin-bottom: 10px;
-}
-
-.p-sidebar ul li a {
-  color: #333;
-  text-decoration: none;
-  display: block;
-  padding: 10px;
-  border-radius: 5px;
-}
-
-.p-sidebar ul li a:hover {
-  background-color: #f0f0f0;
-}
-
-.sidebar-item-parent {
-  font-weight: bold;
-  margin-bottom: 5px;
-}

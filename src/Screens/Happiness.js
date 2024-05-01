@@ -5,8 +5,18 @@ import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
+import Loader from '../Components/Loader'; // Import Loader component
 
 const Happiness = () => {
+
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [poems, setPoems] = useState([]);
+  const [updatedId, setUpdatedId] = useState('');
+  const [editMode, setEditMode] = useState(false);
+
+  const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+
   const [formData, setFormData] = useState({
     inputValue: '',
     subtitleValue: '',
@@ -19,11 +29,6 @@ const Happiness = () => {
     poemContent: ''
   });
 
-  const [isFormValid, setIsFormValid] = useState(false);
-  const [poems, setPoems] = useState([]);
-  const [updatedId, setUpdatedId] = useState('');
-  const [editMode, setEditMode] = useState(false);
-
   useEffect(() => {
     setIsFormValid(formData.inputValue !== '' && formData.subtitleValue !== '' && formData.poemContent !== '');
   }, [formData]);
@@ -34,6 +39,8 @@ const Happiness = () => {
 
   const fetchPoems = async () => {
     try {
+      setLoading(true);
+      setLoadingMessage('Fetching poems...');
       const happinessRef = ref(db, 'happiness');
       const snapshot = await get(happinessRef);
       if (snapshot.exists()) {
@@ -41,8 +48,10 @@ const Happiness = () => {
         const poemsArray = Object.values(data).reverse(); // Latest poem on top
         setPoems(poemsArray);
       }
+      setLoading(false);
     } catch (error) {
       console.log(error);
+      setLoading(false);
     }
   };
 
@@ -62,6 +71,8 @@ const Happiness = () => {
 
   const handlePost = async () => {
     try {
+      setLoading(true);
+      setLoadingMessage('Posting poem...');
       const happinessRef = ref(db, 'happiness');
       const newId = push(happinessRef).key;
       const poemData = { ...formData, id: newId };
@@ -72,31 +83,40 @@ const Happiness = () => {
         poemContent: ''
       });
       fetchPoems();
+      setLoading(false);
     } catch (error) {
       console.error('Error posting poem:', error);
+      setLoading(false);
     }
   };
 
   const handleUpdate = async (poemId) => {
     try {
+      setLoading(true);
+      setLoadingMessage('Updating poem...');
       const poemData = { ...updateData };
       await update(ref(db, `happiness/${poemId}`), poemData);
       setUpdatedId('');
       setEditMode(false);
       fetchPoems();
+      setLoading(false);
     } catch (error) {
       console.error('Error updating poem:', error);
+      setLoading(false);
     }
   };
 
   const handleDelete = async (poemId) => {
     try {
+      setLoading(true);
+      setLoadingMessage('Deleting poem...');
       const poemRef = ref(db, `happiness/${poemId}`);
       await remove(poemRef);
-      // Remove the deleted poem from the poems array in the state
       setPoems(poems.filter(poem => poem.id !== poemId));
+      setLoading(false);
     } catch (error) {
       console.error('Error deleting poem:', error);
+      setLoading(false);
     }
   };
 
@@ -107,87 +127,99 @@ const Happiness = () => {
   };
 
   return (
-    <div className='d-flex justify-content-center align-items-center' style={{ height: '100vh' }}>
+    <div className="container-fluid">
       <div className="row">
         <div className="col-lg-6">
-          <Card style={{ width: '100%', padding: '20px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '10px' }}>
-            <h3>Compose Poem</h3>
-            <InputText
-              title="Title"
-              name="inputValue"
-              type="text"
-              placeholder="Enter title"
-              value={formData.inputValue}
-              onChange={handleInputChange}
-            />
-            <InputText
-              title="Subtitle"
-              name="subtitleValue"
-              type="text"
-              placeholder="Enter subtitle"
-              value={formData.subtitleValue}
-              onChange={handleInputChange}
-            />
-            <InputTextarea
-              title="Poem Content"
-              name="poemContent"
-              type="text"
-              placeholder="Enter poem content"
-              value={formData.poemContent}
-              onChange={handleInputChange}
-            />
-            <Button variant="primary" onClick={handlePost} disabled={!isFormValid}>
-              Save
-            </Button>
-          </Card>
-        </div>
-        <div className="col-lg-6">
-          {poems.length === 0 ? (
-            <p>No poems yet... Add new poems</p>
-          ) : (
-            poems.map((poem) => (
-              <Card key={poem.id} style={{ width: '100%', marginBottom: '20px', padding: '20px', boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '10px' }}>
-                {editMode && updatedId === poem.id ? (
-                  <>
-                    <InputText
-                      title="Title"
-                      name="inputValue"
-                      type="text"
-                      placeholder="Enter title"
-                      value={updateData.inputValue}
-                      onChange={handleUpdateChange}
-                    />
-                    <InputText
-                      title="Subtitle"
-                      name="subtitleValue"
-                      type="text"
-                      placeholder="Enter subtitle"
-                      value={updateData.subtitleValue}
-                      onChange={handleUpdateChange}
-                    />
-                    <InputTextarea
-                      title="Poem Content"
-                      name="poemContent"
-                      type="text"
-                      placeholder="Enter poem content"
-                      value={updateData.poemContent}
-                      onChange={handleUpdateChange}
-                    />
-                    <Button onClick={() => handleUpdate(poem.id)}>Update</Button>
-                  </>
-                ) : (
-                  <>
-                    <h4>{poem.inputValue}</h4>
-                    <h6>{poem.subtitleValue}</h6>
-                    <p>{poem.poemContent}</p>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Button onClick={() => handleEdit(poem)}>Edit</Button>
-                      <Button onClick={() => handleDelete(poem.id)}>Delete</Button>
-                    </div>
-                  </>
-                )}
+          <div className='form-padding'>
+
+            <div className='form-height'>
+
+              <Card className='w-100 p-4 gap-4'>
+                <h3>Write a poem..</h3>
+                <InputText
+                  title="Title"
+                  name="inputValue"
+                  type="text"
+                  placeholder="Enter title"
+                  value={formData.inputValue}
+                  onChange={handleInputChange}
+                />
+                <InputText
+                  title="Subtitle"
+                  name="subtitleValue"
+                  type="text"
+                  placeholder="Enter subtitle"
+                  value={formData.subtitleValue}
+                  onChange={handleInputChange}
+                />
+                <InputTextarea
+                  title="Poem Content"
+                  name="poemContent"
+                  type="text"
+                  placeholder="Enter poem content"
+                  value={formData.poemContent}
+                  onChange={handleInputChange}
+                />
+                <Button className='w-50 align-self-center d-flex justify-content-center btn btn-light btn-outline-success border border-1 border-success' onClick={handlePost} disabled={!isFormValid}>
+                  Save
+                </Button>
               </Card>
-            ))
+
+            </div>
+
+          </div>
+        </div>
+        <div className="col-lg-6" style={{ maxHeight: '100vh', overflowY: 'auto' }}>
+          {loading ? (
+            <Loader loadingMessage={loadingMessage} />
+          ) : (
+            poems.length === 0 ? (
+              <p className="ps-2">No poems yet... Add new poems</p>
+            ) : (
+              poems.map((poem) => (
+                <Card key={poem.id} className='p-2 gap-2 mb-3'>
+                  {editMode && updatedId === poem.id ? (
+                    <>
+                      <InputText
+                        title="Title"
+                        name="inputValue"
+                        type="text"
+                        placeholder="Enter title"
+                        value={updateData.inputValue}
+                        onChange={handleUpdateChange}
+                      />
+                      <InputText
+                        title="Subtitle"
+                        name="subtitleValue"
+                        type="text"
+                        placeholder="Enter subtitle"
+                        value={updateData.subtitleValue}
+                        onChange={handleUpdateChange}
+                      />
+                      <InputTextarea
+                        title="Poem Content"
+                        name="poemContent"
+                        type="text"
+                        placeholder="Enter poem content"
+                        value={updateData.poemContent}
+                        onChange={handleUpdateChange}
+                      />
+                      <Button className='w-50 align-self-center d-flex justify-content-center btn btn-light btn-outline-success border border-1 border-success' onClick={() => handleUpdate(poem.id)}>Update</Button>
+                    </>
+                  ) : (
+                    <>
+                      <h4>{poem.inputValue}</h4>
+                      <h6>{poem.subtitleValue}</h6>
+                      <p>{poem.poemContent}</p>
+                      <div className='d-flex justify-content-evenly'>
+                        <Button className='btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleEdit(poem)}>Edit</Button>
+                        <Button className='btn btn-light btn-outline-danger border border-1 border-danger' onClick={() => handleDelete(poem.id)}>Delete</Button>
+                      </div>
+                    </>
+                  )}
+                </Card>
+              ))
+            )
           )}
         </div>
       </div>
