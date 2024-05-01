@@ -1,4 +1,45 @@
 /* App.css */
+.dropdown-container {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  position: absolute;
+  top: 40px;
+  right: 0;
+  background-color: white;
+  min-width: 160px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.user-info {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.user-info p {
+  margin: 0;
+}
+
+.p-button-secondary {
+  width: 100%;
+  border: none;
+  text-align: left;
+  border-top: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.p-button-secondary:hover {
+  background-color: #ddd;
+}
 
 .App {
   position: relative;
