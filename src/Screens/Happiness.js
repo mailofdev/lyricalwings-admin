@@ -174,7 +174,9 @@ const Happiness = () => {
             <Loader loadingMessage={loadingMessage} />
           ) : (
             poems.length === 0 ? (
-              <p className="ps-2">No poems yet... Add new poems</p>
+              <div className="form-height align-self-center d-flex justify-content-center">
+              <p className="">No poems yet.. Write a poem.!</p>
+              </div>
             ) : (
               poems.map((poem) => (
                 <Card key={poem.id} className='p-2 gap-2 mb-3'>

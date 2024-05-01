@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import './App.css';
 import { GiHamburgerMenu } from "react-icons/gi";
+import { AiOutlineUser } from "react-icons/ai";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import CustomSidebar from './Components/CustomSidebar';
 import Happiness from "./Screens/Happiness";
-import './css/customSidebar.css'
-
+import { Dropdown } from 'primereact/dropdown';
+import './css/customSidebar.css';
+import ProfileDropdown from './Components/ProfileDropdown';
 
 function App() {
   const [visible, setVisible] = useState(false);
-
 
   const sidebarItems = [
     // {
@@ -56,23 +57,34 @@ function App() {
     setVisible(!visible);
   };
 
+  const profileOptions = [
+    // { label: 'Profile', url: '/profile', icon: 'pi pi-user' },
+    // { label: 'Settings', url: '/settings', icon: 'pi pi-cog' },
+    { label: 'Logout', url: '/logout', icon: 'pi pi-sign-out' }
+  ];
+
   return (
     <Router>
       <div className="App">
+        <div className="d-flex justify-content-between align-items-center mx-4">
+          <button onClick={handleSidebarToggle} className="toggle-button">
+            <GiHamburgerMenu size={22} />
+          </button>
+          <div>Logo</div>
+          <ProfileDropdown options={profileOptions} />
+        </div>
         <CustomSidebar
           visible={visible}
           onHide={() => setVisible(false)}
           sidebarItems={sidebarItems}
           handleSidebarToggle={handleSidebarToggle}
         />
-        {!visible && (
-          <button onClick={handleSidebarToggle} className="toggle-button" style={{ right: '10px' }}>
-            <GiHamburgerMenu />
-          </button>
-        )}
         <Routes>
-           <Route path="/Happiness" element={<Happiness />} />   
-               </Routes>
+          <Route path="/Happiness" element={<Happiness />} />
+          <Route path="/profile" element={<div>Profile Page</div>} />
+          <Route path="/settings" element={<div>Settings Page</div>} />
+          <Route path="/logout" element={<div>Logout Page</div>} />
+        </Routes>
       </div>
     </Router>
   );
