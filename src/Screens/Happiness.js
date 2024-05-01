@@ -13,29 +13,27 @@ const Happiness = () => {
   const [poems, setPoems] = useState([]);
   const [updatedId, setUpdatedId] = useState('');
   const [editMode, setEditMode] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-
   const [formData, setFormData] = useState({
-    inputValue: '',
-    subtitleValue: '',
+    titleValue: '',
+    authorValue: '',
     poemContent: ''
   });
-
   const [updateData, setUpdateData] = useState({
-    inputValue: '',
-    subtitleValue: '',
+    titleValue: '',
+    authorValue: '',
     poemContent: ''
   });
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    setIsFormValid(formData.inputValue !== '' && formData.subtitleValue !== '' && formData.poemContent !== '');
+    setIsFormValid(formData.titleValue !== '' && formData.authorValue !== '' && formData.poemContent !== '');
   }, [formData]);
 
   useEffect(() => {
     fetchPoems();
-  }, []);
+  }, [currentPage]); // Fetch poems whenever currentPage changes
 
   const fetchPoems = async () => {
     try {
@@ -78,8 +76,8 @@ const Happiness = () => {
       const poemData = { ...formData, id: newId };
       await set(ref(db, `happiness/${newId}`), poemData);
       setFormData({
-        inputValue: '',
-        subtitleValue: '',
+        titleValue: '',
+        authorValue: '',
         poemContent: ''
       });
       fetchPoems();
@@ -112,7 +110,8 @@ const Happiness = () => {
       setLoadingMessage('Deleting poem...');
       const poemRef = ref(db, `happiness/${poemId}`);
       await remove(poemRef);
-      setPoems(poems.filter(poem => poem.id !== poemId));
+      const updatedPoems = poems.filter(poem => poem.id !== poemId);
+      setPoems(updatedPoems);
       setLoading(false);
     } catch (error) {
       console.error('Error deleting poem:', error);
@@ -126,30 +125,34 @@ const Happiness = () => {
     setEditMode(true);
   };
 
+  // Calculate total number of pages
+  const totalPages = Math.ceil(poems.length / 4);
+
+  // Paginate poems
+  const paginatedPoems = poems.slice((currentPage - 1) * 4, currentPage * 4);
+
   return (
     <div className="container-fluid">
       <div className="row">
         <div className="col-lg-6">
           <div className='form-padding'>
-
             <div className='form-height'>
-
               <Card className='w-100 p-4 gap-4'>
                 <h3>Write a poem..</h3>
                 <InputText
                   title="Title"
-                  name="inputValue"
+                  name="titleValue"
                   type="text"
                   placeholder="Enter title"
-                  value={formData.inputValue}
+                  value={formData.titleValue}
                   onChange={handleInputChange}
                 />
                 <InputText
-                  title="Subtitle"
-                  name="subtitleValue"
+                  title="Author"
+                  name="authorValue"
                   type="text"
-                  placeholder="Enter subtitle"
-                  value={formData.subtitleValue}
+                  placeholder="Enter author name"
+                  value={formData.authorValue}
                   onChange={handleInputChange}
                 />
                 <InputTextarea
@@ -164,64 +167,94 @@ const Happiness = () => {
                   Save
                 </Button>
               </Card>
-
             </div>
-
           </div>
         </div>
-        <div className="col-lg-6" style={{ maxHeight: '100vh', overflowY: 'auto' }}>
-          {loading ? (
-            <Loader loadingMessage={loadingMessage} />
-          ) : (
-            poems.length === 0 ? (
-              <div className="form-height align-self-center d-flex justify-content-center">
-              <p className="">No poems yet.. Write a poem.!</p>
-              </div>
+        <div className="col-lg-6">
+          <div className="poems-container" style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 30px)' }}>
+            {loading ? (
+              <Loader loadingMessage={loadingMessage} />
             ) : (
-              poems.map((poem) => (
-                <Card key={poem.id} className='p-2 gap-2 mb-3'>
-                  {editMode && updatedId === poem.id ? (
-                    <>
-                      <InputText
-                        title="Title"
-                        name="inputValue"
-                        type="text"
-                        placeholder="Enter title"
-                        value={updateData.inputValue}
-                        onChange={handleUpdateChange}
-                      />
-                      <InputText
-                        title="Subtitle"
-                        name="subtitleValue"
-                        type="text"
-                        placeholder="Enter subtitle"
-                        value={updateData.subtitleValue}
-                        onChange={handleUpdateChange}
-                      />
-                      <InputTextarea
-                        title="Poem Content"
-                        name="poemContent"
-                        type="text"
-                        placeholder="Enter poem content"
-                        value={updateData.poemContent}
-                        onChange={handleUpdateChange}
-                      />
-                      <Button className='w-50 align-self-center d-flex justify-content-center btn btn-light btn-outline-success border border-1 border-success' onClick={() => handleUpdate(poem.id)}>Update</Button>
-                    </>
-                  ) : (
-                    <>
-                      <h4>{poem.inputValue}</h4>
-                      <h6>{poem.subtitleValue}</h6>
-                      <p>{poem.poemContent}</p>
-                      <div className='d-flex justify-content-evenly'>
-                        <Button className='btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleEdit(poem)}>Edit</Button>
-                        <Button className='btn btn-light btn-outline-danger border border-1 border-danger' onClick={() => handleDelete(poem.id)}>Delete</Button>
-                      </div>
-                    </>
-                  )}
-                </Card>
-              ))
-            )
+              paginatedPoems.length === 0 ? (
+                <div className="form-height align-self-center d-flex justify-content-center">
+                  <p className="">No poems yet.. Write a poem.!</p>
+                </div>
+              ) : (
+                paginatedPoems.map((poem, index) => (
+                  <Card key={poem.id} className='p-2 gap-2 mb-3'>
+                    {editMode && updatedId === poem.id ? (
+                      <>
+                        <InputText
+                          title="Title"
+                          name="titleValue"
+                          type="text"
+                          placeholder="Enter title"
+                          value={updateData.titleValue}
+                          onChange={handleUpdateChange}
+                        />
+                        <InputText
+                          title="Author"
+                          name="authorValue"
+                          type="text"
+                          placeholder="Enter author name"
+                          value={updateData.authorValue}
+                          onChange={handleUpdateChange}
+                        />
+                        <InputTextarea
+                          title="Poem Content"
+                          name="poemContent"
+                          type="text"
+                          placeholder="Enter poem content"
+                          value={updateData.poemContent}
+                          onChange={handleUpdateChange}
+                          className='custom-textarea'
+                        />
+                        <Button className='w-50 align-self-center d-flex justify-content-center btn btn-light btn-outline-success border border-1 border-success' onClick={() => handleUpdate(poem.id)}>Update</Button>
+                      </>
+                    ) : (
+                      <>
+                        <p>{(currentPage - 1) * 4 + index + 1}. {poem.titleValue}</p>
+                        <h6>{poem.authorValue}</h6>
+                        <p>{poem.poemContent}</p>
+                        <div className='d-flex justify-content-evenly'>
+                          <Button className='btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleEdit(poem)}>Edit</Button>
+                          <Button className='btn btn-light btn-outline-danger border border-1 border-danger' onClick={() => handleDelete(poem.id)}>Delete</Button>
+                        </div>
+                      </>
+                    )}
+                  </Card>
+                ))
+              )
+            )}
+          </div>
+          {totalPages > 1 && (
+            <div className="pagination py-2 my-4" style={{ position: 'fixed', textAlign: 'center', bottom:0, background: "#FFFFFF" }}>
+              {currentPage > 1 && (
+                <Button
+                  className="btn btn-light   mx-1"
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                >
+                  &lt; Prev
+                </Button>
+              )}
+              {Array.from({ length: Math.min(totalPages) }, (_, i) => (
+                <Button
+                  key={i}
+                  className={`btn ${currentPage === i + 1 ? 'btn-primary' : 'btn-light'} mx-1`}
+                  onClick={() => setCurrentPage(i + 1)}
+                >
+                  {i + 1}
+                </Button>
+              ))}
+              {currentPage < totalPages && (
+                <Button
+                  className="btn btn-light  mx-1"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                >
+                  Next &gt;
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </div>

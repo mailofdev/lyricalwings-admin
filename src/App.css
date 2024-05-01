@@ -36,6 +36,26 @@
   }
 }
 
+
+.fixed-top-content {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: white; /* Change as per your design */
+  z-index: 1000; /* Ensure it appears above other content */
+}
+
+.main-content {
+  padding-top: 60px
+}
+
+
+.custom-textarea {
+  min-height: 130px;
+}
+
+
 /* Style the scrollbar */
 ::-webkit-scrollbar {
   width: 0px !important; /* Width of the scrollbar */

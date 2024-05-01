@@ -66,25 +66,30 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <div className="d-flex justify-content-between align-items-center mx-4">
-          <button onClick={handleSidebarToggle} className="toggle-button">
-            <GiHamburgerMenu size={22} />
-          </button>
-          <div>Logo</div>
-          <ProfileDropdown options={profileOptions} />
+        {/* Fixed top content */}
+        <div className="fixed-top-content">
+          <div className="d-flex justify-content-between align-items-center mx-4">
+            <button onClick={handleSidebarToggle} className="toggle-button">
+              <GiHamburgerMenu size={22} />
+            </button>
+            <div>Logo</div>
+            <ProfileDropdown options={profileOptions} />
+          </div>
         </div>
-        <CustomSidebar
-          visible={visible}
-          onHide={() => setVisible(false)}
-          sidebarItems={sidebarItems}
-          handleSidebarToggle={handleSidebarToggle}
-        />
-        <Routes>
-          <Route path="/Happiness" element={<Happiness />} />
-          <Route path="/profile" element={<div>Profile Page</div>} />
-          <Route path="/settings" element={<div>Settings Page</div>} />
-          <Route path="/logout" element={<div>Logout Page</div>} />
-        </Routes>
+
+        {/* Main content */}
+        <div className="main-content">
+          <CustomSidebar
+            visible={visible}
+            onHide={() => setVisible(false)}
+            sidebarItems={sidebarItems}
+            handleSidebarToggle={handleSidebarToggle}
+          />
+          <Routes>
+            <Route path="/Happiness" element={<Happiness />} />
+            {/* Other routes */}
+          </Routes>
+        </div>
       </div>
     </Router>
   );
