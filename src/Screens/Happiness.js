@@ -6,6 +6,7 @@ import Button from 'react-bootstrap/Button';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import Loader from '../Components/Loader'; // Import Loader component
+import { Paginator } from 'primereact/paginator'; // Import Paginator component
 
 const Happiness = () => {
 
@@ -25,7 +26,8 @@ const Happiness = () => {
     authorValue: '',
     poemContent: ''
   });
-  const [currentPage, setCurrentPage] = useState(1);
+  const [first, setFirst] = useState(0);
+  const [rows, setRows] = useState(4); // Number of poems per page
 
   useEffect(() => {
     setIsFormValid(formData.titleValue !== '' && formData.authorValue !== '' && formData.poemContent !== '');
@@ -33,7 +35,7 @@ const Happiness = () => {
 
   useEffect(() => {
     fetchPoems();
-  }, [currentPage]); // Fetch poems whenever currentPage changes
+  }, []); // Fetch poems only once when the component mounts
 
   const fetchPoems = async () => {
     try {
@@ -125,14 +127,14 @@ const Happiness = () => {
     setEditMode(true);
   };
 
-  // Calculate total number of pages
-  const totalPages = Math.ceil(poems.length / 4);
+  const onPageChange = (event) => {
+    setFirst(event.first);
+  };
 
-  // Paginate poems
-  const paginatedPoems = poems.slice((currentPage - 1) * 4, currentPage * 4);
+  const paginatedPoems = poems.slice(first, first + rows);
 
   return (
-    <div className="container-fluid">
+    <div className="container-fluid" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,  }}>
       <div className="row">
         <div className="col-lg-6">
           <div className='form-padding'>
@@ -171,16 +173,17 @@ const Happiness = () => {
           </div>
         </div>
         <div className="col-lg-6">
-          <div className="poems-container" style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 30px)' }}>
+          <div className="poems-container">
             {loading ? (
               <Loader loadingMessage={loadingMessage} />
             ) : (
-              paginatedPoems.length === 0 ? (
+              poems.length === 0 ? (
                 <div className="form-height align-self-center d-flex justify-content-center">
                   <p className="">No poems yet.. Write a poem.!</p>
                 </div>
               ) : (
-                paginatedPoems.map((poem, index) => (
+                paginatedPoems.map((poem) => (
+                  <>
                   <Card key={poem.id} className='p-2 gap-2 mb-3'>
                     {editMode && updatedId === poem.id ? (
                       <>
@@ -213,7 +216,7 @@ const Happiness = () => {
                       </>
                     ) : (
                       <>
-                        <p>{(currentPage - 1) * 4 + index + 1}. {poem.titleValue}</p>
+                        <p>{poem.titleValue}</p>
                         <h6>{poem.authorValue}</h6>
                         <p>{poem.poemContent}</p>
                         <div className='d-flex justify-content-evenly'>
@@ -223,39 +226,21 @@ const Happiness = () => {
                       </>
                     )}
                   </Card>
+                  </>
                 ))
               )
             )}
-          </div>
-          {totalPages > 1 && (
-            <div className="pagination py-2 my-4" style={{ position: 'fixed', textAlign: 'center', bottom:0, background: "#FFFFFF" }}>
-              {currentPage > 1 && (
-                <Button
-                  className="btn btn-light   mx-1"
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                >
-                  &lt; Prev
-                </Button>
-              )}
-              {Array.from({ length: Math.min(totalPages) }, (_, i) => (
-                <Button
-                  key={i}
-                  className={`btn ${currentPage === i + 1 ? 'btn-primary' : 'btn-light'} mx-1`}
-                  onClick={() => setCurrentPage(i + 1)}
-                >
-                  {i + 1}
-                </Button>
-              ))}
-              {currentPage < totalPages && (
-                <Button
-                  className="btn btn-light  mx-1"
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                >
-                  Next &gt;
-                </Button>
-              )}
+            <div >
+              <Paginator
+                first={first}
+                rows={rows}
+                totalRecords={poems.length}
+                rowsPerPageOptions={[4, 8, 12]}
+                onPageChange={onPageChange}
+                className="custom-paginator"
+              />
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

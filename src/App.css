@@ -36,14 +36,67 @@
   }
 }
 
+.poems-container {
+  overflow-y: auto;
+  max-height: calc(-40px + 100vh);
+  margin-top: 45px;
+  margin-bottom: 50px;
+}
 
+.custom-paginator {
+  display: flex;
+  justify-content: center;
+  /* margin-top: 1rem; */
+  position: fixed; /* Fixed position */
+  bottom: 0px; /* Adjust the distance from the bottom */
+  width:50%; 
+  /* left: 20px;  */
+  z-index: 1000; 
+  background-color: #ffffff; 
+
+}
+
+/* Style the paginator buttons */
+.p-paginator-pages button {
+  background-color: #007bff; /* Default background color */
+  color: #fff; /* Default text color */
+  border-color: #007bff; /* Default border color */
+  padding: 10px;
+}
+
+/* Style the active paginator button */
+.p-paginator-pages button.p-paginator-active {
+  background-color: #0056b3; /* Active background color */
+  border-color: #0056b3; /* Active border color */
+}
+
+
+
+.p-paginator-pages{
+  gap: 1rem;
+  display: flex;
+  margin: 0rem 1rem;
+}
+.p-dropdown{
+  margin: 0rem 1rem;
+  padding: 0rem 1rem;
+  background: #f2f2f2;
+}
 .fixed-top-content {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  background-color: white; /* Change as per your design */
-  z-index: 1000; /* Ensure it appears above other content */
+  background-color: white;
+  z-index: 1000; 
+}
+.p-dropdown-items{
+  padding-left: unset;
+  text-align: center;
+}
+.p-dropdown-items-wrapper{
+  background: #f2f2f2;
+
 }
 
 .main-content {
