@@ -5,7 +5,7 @@ import { GiHamburgerMenu } from "react-icons/gi";
 import { AiOutlineUser } from "react-icons/ai";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import CustomSidebar from './Components/CustomSidebar';
-import Happiness from "./Screens/Happiness";
+import PoemForm from "./Screens/PoemForm";
 import { Dropdown } from 'primereact/dropdown';
 import './css/customSidebar.css';
 import ProfileDropdown from './Components/ProfileDropdown';
@@ -28,7 +28,7 @@ function App() {
       label: 'Emotions',
       icon: 'pi pi-chart-line',
       subItems: [
-        { label: 'Happiness', url: '/Happiness' },
+        { label: 'Poems', url: '/PoemForm' },
         // { label: 'Sadness', url: '/sadness' },
         // { label: 'Fear', url: '/fear' },
         // { label: 'Anger', url: '/anger' },
@@ -86,7 +86,7 @@ function App() {
             handleSidebarToggle={handleSidebarToggle}
           />
           <Routes>
-            <Route path="/Happiness" element={<Happiness />} />
+            <Route path="/PoemForm" element={<PoemForm />} />
             {/* Other routes */}
           </Routes>
         </div>
