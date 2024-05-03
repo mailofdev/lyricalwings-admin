@@ -6,9 +6,9 @@ import { AiOutlineUser } from "react-icons/ai";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import CustomSidebar from './Components/CustomSidebar';
 import PoemForm from "./Screens/PoemForm";
-import { Dropdown } from 'primereact/dropdown';
 import './css/customSidebar.css';
 import ProfileDropdown from './Components/ProfileDropdown';
+import PoemList from './Screens/PoemList';
 
 function App() {
   const [visible, setVisible] = useState(false);
@@ -87,7 +87,7 @@ function App() {
           />
           <Routes>
             <Route path="/PoemForm" element={<PoemForm />} />
-            {/* Other routes */}
+            <Route path="/PoemList/:emotion" element={<PoemList />} />
           </Routes>
         </div>
       </div>
