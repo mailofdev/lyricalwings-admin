@@ -6,7 +6,6 @@ import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { Dropdown } from 'primereact/dropdown'; // Import Dropdown component
 import Loader from '../Components/Loader'; // Import Loader component
 import { useNavigate } from 'react-router-dom';
 const PoemForm = () => {
@@ -45,7 +44,7 @@ const PoemForm = () => {
       const snapshot = await get(AllPoemsRef);
       if (snapshot.exists()) {
         const data = snapshot.val();
-        const poemsArray = Object.values(data).reverse(); // Latest poem on top
+        const poemsArray = Object.values(data).reverse();
         setPoems(poemsArray);
       }
       setLoading(false);
@@ -128,10 +127,10 @@ const PoemForm = () => {
     setEditMode(true);
   };
 
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const handleClick = (emotion) => {
-         navigate(`/PoemList/${emotion}`); // Navigate to poemList page with selected emotion
-       };
+    navigate(`/PoemList/${emotion}`); // Navigate to poemList page with selected emotion
+  };
 
   return (
     <div className="container-fluid" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
@@ -166,9 +165,9 @@ const PoemForm = () => {
                   onChange={handleInputChange}
                 />
                 <div>
-                  <label htmlFor="emotion">Emotion:</label>
                   <select
                     name="emotion"
+                    className='form-select'
                     value={formData.emotion}
                     onChange={handleInputChange}
                   >
@@ -185,13 +184,13 @@ const PoemForm = () => {
                   Save
                 </Button>
                 <div className='d-flex justify-content-between flex-wrap px-2'>
-                   <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('happiness')}>happiness</Button>
-                   <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('anger')}>anger</Button>
-                   <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('disgust')}>disgust</Button>
-                   <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('fear')}>fear</Button>
-                   <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('surprise')}>Surprise</Button>
-                   <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('sadness')}>sadness</Button>
-                 </div>
+                  <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('happiness')}>happiness</Button>
+                  <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('anger')}>anger</Button>
+                  <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('disgust')}>disgust</Button>
+                  <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('fear')}>fear</Button>
+                  <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('surprise')}>Surprise</Button>
+                  <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('sadness')}>sadness</Button>
+                </div>
               </Card>
             </div>
           </div>
@@ -218,9 +217,9 @@ const PoemForm = () => {
                             placeholder="Enter title"
                             value={updateData.titleValue}
                             onChange={handleUpdateChange}
-                         
 
- />
+
+                          />
                           <InputText
                             title="Author"
                             name="authorValue"
