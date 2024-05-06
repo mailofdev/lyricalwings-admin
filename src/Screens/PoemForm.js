@@ -128,9 +128,16 @@ const PoemForm = () => {
   };
 
   const navigate = useNavigate();
+  // const handleClick = (emotion) => {
+  //   navigate(`/PoemList/${emotion}`); // Navigate to poemList page with selected emotion
+  // };
+
+  
   const handleClick = (emotion) => {
-    navigate(`/PoemList/${emotion}`); // Navigate to poemList page with selected emotion
+    const filteredPoems = poems.filter(poem => poem.emotion === emotion);
+    navigate(`/PoemList/${emotion}`, { state: { poems: filteredPoems } });
   };
+  
 
   return (
     <div className="container-fluid" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
@@ -205,7 +212,8 @@ const PoemForm = () => {
                   <p className="">No poems yet.. Write a poem.!</p>
                 </div>
               ) : (
-                poems.map((poem) => (
+                // poems.map((poem) => (
+                  poems.slice(0, 3).map((poem) => (
                   <>
                     <Card key={poem.id} className='p-2 gap-2 mb-3'>
                       {editMode && updatedId === poem.id ? (
