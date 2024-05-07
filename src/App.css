@@ -1,41 +1,10 @@
 
-@media (max-width: 576px) {
-  .form-height {
-    align-self: unset;
-    justify-content: unset;
-    align-items: unset;
-    height: unset;
-  }
-  .form-padding{
-    padding: 0rem 0rem 0.5rem 0rem;
-  }
+.p-paginator{
+  gap: 16px;
 }
-
-@media (min-width: 577px) and (max-width: 992px) {
-  .form-height {
-    align-self: unset;
-    justify-content: unset;
-    align-items: unset;
-    height: unset;
-  }
-  .form-padding{
-    padding: 0rem 0rem 0.5rem 0rem;
-  }
+.p-link{
+  padding: 0px 5px !important;
 }
-
-@media (min-width: 993px) {
-  .form-height {
-    display: flex;
-    align-self: center;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-  .form-padding{
-    padding: 0.5rem 0.25rem 0.5rem 0.5rem;
-  }
-}
-
 .poems-container {
   overflow-y: auto;
   max-height: calc(-40px + 100vh);
@@ -84,4 +53,40 @@
 }
 
 
+@media (max-width: 576px) {
+  .form-height {
+    align-self: unset;
+    justify-content: unset;
+    align-items: unset;
+    height: unset;
+  }
+  .form-padding{
+    padding: 0rem 0rem 0.5rem 0rem;
+  }
+}
+
+@media (min-width: 577px) and (max-width: 992px) {
+  .form-height {
+    align-self: unset;
+    justify-content: unset;
+    align-items: unset;
+    height: unset;
+  }
+  .form-padding{
+    padding: 0rem 0rem 0.5rem 0rem;
+  }
+}
+
+@media (min-width: 993px) {
+  .form-height {
+    display: flex;
+    align-self: center;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .form-padding{
+    padding: 0.5rem 0.25rem 0.5rem 0.5rem;
+  }
+}
 

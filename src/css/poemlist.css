@@ -1,0 +1,26 @@
+.poem-list-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.poem-card {
+    width: 30%; 
+    min-height: 300px; 
+    margin-bottom: 20px;
+}
+
+.paginator-container {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #ffffff;
+}
+
+
+@media (max-width: 768px) {
+    .poem-card {
+        width: 100%; 
+    }
+}

@@ -1,0 +1,23 @@
+.sadness-background {
+    background-color: #cce5ff; /* Light blue background */
+  }
+  
+  .happiness-background {
+    background-color: #e2f0cb; /* Light green background */
+  }
+  
+  .anger-background {
+    background-color: #ffd6cc; /* Light red background */
+  }
+  
+  .fear-background {
+    background-color: #ffebcc; /* Light orange background */
+  }
+  
+  .disgust-background {
+    background-color: #f0f0f0; /* Light grey background */
+  }
+  
+  .surprise-background {
+    background-color: #f5e6ff; /* Light purple background */
+  }
