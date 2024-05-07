@@ -87,7 +87,7 @@ const PoemList = () => {
                 ) : (
                     poems.slice(first, first + rows).map((poem) => (
                         <div key={poem.id} className="col">
-                            <Card className={`p-2 gap-2 mb-3 ${poem.emotion}-background`}>
+                            <Card className='p-2 gap-2 mb-3'  style={{ backgroundColor: poem.cardColor }}>
                                 {editMode && updatedId === poem.id ? (
                                     <>
                                         <InputText

@@ -75,7 +75,16 @@ const PoemForm = () => {
       setLoadingMessage('Posting poem...');
       const AllPoemsRef = ref(db, 'AllPoems');
       const newId = push(AllPoemsRef).key;
-      const poemData = { ...formData, id: newId };
+      const emotionToColorMap = {
+        sadness: '#cce5ff',
+        happiness: '#e2f0cb',
+        anger: '#ffd6cc',
+        fear: '#ffebcc',
+        disgust: '#f0f0f0',
+        surprise: '#f5e6ff'
+      };
+      const cardColor = emotionToColorMap[formData.emotion];
+      const poemData = { ...formData, id: newId, cardColor }; // Add cardColor to poem data
       await set(ref(db, `AllPoems/${newId}`), poemData);
       setFormData({
         titleValue: '',
@@ -90,6 +99,7 @@ const PoemForm = () => {
       setLoading(false);
     }
   };
+  
 
   const handleUpdate = async (poemId) => {
     try {
@@ -166,6 +176,7 @@ const PoemForm = () => {
                   placeholder="Enter poem content"
                   value={formData.poemContent}
                   onChange={handleInputChange}
+                  autoResize={true} 
                 />
                 <div>
                   <select
@@ -175,8 +186,8 @@ const PoemForm = () => {
                     onChange={handleInputChange}
                   >
                     <option value="">Select Emotion</option>
-                    <option value="sadness">Sadness</option>
                     <option value="happiness">Happiness</option>
+                    <option value="sadness">Sadness</option>
                     <option value="anger">Anger</option>
                     <option value="fear">Fear</option>
                     <option value="disgust">Disgust</option>
@@ -209,7 +220,7 @@ const PoemForm = () => {
                 </div>
               ) : (
                 poems.slice(0, 3).map((poem) => (
-                  <Card key={poem.id} className={`p-2 gap-2 mb-3 ${poem.emotion}-background`}>
+                  <Card key={poem.id} className={`p-2 gap-2 mb-3`}  style={{ backgroundColor: poem.cardColor }}>
                     {editMode && updatedId === poem.id ? (
                       <>
                         <InputText
