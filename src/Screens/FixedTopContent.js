@@ -24,6 +24,11 @@ function FixedTopContent() {
       icon: 'pi pi-home',
       url: '/PoemForm',
     },
+    {
+      label: 'Settings',
+      icon: 'pi pi-home',
+      url: '/Settings',
+    },
   
   ];
 

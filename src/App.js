@@ -7,6 +7,7 @@ import PoemList from './Screens/PoemList';
 import Login from './Screens/Login';
 import Dashboard from "./Screens/Dashboard";
 import FixedTopContent from "./Screens/FixedTopContent"; 
+import Settings from './Screens/Settings';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/Login" element={<Login />} />
         <Route path="/Dashboard/*" element={<WithTopContent><Dashboard /></WithTopContent>} />
         <Route path="/PoemForm" element={<WithTopContent><PoemForm /></WithTopContent>} />
+        <Route path="/Settings" element={<WithTopContent><Settings /></WithTopContent>} />
         <Route path="/PoemList/:emotion" element={<WithTopContent><PoemList /></WithTopContent>} />
         <Route path="*" element={<Login />} />
       </Routes>

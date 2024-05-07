@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase} from "firebase/database";
 import { getStorage } from "firebase/storage";
-import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 
 
 const firebaseConfig = {
@@ -22,6 +22,10 @@ const firebaseConfig = {
  const storage = getStorage(app);
 const auth = getAuth(app);
 
+const emailPasswordSignUp = (email, password) => {
+  return createUserWithEmailAndPassword(auth, email, password);
+};
+
 const emailPasswordLogin = (email, password) => {
   return signInWithEmailAndPassword(auth, email, password);
 };
@@ -31,4 +35,5 @@ const googleLogin = () => {
   return signInWithPopup(auth, provider);
 };
 
-export { app, db, storage, auth, emailPasswordLogin, googleLogin };
+export { app, db, storage, auth, emailPasswordSignUp, emailPasswordLogin, googleLogin };
+
