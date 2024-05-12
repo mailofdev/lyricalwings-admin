@@ -8,7 +8,7 @@ import '../App.css';
 import "../css/loader.css";
 import CustomSidebar from '../Components/CustomSidebar';
 
-function FixedTopContent() {
+function Header () {
   const [visible, setVisible] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false); 
   const navigate = useNavigate();
@@ -40,13 +40,12 @@ function FixedTopContent() {
     setLoggingOut(true);
     try {
       await auth.signOut();
-      navigate('/Login');
+      navigate('/AuthModal');
       setLoggingOut(false);
     } catch (error) {
       console.error("Error logging out:", error);
     } 
   };
-  
   
 
   const handleProfileAction = (event) => {
@@ -59,9 +58,9 @@ function FixedTopContent() {
 
 
   return (
-    <div className="App">
-    <div className="fixed-top-content">
-      <div className="d-flex justify-content-between align-items-center mx-4">
+    <header className="fixed-top bg-light">
+      <div className="bg-primary-subtle text-light p-2 mt-2 mx-2 border border-1 rounded shadow-sm">
+      <div className="d-flex flex-row justify-content-between align-items-center">
         <button onClick={handleSidebarToggle} className="toggle-button">
           <GiHamburgerMenu size={22} />
         </button>
@@ -81,8 +80,8 @@ function FixedTopContent() {
       />
     </div>
     {loggingOut && <Loader loadingMessage="Logging out..." />}
-  </div>
+  </header>
   );
 }
 
-export default FixedTopContent;
+export default Header ;

@@ -1,35 +1,39 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import PoemForm from "./Screens/PoemForm";
 import PoemList from './Screens/PoemList';
-import Login from './Screens/Login';
 import Dashboard from "./Screens/Dashboard";
-import FixedTopContent from "./Screens/FixedTopContent"; 
 import Settings from './Screens/Settings';
+import Header from './Screens/Header';
+import AuthModal from './Components/AuthModal';
 
 function App() {
   return (
+    <div style={{ paddingTop: '60px', paddingBottom: '60px' }}>
+      <Header />
+      <div className='m-4'>
+        <Routes>
+        <Route path="/" element={<AuthModal show={true} handleClose={() => {}} />} />
+        <Route path="*" element={<AuthModal show={true} handleClose={() => {}} />} />
+
+          <Route path="/Dashboard/*" element={<Dashboard />} />
+          <Route path="/PoemForm" element={<PoemForm />} />
+          <Route path="/Settings" element={<Settings />} />
+          <Route path="/PoemList/:emotion" element={<PoemList />} />
+        </Routes>
+      </div>
+    </div>
+  );
+};
+
+const Root = () => {
+  return (
     <Router>
-      <Routes>
-        <Route path="/Login" element={<Login />} />
-        <Route path="/Dashboard/*" element={<WithTopContent><Dashboard /></WithTopContent>} />
-        <Route path="/PoemForm" element={<WithTopContent><PoemForm /></WithTopContent>} />
-        <Route path="/Settings" element={<WithTopContent><Settings /></WithTopContent>} />
-        <Route path="/PoemList/:emotion" element={<WithTopContent><PoemList /></WithTopContent>} />
-        <Route path="*" element={<Login />} />
-      </Routes>
+      <App />
     </Router>
   );
-}
+};
 
-// Wrapper component to conditionally include the FixedTopContent
-function WithTopContent({ children }) {
-  // Check if the current path is not the Login page
-  const showTopContent = !window.location.pathname.startsWith("/Login");
-  // If not on Login page, render FixedTopContent with children
-  return showTopContent ? <><FixedTopContent />{children}</> : children;
-}
-
-export default App;
+export default Root;

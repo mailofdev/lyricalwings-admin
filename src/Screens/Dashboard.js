@@ -38,11 +38,9 @@ function Dashboard() {
 
     fetchData();
 
-    // Cleanup function to remove the listener
     return () => {
       const db = getDatabase();
       const poemsRef = ref(db, 'AllPoems');
-      // Unsubscribe from the onValue event to prevent memory leaks
       off(poemsRef);
     };
   }, []);
