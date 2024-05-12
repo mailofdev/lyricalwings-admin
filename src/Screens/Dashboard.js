@@ -86,12 +86,7 @@ function Dashboard() {
           <>
 
             <div className='d-flex gap-4 flex-column'>
-              <div className="container-sm flex-row justify-content-center bg-light card shadow-sm">
-                <div className="">
-                  <h3>Emotion Distribution</h3>
-                  <Chart type="pie" data={getChartData(poemsData.emotionsCount)} />
-                </div>
-              </div>
+            
               <div className="row">
                 <div className="col-md-4">
                   <div className="card">
@@ -130,6 +125,13 @@ function Dashboard() {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              <div className="container-sm flex-row justify-content-center bg-light card shadow-sm">
+                <div className="">
+                  <h3>Emotion Distribution</h3>
+                  <Chart type="pie" data={getChartData(poemsData.emotionsCount)} />
+                </div>
               </div>
 
               <div>
