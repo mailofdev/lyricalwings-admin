@@ -108,11 +108,11 @@ const AuthModal = ({ show, handleClose }) => {
         try {
             const result = await signInWithPopup(auth, provider);
             if (result && result.user) {
-                const existingUserSnapshot = await get(ref(db, `users/${result.user.uid}`));
-                if (existingUserSnapshot.exists()) {
-                    setUpdateInfoError("Email already exists.");
-                    return;
-                }
+                // const existingUserSnapshot = await get(ref(db, `users/${result.user.uid}`));
+                // if (existingUserSnapshot.exists()) {
+                //     setUpdateInfoError("Email already exists.");
+                //     return;
+                // }
                 setEmail(result.user.email);
                 setToggleUpdateInfo(true);
             }
