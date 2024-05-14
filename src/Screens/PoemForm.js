@@ -20,13 +20,17 @@ const PoemForm = () => {
     titleValue: '',
     authorValue: '',
     poemContent: '',
-    emotion: ''
+    emotion: '',
+    like: false,
+        comments: ''
   });
   const [updateData, setUpdateData] = useState({
     titleValue: '',
     authorValue: '',
     poemContent: '',
-    emotion: ''
+    emotion: '',
+    like: false,
+        comments: ''
   });
 
   useEffect(() => {
@@ -90,7 +94,9 @@ const PoemForm = () => {
         titleValue: '',
         authorValue: '',
         poemContent: '',
-        emotion: ''
+        emotion: '',
+        like: false,
+        comments: ''
       });
       fetchPoems();
       setLoading(false);
