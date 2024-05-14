@@ -5,7 +5,7 @@ import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
-import Loader from '../Components/Loader'; // Import Loader component
+import Loader from '../Components/Loader';
 import { useNavigate } from 'react-router-dom';
 import '../css/poemForm.css';
 
@@ -22,7 +22,7 @@ const PoemForm = () => {
     poemContent: '',
     emotion: '',
     like: false,
-        comments: ''
+    comments: ''
   });
   const [updateData, setUpdateData] = useState({
     titleValue: '',
@@ -51,11 +51,31 @@ const PoemForm = () => {
         const data = snapshot.val();
         const poemsArray = Object.values(data).reverse();
         setPoems(poemsArray);
+        updateLatestPoemOfEveryEmotion(poemsArray);
       }
       setLoading(false);
     } catch (error) {
       console.log(error);
       setLoading(false);
+    }
+  };
+
+  const updateLatestPoemOfEveryEmotion = (poemsArray) => {
+    const latestPoems = {};
+    poemsArray.forEach(poem => {
+      if (!latestPoems[poem.emotion]) {
+        latestPoems[poem.emotion] = poem;
+      }
+    });
+    saveLatestPoemOfEveryEmotion(latestPoems);
+  };
+
+  const saveLatestPoemOfEveryEmotion = async (latestPoems) => {
+    try {
+      const latestPoemsRef = ref(db, 'latestPoemOfEveryEmotion');
+      await set(latestPoemsRef, latestPoems);
+    } catch (error) {
+      console.error('Error saving latest poems of every emotion:', error);
     }
   };
 
@@ -88,7 +108,7 @@ const PoemForm = () => {
         surprise: '#f5e6ff'
       };
       const cardColor = emotionToColorMap[formData.emotion];
-      const poemData = { ...formData, id: newId, cardColor }; // Add cardColor to poem data
+      const poemData = { ...formData, id: newId, cardColor };
       await set(ref(db, `AllPoems/${newId}`), poemData);
       setFormData({
         titleValue: '',
@@ -221,54 +241,54 @@ const PoemForm = () => {
               <Loader loadingMessage={loadingMessage} />
             ) : (
               poems.length === 0 ? (
-                <div className="form-height align-self-center d-flex justify-content-center">
-                  <p className="">No poems yet.. Write a poem.!</p>
-                </div>
-              ) : (
-                poems.slice(0, 3).map((poem) => (
-                  <Card key={poem.id} className={`p-2 gap-2 mb-3`}  style={{ backgroundColor: poem.cardColor }}>
-                    {editMode && updatedId === poem.id ? (
-                      <>
-                        <InputText
-                          title="Title"
-                          name="titleValue"
-                          type="text"
-                          placeholder="Enter title"
-                          value={updateData.titleValue}
-                          onChange={handleUpdateChange}
-                        />
-                        <InputText
-                          title="Author"
-                          name="authorValue"
-                          type="text"
-                          placeholder="Enter author name"
-                          value={updateData.authorValue}
-                          onChange={handleUpdateChange}
-                        />
-                        <InputTextarea
-                          title="Poem Content"
-                          name="poemContent"
-                          type="text"
-                          placeholder="Enter poem content"
-                          value={updateData.poemContent}
-                          onChange={handleUpdateChange}
-                          className='custom-textarea'
-                        />
-                        <Button className='w-50 align-self-center d-flex justify-content-center btn btn-light btn-outline-success border border-1 border-success' onClick={() => handleUpdate(poem.id)}>Update</Button>
-                      </>
-                    ) : (
-                      <>
-                        <p>{poem.titleValue}</p>
-                        <h6>{poem.authorValue}</h6>
-                        <p>{poem.poemContent}</p>
-                        <div className='d-flex justify-content-evenly'>
-                          <Button className='btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleEdit(poem)}>Edit</Button>
-                          <Button className='btn btn-light btn-outline-danger border border-1 border-danger' onClick={() => handleDelete(poem.id)}>Delete</Button>
-                        </div>
-                      </>
-                    )}
-                  </Card>
-                ))
+                  <div className="form-height align-self-center d-flex justify-content-center">
+                    <p className="">No poems yet.. Write a poem.!</p>
+                  </div>
+                ) : (
+                  poems.slice(0, 3).map((poem) => (
+                    <Card key={poem.id} className={`p-2 gap-2 mb-3`}  style={{ backgroundColor: poem.cardColor }}>
+                      {editMode && updatedId === poem.id ? (
+                        <>
+                          <InputText
+                            title="Title"
+                            name="titleValue"
+                            type="text"
+                            placeholder="Enter title"
+                            value={updateData.titleValue}
+                            onChange={handleUpdateChange}
+                          />
+                          <InputText
+                            title="Author"
+                            name="authorValue"
+                            type="text"
+                            placeholder="Enter author name"
+                            value={updateData.authorValue}
+                            onChange={handleUpdateChange}
+                          />
+                          <InputTextarea
+                            title="Poem Content"
+                            name="poemContent"
+                            type="text"
+                            placeholder="Enter poem content"
+                            value={updateData.poemContent}
+                            onChange={handleUpdateChange}
+                            className='custom-textarea'
+                          />
+                          <Button className='w-50 align-self-center d-flex justify-content-center btn btn-light btn-outline-success border border-1 border-success' onClick={() => handleUpdate(poem.id)}>Update</Button>
+                        </>
+                      ) : (
+                        <>
+                          <p>{poem.titleValue}</p>
+                          <h6>{poem.authorValue}</h6>
+                          <p>{poem.poemContent}</p>
+                          <div className='d-flex justify-content-evenly'>
+                            <Button className='btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleEdit(poem)}>Edit</Button>
+                            <Button className='btn btn-light btn-outline-danger border border-1 border-danger' onClick={() => handleDelete(poem.id)}>Delete</Button>
+                          </div>
+                        </>
+                      )}
+                    </Card>
+                  ))
               )
             )}
           </div>
