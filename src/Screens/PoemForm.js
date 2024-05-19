@@ -108,7 +108,7 @@ const PoemForm = () => {
         surprise: '#f5e6ff'
       };
       const cardColor = emotionToColorMap[formData.emotion];
-      const poemData = { ...formData, id: newId, cardColor };
+      const poemData = { ...formData, id: newId, cardColor, likes: {}, comments: {} };
       await set(ref(db, `AllPoems/${newId}`), poemData);
       setFormData({
         titleValue: '',
