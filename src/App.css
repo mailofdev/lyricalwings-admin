@@ -1,4 +1,7 @@
 
+.ql-editor {
+  height: 300px !important;
+}
 .p-paginator{
   gap: 16px;
 }

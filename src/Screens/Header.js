@@ -29,6 +29,11 @@ function Header () {
       icon: 'pi pi-home',
       url: '/Settings',
     },
+    {
+      label: 'About',
+      icon: 'pi pi-home',
+      url: '/About',
+    },
   
   ];
 
@@ -49,10 +54,10 @@ function Header () {
   
 
   const handleProfileAction = (event) => {
-    const action = event.target.value;
-    if (action === 'logout') {
-        handleLogout();
-    }
+    // const action = event.target.value;
+    // if (action === 'logout') {
+    //     handleLogout();
+    // }
   };
   
 

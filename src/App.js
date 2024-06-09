@@ -8,6 +8,7 @@ import Dashboard from "./Screens/Dashboard";
 import Settings from './Screens/Settings';
 import Header from './Screens/Header';
 import AuthModal from './Components/AuthModal';
+import About from './Screens/About';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/Dashboard/*" element={<Dashboard />} />
           <Route path="/PoemForm" element={<PoemForm />} />
           <Route path="/Settings" element={<Settings />} />
+          <Route path="/About" element={<About />} />
           <Route path="/PoemList/:emotion" element={<PoemList />} />
         </Routes>
       </div>
