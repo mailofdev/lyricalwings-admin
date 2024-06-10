@@ -9,8 +9,8 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { ConfirmPopup } from 'primereact/confirmpopup'; // To use <ConfirmPopup> tag
-import { confirmPopup } from 'primereact/confirmpopup'; // To use confirmPopup method
+import { ConfirmPopup } from 'primereact/confirmpopup';
+import { confirmPopup } from 'primereact/confirmpopup';
 import { Toast } from 'primereact/toast';
 
 const useAboutData = (sectionKey) => {
@@ -43,17 +43,43 @@ const useAboutData = (sectionKey) => {
 
 function AboutSection({ sectionName, sectionKey }) {
     const [text, setText] = useState('');
+    const [bookLink, setBookLink] = useState('');
     const [editing, setEditing] = useState(false);
     const [dataId, setDataId] = useState('');
     const [showAddPanel, setShowAddPanel] = useState(false);
     const [contentChanged, setContentChanged] = useState(false);
+    const [wordCount, setWordCount] = useState(0);
 
     const { aboutData, loading, contentCount, setAboutData, setContentCount } = useAboutData(sectionKey);
     const toast = useRef(null);
 
+    const countWords = (text) => {
+        return text.trim().split(/\s+/).length;
+    };
+
     const saveData = async () => {
+        let minWordCount = 250;
+        let maxWordCount = 300;
+
+        // Adjust word count validation for "My Books" section
+        if (sectionKey === "myBooks") {
+            minWordCount = 20;
+            maxWordCount = 50;
+        }
+
+        // Ensure word count is within the specified range
+        if (wordCount < minWordCount || wordCount > maxWordCount) {
+            toast.current.show({ severity: 'warn', summary: 'Warning', detail: `Content must be between ${minWordCount} and ${maxWordCount} words.`, life: 3000 });
+            return;
+        }
+
         const aboutRef = ref(db, `About/${sectionKey}/${editing ? dataId : Date.now()}`);
         const data = { text };
+
+        // Only include book link if it's not empty and section is "My Books"
+        if (sectionKey === "myBooks" && bookLink.trim() !== "") {
+            data.bookLink = bookLink;
+        }
 
         try {
             await set(aboutRef, data);
@@ -68,6 +94,7 @@ function AboutSection({ sectionName, sectionKey }) {
 
             setEditing(false);
             setText('');
+            setBookLink('');
             setShowAddPanel(false);
             setContentChanged(false);
 
@@ -78,6 +105,7 @@ function AboutSection({ sectionName, sectionKey }) {
         }
     };
 
+
     const deleteData = useCallback(async (id) => {
         try {
             await set(ref(db, `About/${sectionKey}/${id}`), null);
@@ -86,6 +114,7 @@ function AboutSection({ sectionName, sectionKey }) {
             setAboutData(updatedData);
             setContentCount((prevCount) => prevCount - 1);
             setText('');
+            setBookLink('');
             setEditing(false);
             setShowAddPanel(false);
 
@@ -107,6 +136,10 @@ function AboutSection({ sectionName, sectionKey }) {
 
     const editData = useCallback((id) => {
         setText(aboutData[id].text);
+        // Only set book link if it exists
+        if (aboutData[id].bookLink) {
+            setBookLink(aboutData[id].bookLink);
+        }
         setEditing(true);
         setDataId(id);
         setShowAddPanel(true);
@@ -114,13 +147,16 @@ function AboutSection({ sectionName, sectionKey }) {
 
     const cancelEdit = () => {
         setText('');
+        setBookLink('');
         setEditing(false);
         setShowAddPanel(false);
         setContentChanged(false);
     };
 
     const handleChange = (value) => {
+        const wordCount = countWords(value);
         setText(value);
+        setWordCount(wordCount);
         setContentChanged(value.trim() !== '');
     };
 
@@ -137,6 +173,15 @@ function AboutSection({ sectionName, sectionKey }) {
                                 value={text}
                                 onChange={handleChange}
                             />
+                            {sectionKey === "myBooks" && (
+                                <input
+                                    type="text"
+                                    placeholder="Book Link"
+                                    value={bookLink}
+                                    onChange={(e) => setBookLink(e.target.value)}
+                                    className="mt-2 w-100"
+                                />
+                            )}
                             <div className='text-center'>
                                 <Button
                                     label={editing ? "Update" : "Save"}
@@ -146,10 +191,18 @@ function AboutSection({ sectionName, sectionKey }) {
                                 />
                                 <Button label="Cancel" onClick={cancelEdit} className="mt-2 ml-2 p-button-secondary" />
                             </div>
+                            <div className='text-right'>
+                                    {sectionKey === "myBooks" ? (
+                                        <small>{wordCount} words (20-50 words required)</small>
+                                    ) : (
+                                        <small>{wordCount} words (250-300 words required)</small>
+                                    )}
+                            </div>
                         </div>
                     </div>
                 ) : (
-                    contentCount < 1 && (
+
+                    (sectionKey === "myBooks" || (sectionKey === "aboutUs" || sectionKey === "aboutme") && contentCount < 1) && (
                         <Button label="Add content" onClick={() => setShowAddPanel(true)} className="mt-2" />
                     )
                 )}
@@ -160,6 +213,11 @@ function AboutSection({ sectionName, sectionKey }) {
                             {Object.entries(aboutData).map(([key, data]) => (
                                 <div key={key} className="mb-2 card shadow-sm p-2">
                                     <div dangerouslySetInnerHTML={{ __html: data.text }}></div>
+                                    {data.bookLink && (
+                                        <div>
+                                            <a href={data.bookLink} target="_blank" rel="noopener noreferrer">Book Link</a>
+                                        </div>
+                                    )}
                                     <div className="mt-2 d-flex gap-2">
                                         <Button label="Edit" onClick={() => editData(key)} className="p-button-warning mr-2" />
                                         <Button label="Delete" onClick={(e) => confirmDelete(e, key)} className="p-button-danger" />
@@ -185,6 +243,9 @@ function About() {
                 </div>
                 <div className='card shadow-sm'>
                     <AboutSection sectionName="About Me" sectionKey="aboutme" />
+                </div>
+                <div className='card shadow-sm'>
+                    <AboutSection sectionName="My Books" sectionKey="myBooks" />
                 </div>
             </div>
         </div>
