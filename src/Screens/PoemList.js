@@ -20,7 +20,7 @@ const PoemList = () => {
   const [updatedId, setUpdatedId] = useState('');
   const [updateData, setUpdateData] = useState({
       titleValue: '',
-      authorValue: '',
+      backgroundOfPoem: '',
       poemContent: ''
   });
 
@@ -100,11 +100,11 @@ const PoemList = () => {
                                       />
                                       <InputText
                                           title="Author"
-                                          name="authorValue"
+                                          name="backgroundOfPoem"
                                           type="text"
-                                          placeholder="Enter author name"
-                                          value={updateData.authorValue}
-                                          onChange={(e) => setUpdateData({ ...updateData, authorValue: e.target.value })}
+                                          placeholder="Enter background of poem"
+                                          value={updateData.backgroundOfPoem}
+                                          onChange={(e) => setUpdateData({ ...updateData, backgroundOfPoem: e.target.value })}
                                       />
                                       <InputTextarea
                                           title="Poem Content"
@@ -120,7 +120,7 @@ const PoemList = () => {
                               ) : (
                                   <>
                                       <p>{poem.titleValue}</p>
-                                      <h6>{poem.authorValue}</h6>
+                                      <h6>{poem.backgroundOfPoem}</h6>
                                       <p>{poem.poemContent}</p>
                                       <div className='d-flex justify-content-evenly'>
                                           <Button className='btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleEdit(poem)}>Edit</Button>

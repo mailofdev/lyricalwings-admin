@@ -18,7 +18,7 @@ const PoemForm = () => {
   const [loadingMessage, setLoadingMessage] = useState('');
   const [formData, setFormData] = useState({
     titleValue: '',
-    authorValue: '',
+    backgroundOfPoem: '',
     poemContent: '',
     emotion: '',
     like: false,
@@ -26,7 +26,7 @@ const PoemForm = () => {
   });
   const [updateData, setUpdateData] = useState({
     titleValue: '',
-    authorValue: '',
+    backgroundOfPoem: '',
     poemContent: '',
     emotion: '',
     like: false,
@@ -34,7 +34,7 @@ const PoemForm = () => {
   });
 
   useEffect(() => {
-    setIsFormValid(formData.titleValue !== '' && formData.authorValue !== '' && formData.poemContent !== '' && formData.emotion !== '');
+    setIsFormValid(formData.titleValue !== '' && formData.backgroundOfPoem !== '' && formData.poemContent !== '' && formData.emotion !== '');
   }, [formData]);
 
   useEffect(() => {
@@ -112,7 +112,7 @@ const PoemForm = () => {
       await set(ref(db, `AllPoems/${newId}`), poemData);
       setFormData({
         titleValue: '',
-        authorValue: '',
+        backgroundOfPoem: '',
         poemContent: '',
         emotion: '',
         like: false,
@@ -188,11 +188,11 @@ const PoemForm = () => {
                   onChange={handleInputChange}
                 />
                 <InputText
-                  title="Author"
-                  name="authorValue"
+                  title="backgroundOfPoem"
+                  name="backgroundOfPoem"
                   type="text"
-                  placeholder="Enter author name"
-                  value={formData.authorValue}
+                  placeholder="Enter background of poem"
+                  value={formData.backgroundOfPoem}
                   onChange={handleInputChange}
                 />
                 <InputTextarea
@@ -258,11 +258,11 @@ const PoemForm = () => {
                             onChange={handleUpdateChange}
                           />
                           <InputText
-                            title="Author"
-                            name="authorValue"
+                            title="backgroundOfPoem"
+                            name="backgroundOfPoem"
                             type="text"
-                            placeholder="Enter author name"
-                            value={updateData.authorValue}
+                            placeholder="Enter background of poem"
+                            value={updateData.backgroundOfPoem}
                             onChange={handleUpdateChange}
                           />
                           <InputTextarea
@@ -279,7 +279,7 @@ const PoemForm = () => {
                       ) : (
                         <>
                           <p>{poem.titleValue}</p>
-                          <h6>{poem.authorValue}</h6>
+                          <h6>{poem.backgroundOfPoem}</h6>
                           <p>{poem.poemContent}</p>
                           <div className='d-flex justify-content-evenly'>
                             <Button className='btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleEdit(poem)}>Edit</Button>

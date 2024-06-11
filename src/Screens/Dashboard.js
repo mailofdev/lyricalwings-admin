@@ -6,6 +6,8 @@ import Loader from "../Components/Loader"; // Import Loader component
 import { getDatabase, ref, onValue, off } from "firebase/database";
 import { Chart } from 'primereact/chart';
 
+// import { FileUpload } from 'primereact/fileupload';
+        
 function Dashboard() {
   const [usersData, setUsersData] = useState([]); // State to store user data
   const [isLoading, setIsLoading] = useState(true);
