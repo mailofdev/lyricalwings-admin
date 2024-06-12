@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { auth } from '../Config/firebase';
+import { Button } from 'primereact/button';
+import { getDatabase, ref, onValue, off, remove } from "firebase/database";
 import Loader from "../Components/Loader"; // Import Loader component
-import { getDatabase, ref, onValue, off } from "firebase/database";
 import { Chart } from 'primereact/chart';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
-// import { FileUpload } from 'primereact/fileupload';
-        
 function Dashboard() {
   const [usersData, setUsersData] = useState([]); // State to store user data
   const [isLoading, setIsLoading] = useState(true);
@@ -24,7 +23,7 @@ function Dashboard() {
       onValue(usersRef, (snapshot) => {
         const users = snapshot.val();
         if (users) {
-          setUsersData(Object.values(users));
+          setUsersData(Object.entries(users).map(([key, value]) => ({ id: key, ...value })));
         } else {
           setUsersData([]);
         }
@@ -38,6 +37,15 @@ function Dashboard() {
             totalPoems++;
             emotionsCount[poem.emotion] = emotionsCount[poem.emotion] ? emotionsCount[poem.emotion] + 1 : 1;
           });
+
+          // Add all possible emotions with a count of 0 if not already in emotionsCount
+          const allPossibleEmotions = ['happiness', 'sadness', 'anger', 'disgust', 'fear']; // Adjust this array as needed
+          allPossibleEmotions.forEach(emotion => {
+            if (!emotionsCount[emotion]) {
+              emotionsCount[emotion] = 0;
+            }
+          });
+
           setPoemsData({ totalPoems, emotionsCount });
         } else {
           setPoemsData({ totalPoems: 0, emotionsCount: {} });
@@ -76,6 +84,25 @@ function Dashboard() {
     return { labels, datasets };
   }
 
+  const deleteUser = (id) => {
+    const db = getDatabase();
+    const userRef = ref(db, `users/${id}`);
+    remove(userRef).then(() => {
+      setUsersData(usersData.filter(user => user.id !== id));
+    }).catch((error) => {
+      console.error('Error deleting user: ', error);
+    });
+  }
+
+  const deleteButtonTemplate = (rowData) => {
+    return <>
+      <div className='text-center justify-content-center align-center d-flex'>
+        <Button icon="pi pi-trash" className="p-button-danger" onClick={() => deleteUser(rowData.id)} />
+      </div>
+    </>;
+
+  }
+
   const filteredAdmins = usersData.filter(user => user.role === 'admin');
   const filteredUsers = usersData.filter(user => user.role === 'user');
 
@@ -86,15 +113,14 @@ function Dashboard() {
           <Loader loadingMessage={loadingMessage} />
         ) : (
           <>
-
             <div className='d-flex gap-4 flex-column'>
-            
+
               <div className="row">
                 <div className="col-md-4">
                   <div className="card">
                     <div className="card-body">
                       <h5 className="card-title">Total Users</h5>
-                      <p className="card-text">{usersData.length}</p>
+                      <p className="card-text">{filteredUsers.length}</p>
                     </div>
                   </div>
                 </div>
@@ -139,10 +165,18 @@ function Dashboard() {
               <div>
                 <h2>Admins</h2>
                 <div className="shadow-sm card p-4 my-4">
-                  <DataTable value={filteredAdmins} paginator={true} rows={pageSize}>
+                  <DataTable
+                    value={filteredAdmins}
+                    paginator={true}
+                    rows={pageSize}
+                    className="table table-striped table-hover"
+                    paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+                  >
                     <Column field="username" header="Username" />
                     <Column field="authMethod" header="Login Method" />
                     <Column field="email" header="Email" />
+                    <Column body={deleteButtonTemplate} header="Delete" />
                   </DataTable>
                 </div>
               </div>
@@ -150,12 +184,20 @@ function Dashboard() {
               <div>
                 <h2>Users</h2>
                 <div className="shadow-sm card p-4 my-4">
-                  <DataTable value={filteredUsers} paginator={true} rows={pageSize}>
+                  <DataTable
+                    value={filteredUsers}
+                    paginator={true}
+                    rows={pageSize}
+                    className="table table-striped table-hover"
+                    paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+                  >
                     <Column field="username" header="Username" />
                     <Column field="authMethod" header="Login Method" />
                     <Column field="email" header="Email" />
                     <Column field="gender" header="Gender" />
                     <Column field="birthdate" header="Birth Date" />
+                    <Column body={deleteButtonTemplate} header="Delete" />
                   </DataTable>
                 </div>
               </div>

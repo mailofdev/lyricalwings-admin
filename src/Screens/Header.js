@@ -54,10 +54,10 @@ function Header () {
   
 
   const handleProfileAction = (event) => {
-    // const action = event.target.value;
-    // if (action === 'logout') {
-    //     handleLogout();
-    // }
+    const action = event.target.value;
+    if (action === 'logout') {
+        handleLogout();
+    }
   };
   
 

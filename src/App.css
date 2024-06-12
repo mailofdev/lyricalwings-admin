@@ -1,3 +1,74 @@
+/* Dashboard.css */
+
+/* Dashboard.css */
+
+/* Style the DataTable header and body */
+.p-datatable .p-datatable-header, .p-datatable .p-datatable-footer {
+  background-color: #f8f9fa !important;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  border: 1px solid #dee2e6 !important;
+}
+
+.p-datatable .p-datatable-tbody > tr:nth-child(even) {
+  background-color: #f2f2f2 !important;
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+  background-color: #e9ecef !important;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  background-color: #343a40 !important;
+  color: #ffffff !important;
+  border: 1px solid #dee2e6 !important;
+}
+
+/* Style the paginator */
+.p-paginator .p-paginator-pages .p-paginator-page {
+  background-color: #ffffff !important;
+  border: 1px solid #dee2e6 !important;
+  color: #343a40 !important;
+  margin: 0 5px !important;
+  border-radius: 4px !important;
+}
+
+.p-paginator .p-paginator-pages .p-paginator-page.p-highlight {
+  background-color: black !important;
+  border-color: black !important;
+  color: white !important;
+}
+
+.p-paginator .p-paginator-first, .p-paginator .p-paginator-prev,
+.p-paginator .p-paginator-next, .p-paginator .p-paginator-last {
+  background-color: #ffffff !important;
+  border: 1px solid #dee2e6 !important;
+  color: #343a40 !important;
+  border-radius: 4px !important;
+  margin: 0 5px !important;
+}
+
+/* Ensure paginator arrows are visible and red */
+.p-paginator-icon {
+  font-size: 1.25rem !important;
+  background-color: transparent !important;
+  color: black !important;
+}
+
+.p-paginator-next{
+  font-size: 1.25rem !important;
+  background-color: transparent !important;
+  color: black !important;
+}
+
+.nextPageIcon{
+  font-size: 1.25rem !important;
+  /* background-color: transparent !important; */
+  color: black !important;
+}
+/* Dashboard.css */
+
 
 .ql-editor {
   height: 300px !important;
