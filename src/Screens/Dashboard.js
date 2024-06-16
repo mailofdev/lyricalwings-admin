@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
-import { getDatabase, ref, onValue, off, remove } from "firebase/database";
+import { getDatabase, ref, onValue, off, set, remove } from "firebase/database";
 import Loader from "../Components/Loader"; // Import Loader component
 import { Chart } from 'primereact/chart';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { Panel } from 'primereact/panel';
 
 function Dashboard() {
   const [usersData, setUsersData] = useState([]); // State to store user data
@@ -15,10 +16,33 @@ function Dashboard() {
   const [poemsData, setPoemsData] = useState({ totalPoems: 0, emotionsCount: {} });
 
   useEffect(() => {
+    const db = getDatabase();
+    const usersRef = ref(db, 'users');
+    const poemsRef = ref(db, 'AllPoems');
+
+    // Add super admin and super user if they don't exist
+    const addSuperUsers = async () => {
+      const superAdmin = {
+        username: 'super admin',
+        email: 'superadmin@gmail.com',
+        password: 'test123',
+        role: 'admin',
+        nonDeletable: true
+      };
+
+      const superUser = {
+        username: 'super user',
+        email: 'superuser@gmail.com',
+        password: 'test123',
+        role: 'user',
+        nonDeletable: true
+      };
+
+      set(ref(db, 'users/superAdmin'), superAdmin);
+      set(ref(db, 'users/superUser'), superUser);
+    };
+
     const fetchData = async () => {
-      const db = getDatabase();
-      const usersRef = ref(db, 'users');
-      const poemsRef = ref(db, 'AllPoems');
       setLoadingMessage('Fetching user data...');
       onValue(usersRef, (snapshot) => {
         const users = snapshot.val();
@@ -54,12 +78,10 @@ function Dashboard() {
       });
     };
 
+    addSuperUsers();
     fetchData();
     return () => {
-      const db = getDatabase();
-      const usersRef = ref(db, 'users');
       off(usersRef);
-      const poemsRef = ref(db, 'AllPoems');
       off(poemsRef);
     };
   }, []);
@@ -84,7 +106,12 @@ function Dashboard() {
     return { labels, datasets };
   }
 
-  const deleteUser = (id) => {
+  const deleteUser = (id, email) => {
+    if (email === 'superadmin@gmail.com' || email === 'superuser@gmail.com') {
+      console.error('Cannot delete super admin or super user');
+      return;
+    }
+  
     const db = getDatabase();
     const userRef = ref(db, `users/${id}`);
     remove(userRef).then(() => {
@@ -93,15 +120,19 @@ function Dashboard() {
       console.error('Error deleting user: ', error);
     });
   }
-
+  
   const deleteButtonTemplate = (rowData) => {
-    return <>
+    if (rowData.email === 'superadmin@gmail.com' || rowData.email === 'superuser@gmail.com') {
+      return null; // Do not render delete button for super admin and super user
+    }
+    
+    return (
       <div className='text-center justify-content-center align-center d-flex'>
-        <Button icon="pi pi-trash" className="p-button-danger" onClick={() => deleteUser(rowData.id)} />
+        <Button icon="pi pi-trash" className="p-button-danger" onClick={() => deleteUser(rowData.id, rowData.email)} />
       </div>
-    </>;
-
+    );
   }
+  
 
   const filteredAdmins = usersData.filter(user => user.role === 'admin');
   const filteredUsers = usersData.filter(user => user.role === 'user');
@@ -163,8 +194,7 @@ function Dashboard() {
               </div>
 
               <div>
-                <h2>Admins</h2>
-                <div className="shadow-sm card p-4 my-4">
+                <Panel header="Admin list" toggleable >
                   <DataTable
                     value={filteredAdmins}
                     paginator={true}
@@ -178,12 +208,11 @@ function Dashboard() {
                     <Column field="email" header="Email" />
                     <Column body={deleteButtonTemplate} header="Delete" />
                   </DataTable>
-                </div>
+                </Panel>
               </div>
 
               <div>
-                <h2>Users</h2>
-                <div className="shadow-sm card p-4 my-4">
+                <Panel header="User list" toggleable >
                   <DataTable
                     value={filteredUsers}
                     paginator={true}
@@ -199,7 +228,7 @@ function Dashboard() {
                     <Column field="birthdate" header="Birth Date" />
                     <Column body={deleteButtonTemplate} header="Delete" />
                   </DataTable>
-                </div>
+                </Panel>
               </div>
             </div>
           </>

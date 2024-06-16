@@ -1,8 +1,14 @@
-/* Dashboard.css */
+.popup_menu{
+  position: absolute;
+  top: 59px !important;
+  left: 1574.77px;
+  z-index: 1001;
+  transform-origin: center top;
+}
+
 
 /* Dashboard.css */
 
-/* Style the DataTable header and body */
 .p-datatable .p-datatable-header, .p-datatable .p-datatable-footer {
   background-color: #f8f9fa !important;
 }

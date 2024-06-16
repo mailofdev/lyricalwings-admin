@@ -9,6 +9,7 @@ import Settings from './Screens/Settings';
 import Header from './Screens/Header';
 import AuthModal from './Components/AuthModal';
 import About from './Screens/About';
+import DetailPoem from './Screens/DetailPoem';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/Settings" element={<Settings />} />
           <Route path="/About" element={<About />} />
           <Route path="/PoemList/:emotion" element={<PoemList />} />
+          <Route path="/DetailPoem" element={<DetailPoem />} />
         </Routes>
       </div>
     </div>

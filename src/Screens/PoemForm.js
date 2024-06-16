@@ -1,50 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { db } from '../Config/firebase';
-import { get, ref, push, set, remove, update } from "firebase/database";
-import Card from 'react-bootstrap/Card';
-import Button from 'react-bootstrap/Button';
+import React, { useState, useEffect, useRef } from 'react';
+import { db, storage } from '../Config/firebase';
+import { get, ref, push, set } from 'firebase/database';
 import { InputText } from 'primereact/inputtext';
-import { InputTextarea } from 'primereact/inputtextarea';
-import Loader from '../Components/Loader';
 import { useNavigate } from 'react-router-dom';
-import '../css/poemForm.css';
+import { Panel } from 'primereact/panel';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import { Button } from 'react-bootstrap';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 const PoemForm = () => {
   const [isFormValid, setIsFormValid] = useState(false);
+  const [titleValue, setTitleValue] = useState('');
+  const [backgroundOfPoem, setBackgroundOfPoem] = useState('');
+  const [poemContent, setPoemContent] = useState('');
+  const [emotion, setEmotion] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
   const [poems, setPoems] = useState([]);
-  const [updatedId, setUpdatedId] = useState('');
-  const [editMode, setEditMode] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
-  const [formData, setFormData] = useState({
-    titleValue: '',
-    backgroundOfPoem: '',
-    poemContent: '',
-    emotion: '',
-    like: false,
-    comments: ''
-  });
-  const [updateData, setUpdateData] = useState({
-    titleValue: '',
-    backgroundOfPoem: '',
-    poemContent: '',
-    emotion: '',
-    like: false,
-        comments: ''
-  });
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  const toast = useRef(null);
 
   useEffect(() => {
-    setIsFormValid(formData.titleValue !== '' && formData.backgroundOfPoem !== '' && formData.poemContent !== '' && formData.emotion !== '');
-  }, [formData]);
+    const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        setUser(null);
+        navigate('/login'); // Redirect to login if not authenticated
+      }
+    });
+  }, [navigate]);
 
   useEffect(() => {
-    fetchPoems();
-  }, []);
+    setIsFormValid(titleValue !== '' && backgroundOfPoem !== '' && poemContent !== '' && emotion !== '');
+  }, [titleValue, backgroundOfPoem, poemContent, emotion]);
 
   const fetchPoems = async () => {
     try {
-      setLoading(true);
-      setLoadingMessage('Fetching poems...');
       const AllPoemsRef = ref(db, 'AllPoems');
       const snapshot = await get(AllPoemsRef);
       if (snapshot.exists()) {
@@ -53,10 +48,8 @@ const PoemForm = () => {
         setPoems(poemsArray);
         updateLatestPoemOfEveryEmotion(poemsArray);
       }
-      setLoading(false);
     } catch (error) {
       console.log(error);
-      setLoading(false);
     }
   };
 
@@ -79,24 +72,35 @@ const PoemForm = () => {
     }
   };
 
-  const handleInputChange = (event) => {
-    setFormData({
-      ...formData,
-      [event.target.name]: event.target.value
-    });
+  const handleTitleChange = (event) => {
+    const { value } = event.target;
+    setTitleValue(value);
   };
 
-  const handleUpdateChange = (event) => {
-    setUpdateData({
-      ...updateData,
-      [event.target.name]: event.target.value
-    });
+  const handleBackgroundChange = (value) => {
+    setBackgroundOfPoem(value);
+  };
+
+  const handlePoemContentChange = (value) => {
+    setPoemContent(value);
+  };
+
+  const handleEmotionChange = (event) => {
+    const { value } = event.target;
+    setEmotion(value);
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type === 'image/jpeg' && file.size >= 20000 && file.size <= 500000) {
+      setSelectedFile(file);
+    } else {
+      alert('Please select a JPG image between 20KB and 500KB.');
+    }
   };
 
   const handlePost = async () => {
     try {
-      setLoading(true);
-      setLoadingMessage('Posting poem...');
       const AllPoemsRef = ref(db, 'AllPoems');
       const newId = push(AllPoemsRef).key;
       const emotionToColorMap = {
@@ -107,64 +111,43 @@ const PoemForm = () => {
         disgust: '#f0f0f0',
         surprise: '#f5e6ff'
       };
-      const cardColor = emotionToColorMap[formData.emotion];
-      const poemData = { ...formData, id: newId, cardColor, likes: {}, comments: {} };
+      const cardColor = emotionToColorMap[emotion];
+      const poemData = {
+        titleValue,
+        backgroundOfPoem,
+        poemContent,
+        emotion,
+        id: newId,
+        cardColor,
+        likes: {},
+        comments: {},
+        timestamp: Date.now(),
+        fileName: selectedFile ? selectedFile.name : null
+      };
+
+      if (selectedFile) {
+        const fileRef = storageRef(storage, `poemImages/${newId}/${selectedFile.name}`);
+        await uploadBytes(fileRef, selectedFile);
+        const downloadUrl = await getDownloadURL(fileRef); // Get download URL
+        poemData.fileUrl = downloadUrl; // Add file URL to poemData
+      }
+
       await set(ref(db, `AllPoems/${newId}`), poemData);
-      setFormData({
-        titleValue: '',
-        backgroundOfPoem: '',
-        poemContent: '',
-        emotion: '',
-        like: false,
-        comments: ''
-      });
+
       fetchPoems();
-      setLoading(false);
+
+      setTitleValue('');
+      setBackgroundOfPoem('');
+      setPoemContent('');
+      setEmotion('');
+      setSelectedFile(null);
+      navigate(`/PoemList/${emotion}`, { state: { poems: [...poems, poemData] } });
+
     } catch (error) {
       console.error('Error posting poem:', error);
-      setLoading(false);
+      alert(error.message);
     }
   };
-  
-
-  const handleUpdate = async (poemId) => {
-    try {
-      setLoading(true);
-      setLoadingMessage('Updating poem...');
-      const poemData = { ...updateData };
-      await update(ref(db, `AllPoems/${poemId}`), poemData);
-      setUpdatedId('');
-      setEditMode(false);
-      fetchPoems();
-      setLoading(false);
-    } catch (error) {
-      console.error('Error updating poem:', error);
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async (poemId) => {
-    try {
-      setLoading(true);
-      setLoadingMessage('Deleting poem...');
-      const poemRef = ref(db, `AllPoems/${poemId}`);
-      await remove(poemRef);
-      const updatedPoems = poems.filter(poem => poem.id !== poemId);
-      setPoems(updatedPoems);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error deleting poem:', error);
-      setLoading(false);
-    }
-  };
-
-  const handleEdit = (poem) => {
-    setUpdateData(poem);
-    setUpdatedId(poem.id);
-    setEditMode(true);
-  };
-
-  const navigate = useNavigate();
 
   const handleClick = (emotion) => {
     const filteredPoems = poems.filter(poem => poem.emotion === emotion);
@@ -172,130 +155,72 @@ const PoemForm = () => {
   };
 
   return (
-    <div className="container-fluid" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
-      <div className="row">
-        <div className="col-lg-6">
-          <div className='form-padding'>
-            <div className='form-height'>
-              <Card className='w-100 p-4 gap-4'>
-                <h3>Write a poem..</h3>
-                <InputText
-                  title="Title"
-                  name="titleValue"
-                  type="text"
-                  placeholder="Enter title"
-                  value={formData.titleValue}
-                  onChange={handleInputChange}
-                />
-                <InputText
-                  title="backgroundOfPoem"
-                  name="backgroundOfPoem"
-                  type="text"
-                  placeholder="Enter background of poem"
-                  value={formData.backgroundOfPoem}
-                  onChange={handleInputChange}
-                />
-                <InputTextarea
-                  title="Poem Content"
-                  name="poemContent"
-                  type="text"
-                  placeholder="Enter poem content"
-                  value={formData.poemContent}
-                  onChange={handleInputChange}
-                  autoResize={true} 
-                />
-                <div>
-                  <select
-                    name="emotion"
-                    className='form-select'
-                    value={formData.emotion}
-                    onChange={handleInputChange}
-                  >
-                    <option value="">Select Emotion</option>
-                    <option value="happiness">Happiness</option>
-                    <option value="sadness">Sadness</option>
-                    <option value="anger">Anger</option>
-                    <option value="fear">Fear</option>
-                    <option value="disgust">Disgust</option>
-                    <option value="surprise">Surprise</option>
-                  </select>
-                </div>
-                <Button className='w-50 align-self-center d-flex justify-content-center btn btn-light btn-outline-success border border-1 border-success' onClick={handlePost} disabled={!isFormValid}>
-                  Save
-                </Button>
-                <div className='d-flex justify-content-between flex-wrap px-2'>
-                  <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('happiness')}>happiness</Button>
-                  <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('anger')}>anger</Button>
-                  <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('disgust')}>disgust</Button>
-                  <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('fear')}>fear</Button>
-                  <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('surprise')}>Surprise</Button>
-                  <Button className='my-2 btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleClick('sadness')}>sadness</Button>
-                </div>
-              </Card>
-            </div>
+    <div className="container gap-4 d-flex flex-column">
+      <Panel header="Write a poem..">
+        <div className="d-flex flex-column gap-3">
+          <InputText
+            className="form-control"
+            type="text"
+            id="title"
+            value={titleValue}
+            onChange={handleTitleChange}
+            placeholder="Enter the Title"
+            required
+          />
+          <div className="QuillEditor">
+            <ReactQuill
+              theme="snow"
+              value={backgroundOfPoem}
+              onChange={handleBackgroundChange}
+              placeholder="Background of Poem"
+            />
+          </div>
+          <div className="QuillEditor">
+            <ReactQuill
+              theme="snow"
+              value={poemContent}
+              onChange={handlePoemContentChange}
+              placeholder="Write Your Poem Here"
+            />
+          </div>
+          <select
+            className="form-select"
+            value={emotion}
+            onChange={handleEmotionChange}
+            required
+          >
+            <option value="" disabled>Select emotion</option>
+            <option value="happiness">Happiness</option>
+            <option value="sadness">Sadness</option>
+            <option value="anger">Anger</option>
+            <option value="fear">Fear</option>
+            <option value="disgust">Disgust</option>
+            <option value="surprise">Surprise</option>
+          </select>
+
+          <InputText
+            type="file"
+            onChange={handleFileChange}
+          />
+          <Button
+            className="w-50 align-self-center d-flex justify-content-center btn btn-light btn-outline-success border border-1 border-success"
+            onClick={handlePost}
+            disabled={!isFormValid}
+          >
+            Save
+          </Button>
+          <div className="d-flex justify-content-between flex-wrap px-2">
+            <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('happiness')}>Happiness</Button>
+            <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('anger')}>Anger</Button>
+            <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('disgust')}>Disgust</Button>
+            <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('fear')}>Fear</Button>
+            <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('surprise')}>Surprise</Button>
+            <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('sadness')}>Sadness</Button>
           </div>
         </div>
-        <div className="col-lg-6">
-          <div className="poems-container">
-            {loading ? (
-              <Loader loadingMessage={loadingMessage} />
-            ) : (
-              poems.length === 0 ? (
-                  <div className="form-height align-self-center d-flex justify-content-center">
-                    <p className="">No poems yet.. Write a poem.!</p>
-                  </div>
-                ) : (
-                  poems.slice(0, 3).map((poem) => (
-                    <Card key={poem.id} className={`p-2 gap-2 mb-3`}  style={{ backgroundColor: poem.cardColor }}>
-                      {editMode && updatedId === poem.id ? (
-                        <>
-                          <InputText
-                            title="Title"
-                            name="titleValue"
-                            type="text"
-                            placeholder="Enter title"
-                            value={updateData.titleValue}
-                            onChange={handleUpdateChange}
-                          />
-                          <InputText
-                            title="backgroundOfPoem"
-                            name="backgroundOfPoem"
-                            type="text"
-                            placeholder="Enter background of poem"
-                            value={updateData.backgroundOfPoem}
-                            onChange={handleUpdateChange}
-                          />
-                          <InputTextarea
-                            title="Poem Content"
-                            name="poemContent"
-                            type="text"
-                            placeholder="Enter poem content"
-                            value={updateData.poemContent}
-                            onChange={handleUpdateChange}
-                            className='custom-textarea'
-                          />
-                          <Button className='w-50 align-self-center d-flex justify-content-center btn btn-light btn-outline-success border border-1 border-success' onClick={() => handleUpdate(poem.id)}>Update</Button>
-                        </>
-                      ) : (
-                        <>
-                          <p>{poem.titleValue}</p>
-                          <h6>{poem.backgroundOfPoem}</h6>
-                          <p>{poem.poemContent}</p>
-                          <div className='d-flex justify-content-evenly'>
-                            <Button className='btn btn-light btn-outline-primary border border-1 border-primary' onClick={() => handleEdit(poem)}>Edit</Button>
-                            <Button className='btn btn-light btn-outline-danger border border-1 border-danger' onClick={() => handleDelete(poem.id)}>Delete</Button>
-                          </div>
-                        </>
-                      )}
-                    </Card>
-                  ))
-              )
-            )}
-          </div>
-        </div>
-      </div>
+      </Panel>
     </div>
   );
-}
+};
 
 export default PoemForm;
