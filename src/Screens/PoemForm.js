@@ -16,6 +16,7 @@ const PoemForm = () => {
   const [backgroundOfPoem, setBackgroundOfPoem] = useState('');
   const [poemContent, setPoemContent] = useState('');
   const [emotion, setEmotion] = useState('');
+  const [fontColor, setFontColor] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [poems, setPoems] = useState([]);
   const [user, setUser] = useState(null);
@@ -35,8 +36,8 @@ const PoemForm = () => {
   }, [navigate]);
 
   useEffect(() => {
-    setIsFormValid(titleValue !== '' && backgroundOfPoem !== '' && poemContent !== '' && emotion !== '');
-  }, [titleValue, backgroundOfPoem, poemContent, emotion]);
+    setIsFormValid(titleValue !== '' && backgroundOfPoem !== '' && poemContent !== '' && emotion !== '' && fontColor !== '');
+  }, [titleValue, backgroundOfPoem, poemContent, emotion, fontColor]);
 
   const fetchPoems = async () => {
     try {
@@ -90,6 +91,11 @@ const PoemForm = () => {
     setEmotion(value);
   };
 
+  const handleFontColorChange = (event) => {
+    const { value } = event.target;
+    setFontColor(value);
+  };
+
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file && file.type === 'image/jpeg' && file.size >= 20000 && file.size <= 500000) {
@@ -117,6 +123,7 @@ const PoemForm = () => {
         backgroundOfPoem,
         poemContent,
         emotion,
+        fontColor,
         id: newId,
         cardColor,
         likes: {},
@@ -140,6 +147,7 @@ const PoemForm = () => {
       setBackgroundOfPoem('');
       setPoemContent('');
       setEmotion('');
+      setFontColor('');
       setSelectedFile(null);
       navigate(`/PoemList/${emotion}`, { state: { poems: [...poems, poemData] } });
 
@@ -196,6 +204,22 @@ const PoemForm = () => {
             <option value="fear">Fear</option>
             <option value="disgust">Disgust</option>
             <option value="surprise">Surprise</option>
+          </select>
+
+          <select
+            className="form-select"
+            value={fontColor}
+            onChange={handleFontColorChange}
+            required
+          >
+            <option value="" disabled>Select font color</option>
+            <option value="black">Black</option>
+            <option value="white">White</option>
+            <option value="blue">Blue</option>
+            <option value="purple">Purple</option>
+            <option value="red">Red</option>
+            <option value="green">Green</option>
+            <option value="yellow">Yellow</option>
           </select>
 
           <InputText
