@@ -10,6 +10,7 @@ import Header from './Screens/Header';
 import AuthModal from './Components/AuthModal';
 import About from './Screens/About';
 import DetailPoem from './Screens/DetailPoem';
+import Courses from './Screens/Courses';
 
 function App() {
   return (
@@ -26,6 +27,8 @@ function App() {
           <Route path="/About" element={<About />} />
           <Route path="/PoemList/:emotion" element={<PoemList />} />
           <Route path="/DetailPoem" element={<DetailPoem />} />
+          <Route path="/Courses" element={<Courses />} />
+          
         </Routes>
       </div>
     </div>
