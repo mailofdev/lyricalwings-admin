@@ -217,12 +217,11 @@ const Courses = () => {
                 <>
                     <Panel header="Add Introduction" toggleable className="mb-4">
                         <form onSubmit={handleSubmitIntroduction}>
-                            <div className='row'>
-                                <div className='col-9'>
-                                    <div className="mb-3">
-                                        <label htmlFor="title" className="form-label">Introduction Title:</label>
+                            <div className="mb-3">
+                                <label htmlFor="title" className="form-label">Introduction</label>
+                                <div className="row">
+                                    <div className="col-md-9 mb-3 mb-md-0">
                                         <textarea
-
                                             id="title"
                                             className="form-control"
                                             value={introductionTitle}
@@ -230,10 +229,7 @@ const Courses = () => {
                                             required
                                         />
                                     </div>
-                                </div>
-                                <div className='col-3 d-flex align-items-center'>
-                                    <div className="mb-3">
-                                        <label htmlFor="pdf" className="form-label">Upload PDF:</label>
+                                    <div className="col-md-3 d-flex align-items-center">
                                         <input
                                             type="file"
                                             id="pdf"
@@ -245,11 +241,12 @@ const Courses = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className='text-center'> 
-                            <button type="submit" className="btn btn-primary">Save Introduction</button>
+                            <div className="text-center">
+                                <button type="submit" className="btn btn-primary">Save Introduction</button>
                             </div>
                         </form>
                     </Panel>
+
 
                     <Panel header="Add type of poem" toggleable className="mb-4">
                         <form onSubmit={handleSubmitPoem}>
@@ -266,154 +263,217 @@ const Courses = () => {
                             </div>
                             <div className="mb-3">
                                 <label htmlFor="poemIntroduction" className="form-label">Introduction of Poem:</label>
-                                <textarea
-                                    id="poemIntroduction"
-                                    className="form-control"
-                                    value={poemIntroduction}
-                                    onChange={handleInputChange(setPoemIntroduction)}
-                                    required
-                                />
-                                <input
-                                    type="file"
-                                    className="form-control mt-2"
-                                    accept="application/pdf"
-                                    onChange={handleFileChange('poemIntroduction')}
-                                    required
-                                />
+                                <div className="row">
+                                    <div className="col-md-9 mb-2 mb-md-0">
+                                        <textarea
+                                            id="poemIntroduction"
+                                            className="form-control"
+                                            value={poemIntroduction}
+                                            onChange={handleInputChange(setPoemIntroduction)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="col-md-3 d-flex align-items-center">
+                                        <input
+                                            type="file"
+                                            className="form-control"
+                                            accept="application/pdf"
+                                            onChange={handleFileChange('poemIntroduction')}
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
                             <div className="mb-3">
                                 <label htmlFor="poemStructure" className="form-label">Structure of Poem:</label>
-                                <textarea
-                                    id="poemStructure"
-                                    className="form-control"
-                                    value={poemStructure}
-                                    onChange={handleInputChange(setPoemStructure)}
-                                    required
-                                />
-                                <input
-                                    type="file"
-                                    className="form-control mt-2"
-                                    accept="application/pdf"
-                                    onChange={handleFileChange('poemStructure')}
-                                    required
-                                />
+                                <div className="row">
+                                    <div className="col-md-9 mb-2 mb-md-0">
+                                        <textarea
+                                            id="poemStructure"
+                                            className="form-control"
+                                            value={poemStructure}
+                                            onChange={handleInputChange(setPoemStructure)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="col-md-3 d-flex align-items-center">
+                                        <input
+                                            type="file"
+                                            className="form-control"
+                                            accept="application/pdf"
+                                            onChange={handleFileChange('poemStructure')}
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
                             <div className="mb-3">
                                 <label htmlFor="poemLiterature" className="form-label">Literature of Poem:</label>
-                                <textarea
-                                    id="poemLiterature"
-                                    className="form-control"
-                                    value={poemLiterature}
-                                    onChange={handleInputChange(setPoemLiterature)}
-                                    required
-                                />
-                                <input
-                                    type="file"
-                                    className="form-control mt-2"
-                                    accept="application/pdf"
-                                    onChange={handleFileChange('poemLiterature')}
-                                    required
-                                />
+                                <div className="row">
+                                    <div className="col-md-9 mb-2 mb-md-0">
+                                        <textarea
+                                            id="poemLiterature"
+                                            className="form-control"
+                                            value={poemLiterature}
+                                            onChange={handleInputChange(setPoemLiterature)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="col-md-3 d-flex align-items-center">
+                                        <input
+                                            type="file"
+                                            className="form-control"
+                                            accept="application/pdf"
+                                            onChange={handleFileChange('poemLiterature')}
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
                             <div className="mb-3">
                                 <label htmlFor="poemMethodology" className="form-label">Methodology and Implementation of Poem:</label>
-                                <textarea
-                                    id="poemMethodology"
-                                    className="form-control"
-                                    value={poemMethodology}
-                                    onChange={handleInputChange(setPoemMethodology)}
-                                    required
-                                />
-                                <input
-                                    type="file"
-                                    className="form-control mt-2"
-                                    accept="application/pdf"
-                                    onChange={handleFileChange('poemMethodology')}
-                                    required
-                                />
+                                <div className="row">
+                                    <div className="col-md-9 mb-2 mb-md-0">
+                                        <textarea
+                                            id="poemMethodology"
+                                            className="form-control"
+                                            value={poemMethodology}
+                                            onChange={handleInputChange(setPoemMethodology)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="col-md-3 d-flex align-items-center">
+                                        <input
+                                            type="file"
+                                            className="form-control"
+                                            accept="application/pdf"
+                                            onChange={handleFileChange('poemMethodology')}
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
                             <div className="mb-3">
                                 <label htmlFor="poemEvaluation" className="form-label">Evaluation of Poem:</label>
-                                <textarea
-                                    id="poemEvaluation"
-                                    className="form-control"
-                                    value={poemEvaluation}
-                                    onChange={handleInputChange(setPoemEvaluation)}
-                                    required
-                                />
-                                <input
-                                    type="file"
-                                    className="form-control mt-2"
-                                    accept="application/pdf"
-                                    onChange={handleFileChange('poemEvaluation')}
-                                    required
-                                />
+                                <div className="row">
+                                    <div className="col-md-9 mb-2 mb-md-0">
+                                        <textarea
+                                            id="poemEvaluation"
+                                            className="form-control"
+                                            value={poemEvaluation}
+                                            onChange={handleInputChange(setPoemEvaluation)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="col-md-3 d-flex align-items-center">
+                                        <input
+                                            type="file"
+                                            className="form-control"
+                                            accept="application/pdf"
+                                            onChange={handleFileChange('poemEvaluation')}
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
                             <div className="mb-3">
                                 <label htmlFor="poemConclusion" className="form-label">Conclusion of Poem:</label>
-                                <textarea
-                                    id="poemConclusion"
-                                    className="form-control"
-                                    value={poemConclusion}
-                                    onChange={handleInputChange(setPoemConclusion)}
-                                    required
-                                />
-                                <input
-                                    type="file"
-                                    className="form-control mt-2"
-                                    accept="application/pdf"
-                                    onChange={handleFileChange('poemConclusion')}
-                                    required
-                                />
+                                <div className="row">
+                                    <div className="col-md-9 mb-2 mb-md-0">
+                                        <textarea
+                                            id="poemConclusion"
+                                            className="form-control"
+                                            value={poemConclusion}
+                                            onChange={handleInputChange(setPoemConclusion)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="col-md-3 d-flex align-items-center">
+                                        <input
+                                            type="file"
+                                            className="form-control"
+                                            accept="application/pdf"
+                                            onChange={handleFileChange('poemConclusion')}
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
                             <div className="mb-3">
                                 <label htmlFor="poemReference" className="form-label">Reference of Poem:</label>
-                                <textarea
-                                    id="poemReference"
-                                    className="form-control"
-                                    value={poemReference}
-                                    onChange={handleInputChange(setPoemReference)}
-                                    required
-                                />
-                                <input
-                                    type="file"
-                                    className="form-control mt-2"
-                                    accept="application/pdf"
-                                    onChange={handleFileChange('poemReference')}
-                                    required
-                                />
+                                <div className="row">
+                                    <div className="col-md-9 mb-2 mb-md-0">
+                                        <textarea
+                                            id="poemReference"
+                                            className="form-control"
+                                            value={poemReference}
+                                            onChange={handleInputChange(setPoemReference)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="col-md-3 d-flex align-items-center">
+                                        <input
+                                            type="file"
+                                            className="form-control"
+                                            accept="application/pdf"
+                                            onChange={handleFileChange('poemReference')}
+                                            required
+                                        />
+                                    </div>
+                                </div>
                             </div>
                             <button type="submit" className="btn btn-primary">Save Poem</button>
                         </form>
                     </Panel>
+
 
                     {savedIntroductions.length > 0 && (
                         <Panel header="Saved Introductions" toggleable className="mt-4">
                             {savedIntroductions.map((data) => (
                                 <div className="card mb-3" key={data.id}>
                                     <div className="card-body">
-                                        <h5 className="card-title">{data.title}</h5>
-                                        <a href={data.pdfUrl} target="_blank" rel="noopener noreferrer" className="btn btn-link">View PDF</a>
-                                        <button onClick={() => handleDelete(data.id, [data.pdfUrl])} className="btn btn-danger ml-3">Delete</button>
+                                        <div className="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h5 className="card-title">{data.title}</h5>
+                                                <a href={data.pdfUrl} target="_blank" rel="noopener noreferrer" className="btn btn-link">View PDF</a>
+                                            </div>
+                                            <button onClick={() => handleDelete(data.id, [data.pdfUrl])} className="btn btn-danger">Delete</button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
                         </Panel>
                     )}
 
-                    {savedPoems.length > 0 && (
-                        <Panel header="Saved types of poem" toggleable className="mt-4">
-                            {savedPoems.map((data) => (
-                                <div className="card mb-3" key={data.id}>
-                                    <div className="card-body">
-                                        <h5 className="card-title">{data.poemTitle}</h5>
-                                        <p className="card-text">{data.poemIntroduction}</p>
-                                        <button onClick={() => handleDelete(data.id, Object.values(data).filter(url => url && typeof url === 'string' && url.startsWith('https://')))} className="btn btn-danger ml-3">Delete</button>
-                                    </div>
-                                </div>
-                            ))}
-                        </Panel>
-                    )}
+
+{savedPoems.length > 0 && (
+    <Panel header="Saved types of poem" toggleable className="mt-4">
+        {savedPoems.map((data) => (
+            <div className="card mb-3" key={data.id}>
+                <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 className="card-title">{data.poemTitle}</h5>
+                            <p className="card-text">{data.poemIntroduction}</p>
+                        </div>
+                        <button
+                            onClick={() => handleDelete(
+                                data.id,
+                                Object.values(data).filter(
+                                    url => url && typeof url === 'string' && url.startsWith('https://')
+                                )
+                            )}
+                            className="btn btn-danger"
+                        >
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        ))}
+    </Panel>
+)}
+
                 </>
             )}
         </div>
