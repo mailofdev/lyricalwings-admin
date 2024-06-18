@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
-import { getDatabase, ref, onValue, off, set, remove } from "firebase/database";
+import { getDatabase, ref, onValue, off, remove, set } from "firebase/database";
 import Loader from "../Components/Loader"; // Import Loader component
 import { Chart } from 'primereact/chart';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Panel } from 'primereact/panel';
+import { emailPasswordSignUp } from '../Config/firebase';
+import { InputText } from 'primereact/inputtext';
 
 function Dashboard() {
   const [usersData, setUsersData] = useState([]); // State to store user data
@@ -14,33 +16,17 @@ function Dashboard() {
   const [loadingMessage, setLoadingMessage] = useState('');
   const [pageSize] = useState(5);
   const [poemsData, setPoemsData] = useState({ totalPoems: 0, emotionsCount: {} });
+  const [showAddUserView, setShowAddUserView] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [role, setRole] = useState('user');
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const db = getDatabase();
     const usersRef = ref(db, 'users');
     const poemsRef = ref(db, 'AllPoems');
-
-    // Add super admin and super user if they don't exist
-    const addSuperUsers = async () => {
-      const superAdmin = {
-        username: 'super admin',
-        email: 'superadmin@gmail.com',
-        password: 'test123',
-        role: 'admin',
-        nonDeletable: true
-      };
-
-      const superUser = {
-        username: 'super user',
-        email: 'superuser@gmail.com',
-        password: 'test123',
-        role: 'user',
-        nonDeletable: true
-      };
-
-      set(ref(db, 'users/superAdmin'), superAdmin);
-      set(ref(db, 'users/superUser'), superUser);
-    };
 
     const fetchData = async () => {
       setLoadingMessage('Fetching user data...');
@@ -78,7 +64,6 @@ function Dashboard() {
       });
     };
 
-    addSuperUsers();
     fetchData();
     return () => {
       off(usersRef);
@@ -107,11 +92,6 @@ function Dashboard() {
   }
 
   const deleteUser = (id, email) => {
-    if (email === 'superadmin@gmail.com' || email === 'superuser@gmail.com') {
-      console.error('Cannot delete super admin or super user');
-      return;
-    }
-  
     const db = getDatabase();
     const userRef = ref(db, `users/${id}`);
     remove(userRef).then(() => {
@@ -120,121 +100,200 @@ function Dashboard() {
       console.error('Error deleting user: ', error);
     });
   }
-  
+
   const deleteButtonTemplate = (rowData) => {
-    if (rowData.email === 'superadmin@gmail.com' || rowData.email === 'superuser@gmail.com') {
-      return null; // Do not render delete button for super admin and super user
-    }
-    
     return (
       <div className='text-center justify-content-center align-center d-flex'>
         <Button icon="pi pi-trash" className="p-button-danger" onClick={() => deleteUser(rowData.id, rowData.email)} />
       </div>
     );
   }
-  
 
   const filteredAdmins = usersData.filter(user => user.role === 'admin');
   const filteredUsers = usersData.filter(user => user.role === 'user');
 
+  const validateForm = () => {
+    if (!email.trim() || !password.trim() || !username.trim()) {
+      setError('Please enter email, password, and username.');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSignUp = async () => {
+    if (!validateForm()) return;
+
+    setLoadingMessage('Creating user...');
+    setIsLoading(true);
+    try {
+      const userCredential = await emailPasswordSignUp(email, password);
+      const userId = userCredential.user.uid;
+      const db = getDatabase();
+      await set(ref(db, `users/${userId}`), {
+        email,
+        username,
+        role,
+      });
+      setShowAddUserView(false);
+      setEmail('');
+      setPassword('');
+      setUsername('');
+      setRole('user');
+      setError('');
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onAddUserClick = () => {
+    setShowAddUserView(true);
+  };
+
+  const onHideAddUserView = () => {
+    setShowAddUserView(false);
+  };
+
+  const addUserView = (
+    <div className='p-4 border  d-flex gap-4 flex-column shadow-sm card'>
+      <div className='flex-row d-flex gap-4'>
+        <InputText
+          type="email"
+          className="form-control"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <InputText
+          type="password"
+          className="form-control"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <InputText
+          type="text"
+          className="form-control"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+      </div>
+      <div className='flex-row d-flex gap-4'>
+        <select
+          className="form-control"
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+        >
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <div className='flex-row d-flex justify-content-end gap-4'>
+        <Button onClick={onHideAddUserView} className="p-button-danger">
+          Cancel
+        </Button>
+        <Button onClick={handleSignUp} className="p-button-success">
+          Add User
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
-    <>
-      <div className='container'>
-        {isLoading ? (
-          <Loader loadingMessage={loadingMessage} />
-        ) : (
-          <>
-            <div className='d-flex gap-4 flex-column'>
+    <div className='container'>
+      {isLoading ? (
+        <Loader loadingMessage={loadingMessage} />
+      ) : (
+        <>
+          <div className='d-flex gap-4 flex-column'>
 
-              <div className="row">
-                <div className="col-md-4">
-                  <div className="card">
-                    <div className="card-body">
-                      <h5 className="card-title">Total Users</h5>
-                      <p className="card-text">{filteredUsers.length}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="card">
-                    <div className="card-body">
-                      <h5 className="card-title">Total Admins</h5>
-                      <p className="card-text">{filteredAdmins.length}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="col-md-4">
-                  <div className="card">
-                    <div className="card-body">
-                      <h5 className="card-title">Total Poems</h5>
-                      <p className="card-text">{poemsData.totalPoems}</p>
-                    </div>
+
+
+            <div className="row">
+              <div className="col-md-4">
+                <div className="card">
+                  <div className="card-body">
+                    <h5 className="card-title">Total Users</h5>
+                    <p className="card-text">{filteredUsers.length}</p>
                   </div>
                 </div>
               </div>
-
-              <div className="row flex-wrap justify-content-around">
-                {Object.entries(poemsData.emotionsCount).map(([emotion, count]) => (
-                  <div key={emotion} className="col-lg-2 col-md-4 my-2">
-                    <div className="card">
-                      <div className="card-body">
-                        <h5 className="card-title">{emotion}</h5>
-                        <p className="card-text">{count}</p>
-                      </div>
-                    </div>
+              <div className="col-md-4">
+                <div className="card">
+                  <div className="card-body">
+                    <h5 className="card-title">Total Admins</h5>
+                    <p className="card-text">{filteredAdmins.length}</p>
                   </div>
-                ))}
-              </div>
-
-              <div className="container-sm flex-row justify-content-center bg-light card shadow-sm">
-                <div className="">
-                  <h3>Emotion Distribution</h3>
-                  <Chart type="pie" data={getChartData(poemsData.emotionsCount)} />
                 </div>
               </div>
-
-              <div>
-                <Panel header="Admin list" toggleable >
-                  <DataTable
-                    value={filteredAdmins}
-                    paginator={true}
-                    rows={pageSize}
-                    className="table table-striped table-hover"
-                    paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
-                  >
-                    <Column field="username" header="Username" />
-                    <Column field="authMethod" header="Login Method" />
-                    <Column field="email" header="Email" />
-                    <Column body={deleteButtonTemplate} header="Delete" />
-                  </DataTable>
-                </Panel>
-              </div>
-
-              <div>
-                <Panel header="User list" toggleable >
-                  <DataTable
-                    value={filteredUsers}
-                    paginator={true}
-                    rows={pageSize}
-                    className="table table-striped table-hover"
-                    paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
-                  >
-                    <Column field="username" header="Username" />
-                    <Column field="authMethod" header="Login Method" />
-                    <Column field="email" header="Email" />
-                    <Column field="gender" header="Gender" />
-                    <Column field="birthdate" header="Birth Date" />
-                    <Column body={deleteButtonTemplate} header="Delete" />
-                  </DataTable>
-                </Panel>
+              <div className="col-md-4">
+                <div className="card">
+                  <div className="card-body">
+                    <h5 className="card-title">Total Poems</h5>
+                    <p className="card-text">{poemsData.totalPoems}</p>
+                  </div>
+                </div>
               </div>
             </div>
-          </>
-        )}
-      </div>
-    </>
+
+            <div className="row flex-wrap justify-content-around">
+              {Object.entries(poemsData.emotionsCount).map(([emotion, count]) => (
+                <div key={emotion} className="col-lg-2 col-md-4 my-2">
+                  <div className="card">
+                    <div className="card-body">
+                      <h5 className="card-title">{emotion}</h5>
+                      <p className="card-text">{count}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+
+            <Panel header="All users" className='m-4' toggleable>
+
+              <div className='d-flex flex-column gap-3'>
+              <div>
+                <h5 className="card-title">Users</h5>
+                  <DataTable value={filteredUsers} paginator rows={pageSize}>
+                    <Column field="username" header="Username" />
+                    <Column field="email" header="Email" />
+                    <Column body={deleteButtonTemplate} header="Actions" />
+                  </DataTable>
+                </div>
+
+                <div>
+                  <h5 className="card-title">Admins</h5>
+                  <DataTable value={filteredAdmins} paginator rows={pageSize}>
+                    <Column field="username" header="Username" />
+                    <Column field="email" header="Email" />
+                    <Column body={deleteButtonTemplate} header="Actions" />
+                  </DataTable>
+                </div>
+                <div className='text-center'>
+                  <Button onClick={onAddUserClick} className="p-button-success">
+                    Add new user
+                  </Button>
+                </div>
+                <div>
+                  {showAddUserView && addUserView}
+                </div>
+              </div>
+            </Panel>
+
+
+
+            <Panel header="Poem Emotions" className='m-4' toggleable>
+              <div className="flex-row justify-content-center card">
+                <Chart type="pie" data={getChartData(poemsData.emotionsCount)} />
+              </div>
+            </Panel>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 

@@ -26,11 +26,7 @@ function Header() {
       icon: 'pi pi-pencil',
       url: '/PoemForm',
     },
-    {
-      label: 'Settings',
-      icon: 'pi pi-cog',
-      url: '/Settings',
-    },
+   
     {
       label: 'About',
       icon: 'pi pi-info-circle',
