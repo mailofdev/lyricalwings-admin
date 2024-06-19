@@ -74,6 +74,9 @@ const PoemList = () => {
     };
 
     return (
+        <>
+        {loading ? (  <Loader loadingMessage="Loading poem list.." />
+    ) : (
         <div className="container">
             <div className="row mb-3">
                 <div className="col">
@@ -90,12 +93,12 @@ const PoemList = () => {
                 {filteredPoems.slice(first, first + rows).map((poem) => (
                     <div key={poem.id} className="col-md-4 col-lg-4 mb-3">
                         <div className="custom-card h-100">
-                            <div className="card-body">
+                            <div className="card-body" onClick={() => handleEdit(poem)}>
                                 <h5 className="card-title">{poem.titleValue}</h5>
                                 <div className="card-text home-poem-content" dangerouslySetInnerHTML={{ __html: poem.poemContent }}></div>
                                 <div className="d-flex justify-content-between mt-3">
-                                    <Button variant="primary" onClick={() => handleEdit(poem)}>Edit</Button>
-                                    <Button variant="danger" onClick={() => handleDelete(poem.id)}>Delete</Button>
+                                    {/* <Button variant="primary" onClick={() => handleEdit(poem)}>Edit</Button> */}
+                                    {/* <Button variant="danger" onClick={() => handleDelete(poem.id)}>Delete</Button> */}
                                 </div>
                             </div>
                         </div>
@@ -114,6 +117,8 @@ const PoemList = () => {
                 </div>
             </div>
         </div>
+    )}
+</>
     );
 }
 
