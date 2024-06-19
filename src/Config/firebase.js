@@ -1,6 +1,6 @@
 
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, get} from "firebase/database";
+import { getDatabase, ref, set, get, child} from "firebase/database";
 import { getStorage } from "firebase/storage";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 
@@ -35,5 +35,5 @@ const googleLogin = () => {
   return signInWithPopup(auth, provider);
 };
 
-export { app, db, storage, auth, ref, set, get, signOut, emailPasswordSignUp, emailPasswordLogin, googleLogin };
+export { app, db, storage, auth, child, ref, set, get, signOut, emailPasswordSignUp, emailPasswordLogin, googleLogin };
 

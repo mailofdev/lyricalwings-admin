@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { getDatabase, ref, orderByChild, equalTo, query, get } from "firebase/database";
 import { auth } from '../Config/firebase';
 import Loader from './Loader';
 import "../css/loader.css"
 import { useNavigate } from 'react-router-dom';
 
 const AuthModal = ({ show, handleClose }) => {
-    const [signInEmail, setSignInEmail] = useState('');
+    const [signInIdentifier, setSignInIdentifier] = useState('');
     const [signInPassword, setSignInPassword] = useState('');
     const [signinError, setSigninError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -24,12 +25,29 @@ const AuthModal = ({ show, handleClose }) => {
         e.preventDefault();
         setLoading(true);
         setLoadingMessage('Signing in...');
+
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, signInEmail, signInPassword);
+            let email = signInIdentifier;
+            // If the identifier is not an email, assume it's a username and fetch the email
+            if (!signInIdentifier.includes('@')) {
+                const db = getDatabase();
+                const usersRef = ref(db, 'users');
+                const queryRef = query(usersRef, orderByChild('username'), equalTo(signInIdentifier));
+                const snapshot = await get(queryRef);
+
+                if (snapshot.exists()) {
+                    const userData = Object.values(snapshot.val())[0];
+                    email = userData.email;
+                } else {
+                    throw new Error('auth/user-not-found');
+                }
+            }
+
+            const userCredential = await signInWithEmailAndPassword(auth, email, signInPassword);
             setSigninError('');
             handleClose();
             navigate('/Dashboard');
-            setSignInEmail('');
+            setSignInIdentifier('');
             setSignInPassword('');
         } catch (error) {
             console.error("Error signing in:", error);
@@ -44,7 +62,7 @@ const AuthModal = ({ show, handleClose }) => {
     };
 
     return (
-        <Modal show={show} onHide={handleClose()} centered>
+        <Modal show={show} onHide={handleClose} centered>
             <Modal.Header>
                 <Modal.Title>Sign In</Modal.Title>
             </Modal.Header>
@@ -55,13 +73,13 @@ const AuthModal = ({ show, handleClose }) => {
                     <div className='d-flex gap-3 flex-column card shadow m-2 p-4'>
                         <form onSubmit={handleSignInSubmit}>
                             <div className="mb-3">
-                                <label htmlFor="signInEmail" className="form-label">Email</label>
+                                <label htmlFor="signInIdentifier" className="form-label">Email or Username</label>
                                 <input
-                                    type="email"
+                                    type="text"
                                     className="form-control"
-                                    id="signInEmail"
-                                    value={signInEmail}
-                                    onChange={(e) => setSignInEmail(e.target.value)}
+                                    id="signInIdentifier"
+                                    value={signInIdentifier}
+                                    onChange={(e) => setSignInIdentifier(e.target.value)}
                                     required
                                 />
                             </div>
