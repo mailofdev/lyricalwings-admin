@@ -99,87 +99,89 @@ function Dashboard() {
     return { labels, datasets };
   }
 
-  const handleCardClick = () => {
-    navigate(`/PoemList/showall`);
-  };
+  const EmotionCounts = ({ emotionsCount }) => {
+    const emotionToEmoji = {
+      happiness: '😊',
+      sadness: '😢',
+      anger: '😡',
+      fear: '😨',
+      disgust: '🤢',
+      surprise: '😮'
+    };
 
-  const handleUserClick = () => {
-    navigate('/Users');
-  };
+    const handleEmotionClick = (emotion) => {
+      navigate(`/PoemList/${emotion}`);
+    };
 
-  const handleEmotionClick = (emotion) => {
-    navigate(`/PoemList/${emotion}`);
-  };
-
-  const handleBooksClick = () => {
-    navigate('/About');
-  };
-
-  return (
-    <div className='container'>
-      {isLoading ? (
-        <Loader loadingMessage={loadingMessage} />
-      ) : (
-        <>
-          <div className='d-flex flex-column'>
-            <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-              <div className="col">
-                <div className="card h-100" onClick={handleUserClick}>
-                  <div className="card-body cursor-pointer">
-                    <div className='d-flex justify-content-between align-items-center'>
-                      <h5 className="card-title">Users</h5>
-                      <h5>{usersData.length}</h5>
+    return (
+      <div className='container'>
+        {isLoading ? (
+          <Loader loadingMessage={loadingMessage} />
+        ) : (
+          <>
+            <div className='d-flex flex-column'>
+              <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                <div className="col">
+                  <div className="card h-100" onClick={() => navigate('/Users')}>
+                    <div className="card-body cursor-pointer">
+                      <div className='d-flex justify-content-between align-items-center'>
+                        <h5 className="card-title">Users</h5>
+                        <h5>{usersData.length}</h5>
+                      </div>
+                      <div className='d-flex justify-content-between'>
+                        <div className="card-text"><small>admin: {roleCounts.admin || 0}</small></div>
+                        <div className="card-text"><small>user: {roleCounts.user || 0}</small></div>
+                        <div className="card-text"><small>superadmin: {roleCounts.superAdmin || 0}</small></div>
+                        <div className="card-text"><small>superuser: {roleCounts.superUser || 0}</small></div>
+                      </div>
                     </div>
-                    <div className='d-flex justify-content-between'>
-                      <div className="card-text"><small>admin: {roleCounts.admin || 0}</small></div>
-                      <div className="card-text"><small>user: {roleCounts.user || 0}</small></div>
-                      <div className="card-text"><small>superadmin: {roleCounts.superAdmin || 0}</small></div>
-                      <div className="card-text"><small>superuser: {roleCounts.superUser || 0}</small></div>
+                  </div>
+                </div>
+
+                <div className="col">
+                  <div className="card h-100" onClick={() => navigate('/PoemList/showall')}>
+                    <div className="card-body cursor-pointer">
+                      <div className='d-flex justify-content-between align-items-center'>
+                        <h5 className="card-title">Poems</h5>
+                        <h5>{poemsData.totalPoems}</h5>
+                      </div>
+                      <div className='d-flex flex-wrap justify-content-between'>
+                        {Object.entries(emotionsCount).map(([emotion, count]) => (
+                          <div key={emotion} className="card-text me-2 mb-2" onClick={(e) => { e.stopPropagation(); handleEmotionClick(emotion); }}>
+                            <small>{emotionToEmoji[emotion]}{' '}{count || 0}</small>
+                            {/* <small>{emotion}{' '}{count || 0}</small> */}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="col">
+                  <div className="card h-100" onClick={() => navigate('/About')}>
+                    <div className="card-body cursor-pointer">
+                      <div className='d-flex justify-content-between align-items-center'>
+                        <h5 className="card-title">My books</h5>
+                        <h5>{booksLength}</h5>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="col">
-                <div className="card h-100" onClick={handleCardClick}>
-                  <div className="card-body cursor-pointer">
-                    <div className='d-flex justify-content-between align-items-center'>
-                      <h5 className="card-title">Poems</h5>
-                      <h5>{poemsData.totalPoems}</h5>
-                    </div>
-                    <div className='d-flex flex-wrap'>
-                      {Object.entries(poemsData.emotionsCount).map(([emotion, count]) => (
-                        <div key={emotion} className="card-text me-2 mb-2" onClick={(e) => { e.stopPropagation(); handleEmotionClick(emotion); }}>
-                          <small>{emotion}: {count || 0}</small>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+              <Panel header="Poem Emotions" toggleable>
+                <div className="d-flex justify-content-center">
+                  <Chart type="pie" data={getChartData(poemsData.emotionsCount)} />
                 </div>
-              </div>
-
-              <div className="col">
-                <div className="card h-100" onClick={handleBooksClick}>
-                  <div className="card-body cursor-pointer">
-                    <div className='d-flex justify-content-between align-items-center'>
-                      <h5 className="card-title">My books</h5>
-                      <h5>{booksLength}</h5>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              </Panel>
             </div>
+          </>
+        )}
+      </div>
+    );
+  };
 
-            <Panel header="Poem Emotions" toggleable>
-              <div className="d-flex justify-content-center">
-                <Chart type="pie" data={getChartData(poemsData.emotionsCount)} />
-              </div>
-            </Panel>
-          </div>
-        </>
-      )}
-    </div>
-  );
+  return <EmotionCounts emotionsCount={poemsData.emotionsCount} />;
 }
 
 export default Dashboard;
