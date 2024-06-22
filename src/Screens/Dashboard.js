@@ -1,32 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Button } from 'primereact/button';
-import { getDatabase, ref, onValue, off, remove, set } from "firebase/database";
+import { getDatabase, ref, onValue, off } from "firebase/database";
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import Loader from "../Components/Loader"; // Import Loader component
 import { Chart } from 'primereact/chart';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Panel } from 'primereact/panel';
-import { emailPasswordSignUp } from '../Config/firebase';
-import { InputText } from 'primereact/inputtext';
 
 function Dashboard() {
   const [usersData, setUsersData] = useState([]); // State to store user data
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState('');
-  const [pageSize] = useState(5);
   const [poemsData, setPoemsData] = useState({ totalPoems: 0, emotionsCount: {} });
-  const [showAddUserView, setShowAddUserView] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
-  const [role, setRole] = useState('user');
-  const [error, setError] = useState('');
+  const [booksLength, setBooksLength] = useState(0); // State to store the length of books
+  const navigate = useNavigate(); // Initialize useNavigate hook
 
   useEffect(() => {
     const db = getDatabase();
     const usersRef = ref(db, 'users');
     const poemsRef = ref(db, 'AllPoems');
+    const aboutRef = ref(db, 'About');
 
     const fetchData = async () => {
       setLoadingMessage('Fetching user data...');
@@ -62,14 +54,30 @@ function Dashboard() {
         }
         setIsLoading(false); // Move setIsLoading(false) here to handle both users and poems data
       });
+
+      // Fetch data from 'About' collection to get the length of books
+      onValue(aboutRef, (snapshot) => {
+        const aboutData = snapshot.val();
+        if (aboutData && aboutData.myBooks) {
+          setBooksLength(Object.keys(aboutData.myBooks).length); // Get length of 'myBooks'
+        } else {
+          setBooksLength(0);
+        }
+      });
     };
 
     fetchData();
     return () => {
       off(usersRef);
       off(poemsRef);
+      off(aboutRef);
     };
   }, []);
+
+  const roleCounts = usersData.reduce((acc, user) => {
+    acc[user.role] = (acc[user.role] || 0) + 1;
+    return acc;
+  }, {});
 
   function getChartData(emotionsCount) {
     const labels = Object.keys(emotionsCount);
@@ -91,115 +99,21 @@ function Dashboard() {
     return { labels, datasets };
   }
 
-  const deleteUser = (id, email) => {
-    const db = getDatabase();
-    const userRef = ref(db, `users/${id}`);
-    remove(userRef).then(() => {
-      setUsersData(usersData.filter(user => user.id !== id));
-    }).catch((error) => {
-      console.error('Error deleting user: ', error);
-    });
-  }
-
-  const deleteButtonTemplate = (rowData) => {
-    return (
-      <div className='text-center justify-content-center align-center d-flex'>
-        <Button icon="pi pi-trash" className="p-button-danger" onClick={() => deleteUser(rowData.id, rowData.email)} />
-      </div>
-    );
-  }
-
-  const filteredAdmins = usersData.filter(user => user.role === 'admin');
-  const filteredUsers = usersData.filter(user => user.role === 'user');
-
-  const validateForm = () => {
-    if (!email.trim() || !password.trim() || !username.trim()) {
-      setError('Please enter email, password, and username.');
-      return false;
-    }
-    return true;
+  const handleCardClick = () => {
+    navigate(`/PoemList/showall`);
   };
 
-  const handleSignUp = async () => {
-    if (!validateForm()) return;
-
-    setLoadingMessage('Creating user...');
-    setIsLoading(true);
-    try {
-      const userCredential = await emailPasswordSignUp(email, password);
-      const userId = userCredential.user.uid;
-      const db = getDatabase();
-      await set(ref(db, `users/${userId}`), {
-        email,
-        username,
-        role,
-      });
-      setShowAddUserView(false);
-      setEmail('');
-      setPassword('');
-      setUsername('');
-      setRole('user');
-      setError('');
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleUserClick = () => {
+    navigate('/Users');
   };
 
-  const onAddUserClick = () => {
-    setShowAddUserView(true);
+  const handleEmotionClick = (emotion) => {
+    navigate(`/PoemList/${emotion}`);
   };
 
-  const onHideAddUserView = () => {
-    setShowAddUserView(false);
+  const handleBooksClick = () => {
+    navigate('/About');
   };
-
-  const addUserView = (
-    <div className='p-4 border  d-flex gap-4 flex-column shadow-sm card'>
-      <div className='flex-row d-flex gap-4'>
-        <InputText
-          type="email"
-          className="form-control"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <InputText
-          type="password"
-          className="form-control"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <InputText
-          type="text"
-          className="form-control"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-      </div>
-      <div className='flex-row d-flex gap-4'>
-        <select
-          className="form-control"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-        >
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-        </select>
-      </div>
-      <div className='flex-row d-flex justify-content-end gap-4'>
-        <Button onClick={onHideAddUserView} className="p-button-danger">
-          Cancel
-        </Button>
-        <Button onClick={handleSignUp} className="p-button-success">
-          Add User
-        </Button>
-      </div>
-    </div>
-  );
 
   return (
     <div className='container'>
@@ -207,86 +121,57 @@ function Dashboard() {
         <Loader loadingMessage={loadingMessage} />
       ) : (
         <>
-          <div className='d-flex gap-4 flex-column'>
-
-
-
-            <div className="row">
-              <div className="col-md-4">
-                <div className="card">
-                  <div className="card-body">
-                    <h5 className="card-title">Total Users</h5>
-                    <p className="card-text">{filteredUsers.length}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="col-md-4">
-                <div className="card">
-                  <div className="card-body">
-                    <h5 className="card-title">Total Admins</h5>
-                    <p className="card-text">{filteredAdmins.length}</p>
-                  </div>
-                </div>
-              </div>
-              <div className="col-md-4">
-                <div className="card">
-                  <div className="card-body">
-                    <h5 className="card-title">Total Poems</h5>
-                    <p className="card-text">{poemsData.totalPoems}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="row flex-wrap justify-content-around">
-              {Object.entries(poemsData.emotionsCount).map(([emotion, count]) => (
-                <div key={emotion} className="col-lg-2 col-md-4 my-2">
-                  <div className="card">
-                    <div className="card-body">
-                      <h5 className="card-title">{emotion}</h5>
-                      <p className="card-text">{count}</p>
+          <div className='d-flex flex-column'>
+            <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+              <div className="col">
+                <div className="card h-100" onClick={handleUserClick}>
+                  <div className="card-body cursor-pointer">
+                    <div className='d-flex justify-content-between align-items-center'>
+                      <h5 className="card-title">Users</h5>
+                      <h5>{usersData.length}</h5>
+                    </div>
+                    <div className='d-flex justify-content-between'>
+                      <div className="card-text"><small>admin: {roleCounts.admin || 0}</small></div>
+                      <div className="card-text"><small>user: {roleCounts.user || 0}</small></div>
+                      <div className="card-text"><small>superadmin: {roleCounts.superAdmin || 0}</small></div>
+                      <div className="card-text"><small>superuser: {roleCounts.superUser || 0}</small></div>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
 
-
-            <Panel header="All users" className='m-4' toggleable>
-
-              <div className='d-flex flex-column gap-3'>
-              <div>
-                <h5 className="card-title">Users</h5>
-                  <DataTable value={filteredUsers} paginator rows={pageSize}>
-                    <Column field="username" header="Username" />
-                    <Column field="email" header="Email" />
-                    <Column body={deleteButtonTemplate} header="Actions" />
-                  </DataTable>
-                </div>
-
-                <div>
-                  <h5 className="card-title">Admins</h5>
-                  <DataTable value={filteredAdmins} paginator rows={pageSize}>
-                    <Column field="username" header="Username" />
-                    <Column field="email" header="Email" />
-                    <Column body={deleteButtonTemplate} header="Actions" />
-                  </DataTable>
-                </div>
-                <div className='text-center'>
-                  <Button onClick={onAddUserClick} className="p-button-success">
-                    Add new user
-                  </Button>
-                </div>
-                <div>
-                  {showAddUserView && addUserView}
+              <div className="col">
+                <div className="card h-100" onClick={handleCardClick}>
+                  <div className="card-body cursor-pointer">
+                    <div className='d-flex justify-content-between align-items-center'>
+                      <h5 className="card-title">Poems</h5>
+                      <h5>{poemsData.totalPoems}</h5>
+                    </div>
+                    <div className='d-flex flex-wrap'>
+                      {Object.entries(poemsData.emotionsCount).map(([emotion, count]) => (
+                        <div key={emotion} className="card-text me-2 mb-2" onClick={(e) => { e.stopPropagation(); handleEmotionClick(emotion); }}>
+                          <small>{emotion}: {count || 0}</small>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </Panel>
 
+              <div className="col">
+                <div className="card h-100" onClick={handleBooksClick}>
+                  <div className="card-body cursor-pointer">
+                    <div className='d-flex justify-content-between align-items-center'>
+                      <h5 className="card-title">My books</h5>
+                      <h5>{booksLength}</h5>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-
-            <Panel header="Poem Emotions" className='m-4' toggleable>
-              <div className="flex-row justify-content-center card">
+            <Panel header="Poem Emotions" toggleable>
+              <div className="d-flex justify-content-center">
                 <Chart type="pie" data={getChartData(poemsData.emotionsCount)} />
               </div>
             </Panel>

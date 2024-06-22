@@ -1,3 +1,7 @@
+.cursor-pointer {
+  cursor: pointer;
+}
+
 .popup_menu{
   position: absolute;
   top: 59px !important;

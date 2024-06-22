@@ -234,6 +234,7 @@ const PoemForm = () => {
             Save
           </Button>
           <div className="d-flex justify-content-between flex-wrap px-2">
+          <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('showall')}>All</Button>
             <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('happiness')}>Happiness</Button>
             <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('anger')}>Anger</Button>
             <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('disgust')}>Disgust</Button>

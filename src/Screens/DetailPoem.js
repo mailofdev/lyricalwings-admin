@@ -213,8 +213,8 @@ const DetailPoem = () => {
                                         // overflow: 'hidden' 
                                     }}>
                                         <div className="display-4" style={{ color: poem.fontColor }}>{poem.titleValue}</div>
-                                        <div className="card-body" dangerouslySetInnerHTML={{ __html: poem.backgroundOfPoem }} />
-                                        <div className="card-body" dangerouslySetInnerHTML={{ __html: poem.poemContent }} />
+                                        <div className="card-body" style={{ color: poem.fontColor }} dangerouslySetInnerHTML={{ __html: poem.backgroundOfPoem }} />
+                                        <div className="card-body" style={{ color: poem.fontColor }} dangerouslySetInnerHTML={{ __html: poem.poemContent }} />
                                         <div className='flex-row d-flex justify-content-evenly align-items-center'>
                                             <button className="btn btn-warning" onClick={handleEditPoem}><FaEdit /></button>
                                             <button className="btn btn-danger" onClick={handleDeletePoem}><FaTrash /></button>

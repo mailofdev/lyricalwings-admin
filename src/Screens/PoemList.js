@@ -17,12 +17,9 @@ const PoemList = () => {
     const [filteredPoems, setFilteredPoems] = useState([]);
     const navigate = useNavigate();
 
-    console.log(JSON.stringify(filteredPoems)); // Display the poem data in the console
-
-
     useEffect(() => {
         fetchPoems();
-    }, []);
+    }, [emotion]); // Fetch poems whenever the emotion parameter changes
 
     useEffect(() => {
         setFilteredPoems(
@@ -39,7 +36,13 @@ const PoemList = () => {
             const snapshot = await get(AllPoemsRef);
             if (snapshot.exists()) {
                 const data = snapshot.val();
-                const poemsArray = Object.values(data).filter(poem => poem.emotion === emotion).reverse();
+                let poemsArray = Object.values(data);
+                
+                if (emotion !== 'showall') {
+                    poemsArray = poemsArray.filter(poem => poem.emotion === emotion);
+                }
+
+                poemsArray = poemsArray.reverse(); // Reverse the order if needed
                 setPoems(poemsArray);
                 setFilteredPoems(poemsArray);
             }
@@ -75,50 +78,51 @@ const PoemList = () => {
 
     return (
         <>
-        {loading ? (  <Loader loadingMessage="Loading poem list.." />
-    ) : (
-        <div className="container">
-            <div className="row mb-3">
-                <div className="col">
-                    <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Search by poem name"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                    />
-                </div>
-            </div>
-            <div className="row">
-                {filteredPoems.slice(first, first + rows).map((poem) => (
-                    <div key={poem.id} className="col-md-4 col-lg-4 mb-3">
-                        <div className="custom-card h-100">
-                            <div className="card-body" onClick={() => handleEdit(poem)}>
-                                <h5 className="card-title">{poem.titleValue}</h5>
-                                <div className="card-text home-poem-content" dangerouslySetInnerHTML={{ __html: poem.poemContent }}></div>
-                                <div className="d-flex justify-content-between mt-3">
-                                    {/* <Button variant="primary" onClick={() => handleEdit(poem)}>Edit</Button> */}
-                                    {/* <Button variant="danger" onClick={() => handleDelete(poem.id)}>Delete</Button> */}
-                                </div>
-                            </div>
+            {loading ? (
+                <Loader loadingMessage="Loading poem list.." />
+            ) : (
+                <div className="container">
+                    <div className="row mb-3">
+                        <div className="col">
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Search by poem name"
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                            />
                         </div>
                     </div>
-                ))}
-            </div>
-            <div className="row mt-3 fixed-bottom">
-                <div className="col d-flex justify-content-center">
-                    <Paginator
-                        first={first}
-                        rows={rows}
-                        totalRecords={filteredPoems.length}
-                        onPageChange={onPageChange}
-                        className="p-paginator-sm"
-                    />
+                    <div className="row">
+                        {filteredPoems.slice(first, first + rows).map((poem) => (
+                            <div key={poem.id} className="col-md-4 col-lg-4 mb-3">
+                                <div className="custom-card h-100">
+                                    <div className="card-body" onClick={() => handleEdit(poem)}>
+                                        <h5 className="card-title">{poem.titleValue}</h5>
+                                        <div className="card-text home-poem-content" dangerouslySetInnerHTML={{ __html: poem.poemContent }}></div>
+                                        <div className="d-flex justify-content-between mt-3">
+                                            {/* <Button variant="primary" onClick={() => handleEdit(poem)}>Edit</Button> */}
+                                            {/* <Button variant="danger" onClick={() => handleDelete(poem.id)}>Delete</Button> */}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="row mt-3 fixed-bottom">
+                        <div className="col d-flex justify-content-center">
+                            <Paginator
+                                first={first}
+                                rows={rows}
+                                totalRecords={filteredPoems.length}
+                                onPageChange={onPageChange}
+                                className="p-paginator-sm"
+                            />
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    )}
-</>
+            )}
+        </>
     );
 }
 

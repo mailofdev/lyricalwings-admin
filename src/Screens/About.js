@@ -238,14 +238,14 @@ function About() {
     return (
         <div className='container'>
             <div className='gap-3 d-flex flex-column'>
+            <div className='card shadow-sm'>
+                    <AboutSection sectionName="My Books" sectionKey="myBooks" />
+                </div>
                 <div className='card shadow-sm'>
                     <AboutSection sectionName="About Us" sectionKey="aboutUs" />
                 </div>
                 <div className='card shadow-sm'>
                     <AboutSection sectionName="About Me" sectionKey="aboutme" />
-                </div>
-                <div className='card shadow-sm'>
-                    <AboutSection sectionName="My Books" sectionKey="myBooks" />
                 </div>
             </div>
         </div>

@@ -37,6 +37,11 @@ function Header() {
       icon: 'pi pi-info-circle',
       url: '/Courses',
     },
+    {
+      label: 'Users',
+      icon: 'pi pi-info-circle',
+      url: '/Users',
+    },
   ];
 
   const handleSidebarToggle = () => {
