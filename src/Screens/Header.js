@@ -33,6 +33,12 @@ function Header() {
       url: '/About',
     },
     {
+      label: 'Story and Novel',
+      icon: 'pi pi-info-circle',
+      url: '/StoryAndNovels',
+    },
+    
+    {
       label: 'Courses',
       icon: 'pi pi-info-circle',
       url: '/Courses',

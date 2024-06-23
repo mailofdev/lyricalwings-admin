@@ -101,12 +101,12 @@ function Dashboard() {
 
   const EmotionCounts = ({ emotionsCount }) => {
     const emotionToEmoji = {
-      happiness: '😊',
-      sadness: '😢',
-      anger: '😡',
-      fear: '😨',
-      disgust: '🤢',
-      surprise: '😮'
+      happiness: 'Happy',
+      sadness: 'Sad',
+      anger: 'Anger',
+      fear: 'Fear',
+      disgust: 'Disgust',
+      surprise: 'Surprise'
     };
 
     const handleEmotionClick = (emotion) => {
@@ -120,7 +120,7 @@ function Dashboard() {
         ) : (
           <>
             <div className='d-flex flex-column'>
-              <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+              <div className="row row-cols-1 row-cols-md-1 row-cols-lg-3 g-4">
                 <div className="col">
                   <div className="card h-100" onClick={() => navigate('/Users')}>
                     <div className="card-body cursor-pointer">
@@ -147,9 +147,8 @@ function Dashboard() {
                       </div>
                       <div className='d-flex flex-wrap justify-content-between'>
                         {Object.entries(emotionsCount).map(([emotion, count]) => (
-                          <div key={emotion} className="card-text me-2 mb-2" onClick={(e) => { e.stopPropagation(); handleEmotionClick(emotion); }}>
+                          <div key={emotion} className="card-text mb-2 border border-dark rounded" onClick={(e) => { e.stopPropagation(); handleEmotionClick(emotion); }}>
                             <small>{emotionToEmoji[emotion]}{' '}{count || 0}</small>
-                            {/* <small>{emotion}{' '}{count || 0}</small> */}
                           </div>
                         ))}
                       </div>
@@ -162,11 +161,13 @@ function Dashboard() {
                     <div className="card-body cursor-pointer">
                       <div className='d-flex justify-content-between align-items-center'>
                         <h5 className="card-title">My books</h5>
-                        <h5>{booksLength}</h5>
+                        <h5>{booksLength || 0}</h5>
                       </div>
                     </div>
                   </div>
                 </div>
+
+                
               </div>
 
               <Panel header="Poem Emotions" toggleable>

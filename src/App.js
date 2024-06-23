@@ -11,6 +11,7 @@ import About from './Screens/About';
 import DetailPoem from './Screens/DetailPoem';
 import Courses from './Screens/Courses';
 import Users from './Screens/Users';
+import StoryAndNovels from './Screens/StoryAndNovels';
 
 function App() {
   return (
@@ -28,7 +29,7 @@ function App() {
           <Route path="/DetailPoem" element={<DetailPoem />} />
           <Route path="/Courses" element={<Courses />} />
           <Route path="/Users" element={<Users />} />
-          
+          <Route path="/StoryAndNovels" element={<StoryAndNovels />} />
         </Routes>
       </div>
     </div>
