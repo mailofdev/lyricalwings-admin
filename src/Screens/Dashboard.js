@@ -161,7 +161,7 @@ function Dashboard() {
           <>
             <div className='d-flex flex-column'>
               <div className="row g-4">
-                <div className="col-6">
+                <div className="col-12 col-sm-6">
                   <div className="card h-100" onClick={() => navigate('/Users')}>
                     <div className="card-body cursor-pointer">
                       <div className='d-flex justify-content-between align-items-center'>
@@ -178,7 +178,7 @@ function Dashboard() {
                   </div>
                 </div>
 
-                <div className="col-6">
+                <div className="col-12 col-sm-6">
                   <div className="card h-100" onClick={() => navigate('/PoemList/showall')}>
                     <div className="card-body cursor-pointer">
                       <div className='d-flex justify-content-between align-items-center'>
@@ -188,7 +188,7 @@ function Dashboard() {
                       <div className='d-flex flex-wrap justify-content-between'>
                         {Object.entries(emotionsCount).map(([emotion, count]) => (
                           <div key={emotion} className="card-text border border-dark rounded py-1 px-2 " onClick={(e) => { e.stopPropagation(); handleEmotionClick(emotion); }}>
-                            <small>{emotionToEmoji[emotion]}{' '}{count || 0}</small>
+                            <small>{emotionToEmoji[emotion]}: {count || 0}</small>
                           </div>
                         ))}
                       </div>
@@ -196,7 +196,7 @@ function Dashboard() {
                   </div>
                 </div>
 
-                <div className="col">
+                <div className="col-12 col-sm-6 col-md-4 col-lg-3">
                   <div className="card h-100" onClick={() => navigate('/About')}>
                     <div className="card-body cursor-pointer">
                       <div className='d-flex justify-content-between align-items-center'>
@@ -207,7 +207,7 @@ function Dashboard() {
                   </div>
                 </div>
 
-                <div className="col">
+                <div className="col-12 col-sm-6 col-md-4 col-lg-3">
                   <div className="card h-100" >
                     <div className="card-body">
                       <div className='d-flex justify-content-between align-items-center'>
@@ -218,7 +218,7 @@ function Dashboard() {
                   </div>
                 </div>
 
-                <div className="col">
+                <div className="col-12 col-sm-6 col-md-4 col-lg-3">
                   <div className="card h-100">
                     <div className="card-body">
                       <div className='d-flex justify-content-between align-items-center'>
@@ -229,23 +229,20 @@ function Dashboard() {
                   </div>
                 </div>
 
-                <div className="col">
+                <div className="col-12 col-sm-6 col-md-4 col-lg-3">
                   <div className="card h-100" onClick={() => navigate('/Courses')}>
                     <div className="card-body cursor-pointer">
                       <div className='d-flex justify-content-between align-items-center'>
-                        {/* <h5 className="card-title">Courses intro</h5> */}
-                        {/* <div>{coursesIntroLength || 0}</div> */}
-                        <h5 className="card-title">Courses Types</h5>
+                        <h5 className="card-title">Courses</h5>
                         <h5>{coursesTypeLength || 0}</h5>
                       </div>
-                     
                     </div>
                   </div>
                 </div>
 
               </div>
 
-              <Panel header="Poem Emotions" toggleable>
+              <Panel className='mt-3' header="Poem Emotions" toggleable>
                 <div className="d-flex justify-content-center">
                   <Chart type="pie" data={getChartData(poemsData.emotionsCount)} />
                 </div>
