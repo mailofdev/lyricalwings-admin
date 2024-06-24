@@ -9,26 +9,26 @@ import { Panel } from 'primereact/panel';
 const Courses = () => {
 
     const [introductionTitle, setIntroductionTitle] = useState('');
-    const [poemTitle, setPoemTitle] = useState('');
-    const [poemIntroduction, setPoemIntroduction] = useState('');
-    const [poemStructure, setPoemStructure] = useState('');
-    const [poemLiterature, setPoemLiterature] = useState('');
-    const [poemMethodology, setPoemMethodology] = useState('');
-    const [poemEvaluation, setPoemEvaluation] = useState('');
-    const [poemConclusion, setPoemConclusion] = useState('');
-    const [poemReference, setPoemReference] = useState('');
+    const [courseTypeTitle, setcourseTypeTitle] = useState('');
+    const [courseTypeIntroduction, setcourseTypeIntroduction] = useState('');
+    const [courseTypeStructure, setcourseTypeStructure] = useState('');
+    const [courseTypeLiterature, setcourseTypeLiterature] = useState('');
+    const [courseTypeMethodology, setcourseTypeMethodology] = useState('');
+    const [courseTypeEvaluation, setcourseTypeEvaluation] = useState('');
+    const [courseTypeConclusion, setcourseTypeConclusion] = useState('');
+    const [courseTypeReference, setcourseTypeReference] = useState('');
     const [files, setFiles] = useState({
-        poemTitle: null,
-        poemIntroduction: null,
-        poemStructure: null,
-        poemLiterature: null,
-        poemMethodology: null,
-        poemEvaluation: null,
-        poemConclusion: null,
-        poemReference: null
+        courseTypeTitle: null,
+        courseTypeIntroduction: null,
+        courseTypeStructure: null,
+        courseTypeLiterature: null,
+        courseTypeMethodology: null,
+        courseTypeEvaluation: null,
+        courseTypeConclusion: null,
+        courseTypeReference: null
     });
     const [savedIntroductions, setSavedIntroductions] = useState([]);
-    const [savedPoems, setSavedPoems] = useState([]);
+    const [savedcourseTypes, setSavedcourseTypes] = useState([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -43,11 +43,11 @@ const Courses = () => {
                     setSavedIntroductions(Object.keys(data).map(key => ({ id: key, ...data[key] })));
                 }
 
-                const poemRef = ref(db, 'Courses/Poems');
-                const poemSnapshot = await get(poemRef);
-                if (poemSnapshot.exists()) {
-                    const data = poemSnapshot.val();
-                    setSavedPoems(Object.keys(data).map(key => ({ id: key, ...data[key] })));
+                const courseTypeRef = ref(db, 'Courses/courseType');
+                const courseTypeSnapshot = await get(courseTypeRef);
+                if (courseTypeSnapshot.exists()) {
+                    const data = courseTypeSnapshot.val();
+                    setSavedcourseTypes(Object.keys(data).map(key => ({ id: key, ...data[key] })));
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -79,10 +79,10 @@ const Courses = () => {
 
     const handleSubmitIntroduction = async (e) => {
         e.preventDefault();
-        if (files.poemTitle && introductionTitle) {
+        if (files.courseTypeTitle && introductionTitle) {
             setLoading(true);
             try {
-                const fileUrl = await uploadFile(files.poemTitle, `introduction_pdfs/${files.poemTitle.name}`);
+                const fileUrl = await uploadFile(files.courseTypeTitle, `introduction_pdfs/${files.courseTypeTitle.name}`);
 
                 const introductionData = {
                     title: introductionTitle,
@@ -95,7 +95,7 @@ const Courses = () => {
                 setSavedIntroductions(prevData => [...prevData, { id: newIntroRef.key, ...introductionData }]);
 
                 setIntroductionTitle('');
-                setFiles({ ...files, poemTitle: null });
+                setFiles({ ...files, courseTypeTitle: null });
             } catch (error) {
                 console.error("Error uploading file or saving data:", error);
             } finally {
@@ -106,9 +106,9 @@ const Courses = () => {
         }
     };
 
-    const handleSubmitPoem = async (e) => {
+    const handleSubmitcourseType = async (e) => {
         e.preventDefault();
-        if (files.poemTitle && poemTitle) {
+        if (files.courseTypeTitle && courseTypeTitle) {
             setLoading(true);
             try {
                 const fileUrls = await Promise.all(Object.keys(files).map(async (key) => {
@@ -118,47 +118,47 @@ const Courses = () => {
                     return null;
                 }));
 
-                const poemData = {
-                    poemTitle,
-                    poemTitleUrl: fileUrls[0],
-                    poemIntroduction,
-                    poemIntroductionUrl: fileUrls[1],
-                    poemStructure,
-                    poemStructureUrl: fileUrls[2],
-                    poemLiterature,
-                    poemLiteratureUrl: fileUrls[3],
-                    poemMethodology,
-                    poemMethodologyUrl: fileUrls[4],
-                    poemEvaluation,
-                    poemEvaluationUrl: fileUrls[5],
-                    poemConclusion,
-                    poemConclusionUrl: fileUrls[6],
-                    poemReference,
-                    poemReferenceUrl: fileUrls[7]
+                const courseTypeData = {
+                    courseTypeTitle,
+                    courseTypeTitleUrl: fileUrls[0],
+                    courseTypeIntroduction,
+                    courseTypeIntroductionUrl: fileUrls[1],
+                    courseTypeStructure,
+                    courseTypeStructureUrl: fileUrls[2],
+                    courseTypeLiterature,
+                    courseTypeLiteratureUrl: fileUrls[3],
+                    courseTypeMethodology,
+                    courseTypeMethodologyUrl: fileUrls[4],
+                    courseTypeEvaluation,
+                    courseTypeEvaluationUrl: fileUrls[5],
+                    courseTypeConclusion,
+                    courseTypeConclusionUrl: fileUrls[6],
+                    courseTypeReference,
+                    courseTypeReferenceUrl: fileUrls[7]
                 };
 
-                const newPoemRef = push(ref(db, 'Courses/Poems'));
-                await set(newPoemRef, poemData);
+                const newcourseTypeRef = push(ref(db, 'Courses/courseType'));
+                await set(newcourseTypeRef, courseTypeData);
 
-                setSavedPoems(prevData => [...prevData, { id: newPoemRef.key, ...poemData }]);
+                setSavedcourseTypes(prevData => [...prevData, { id: newcourseTypeRef.key, ...courseTypeData }]);
 
-                setPoemTitle('');
-                setPoemIntroduction('');
-                setPoemStructure('');
-                setPoemLiterature('');
-                setPoemMethodology('');
-                setPoemEvaluation('');
-                setPoemConclusion('');
-                setPoemReference('');
+                setcourseTypeTitle('');
+                setcourseTypeIntroduction('');
+                setcourseTypeStructure('');
+                setcourseTypeLiterature('');
+                setcourseTypeMethodology('');
+                setcourseTypeEvaluation('');
+                setcourseTypeConclusion('');
+                setcourseTypeReference('');
                 setFiles({
-                    poemTitle: null,
-                    poemIntroduction: null,
-                    poemStructure: null,
-                    poemLiterature: null,
-                    poemMethodology: null,
-                    poemEvaluation: null,
-                    poemConclusion: null,
-                    poemReference: null
+                    courseTypeTitle: null,
+                    courseTypeIntroduction: null,
+                    courseTypeStructure: null,
+                    courseTypeLiterature: null,
+                    courseTypeMethodology: null,
+                    courseTypeEvaluation: null,
+                    courseTypeConclusion: null,
+                    courseTypeReference: null
                 });
             } catch (error) {
                 console.error("Error uploading files or saving data:", error);
@@ -192,15 +192,15 @@ const Courses = () => {
             }));
 
             // Delete the document from Firestore
-            const collectionName = pdfUrls[0].includes('introduction_pdfs') ? 'Introductions' : 'Poems'; // Adjust based on your logic
+            const collectionName = pdfUrls[0].includes('introduction_pdfs') ? 'Introductions' : 'courseType'; // Adjust based on your logic
             const docRef = ref(db, `Courses/${collectionName}/${id}`);
             await remove(docRef);
 
             // Update state after successful deletion
             if (collectionName === 'Introductions') {
                 setSavedIntroductions(prevData => prevData.filter(item => item.id !== id));
-            } else if (collectionName === 'Poems') {
-                setSavedPoems(prevData => prevData.filter(item => item.id !== id));
+            } else if (collectionName === 'courseType') {
+                setSavedcourseTypes(prevData => prevData.filter(item => item.id !== id));
             }
         } catch (error) {
             console.error("Error deleting data:", error);
@@ -235,7 +235,7 @@ const Courses = () => {
                                             id="pdf"
                                             className="form-control"
                                             accept="application/pdf"
-                                            onChange={handleFileChange('poemTitle')}
+                                            onChange={handleFileChange('courseTypeTitle')}
                                             required
                                         />
                                     </div>
@@ -248,28 +248,28 @@ const Courses = () => {
                     </Panel>
 
 
-                    <Panel header="Add type of poem" toggleable className="mb-4">
-                        <form onSubmit={handleSubmitPoem}>
+                    <Panel header="Add type of courseType" toggleable className="mb-4">
+                        <form onSubmit={handleSubmitcourseType}>
                             <div className="mb-3">
-                                <label htmlFor="poemTitle" className="form-label">Title of Poem:</label>
+                                <label htmlFor="courseTypeTitle" className="form-label">Title of courseType:</label>
                                 <input
                                     type="text"
-                                    id="poemTitle"
+                                    id="courseTypeTitle"
                                     className="form-control"
-                                    value={poemTitle}
-                                    onChange={handleInputChange(setPoemTitle)}
+                                    value={courseTypeTitle}
+                                    onChange={handleInputChange(setcourseTypeTitle)}
                                     required
                                 />
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="poemIntroduction" className="form-label">Introduction of Poem:</label>
+                                <label htmlFor="courseTypeIntroduction" className="form-label">Introduction of courseType:</label>
                                 <div className="row">
                                     <div className="col-md-9 mb-2 mb-md-0">
                                         <textarea
-                                            id="poemIntroduction"
+                                            id="courseTypeIntroduction"
                                             className="form-control"
-                                            value={poemIntroduction}
-                                            onChange={handleInputChange(setPoemIntroduction)}
+                                            value={courseTypeIntroduction}
+                                            onChange={handleInputChange(setcourseTypeIntroduction)}
                                             required
                                         />
                                     </div>
@@ -278,21 +278,21 @@ const Courses = () => {
                                             type="file"
                                             className="form-control"
                                             accept="application/pdf"
-                                            onChange={handleFileChange('poemIntroduction')}
+                                            onChange={handleFileChange('courseTypeIntroduction')}
                                             required
                                         />
                                     </div>
                                 </div>
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="poemStructure" className="form-label">Structure of Poem:</label>
+                                <label htmlFor="courseTypeStructure" className="form-label">Structure of courseType:</label>
                                 <div className="row">
                                     <div className="col-md-9 mb-2 mb-md-0">
                                         <textarea
-                                            id="poemStructure"
+                                            id="courseTypeStructure"
                                             className="form-control"
-                                            value={poemStructure}
-                                            onChange={handleInputChange(setPoemStructure)}
+                                            value={courseTypeStructure}
+                                            onChange={handleInputChange(setcourseTypeStructure)}
                                             required
                                         />
                                     </div>
@@ -301,21 +301,21 @@ const Courses = () => {
                                             type="file"
                                             className="form-control"
                                             accept="application/pdf"
-                                            onChange={handleFileChange('poemStructure')}
+                                            onChange={handleFileChange('courseTypeStructure')}
                                             required
                                         />
                                     </div>
                                 </div>
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="poemLiterature" className="form-label">Literature of Poem:</label>
+                                <label htmlFor="courseTypeLiterature" className="form-label">Literature of courseType:</label>
                                 <div className="row">
                                     <div className="col-md-9 mb-2 mb-md-0">
                                         <textarea
-                                            id="poemLiterature"
+                                            id="courseTypeLiterature"
                                             className="form-control"
-                                            value={poemLiterature}
-                                            onChange={handleInputChange(setPoemLiterature)}
+                                            value={courseTypeLiterature}
+                                            onChange={handleInputChange(setcourseTypeLiterature)}
                                             required
                                         />
                                     </div>
@@ -324,21 +324,21 @@ const Courses = () => {
                                             type="file"
                                             className="form-control"
                                             accept="application/pdf"
-                                            onChange={handleFileChange('poemLiterature')}
+                                            onChange={handleFileChange('courseTypeLiterature')}
                                             required
                                         />
                                     </div>
                                 </div>
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="poemMethodology" className="form-label">Methodology and Implementation of Poem:</label>
+                                <label htmlFor="courseTypeMethodology" className="form-label">Methodology and Implementation of courseType:</label>
                                 <div className="row">
                                     <div className="col-md-9 mb-2 mb-md-0">
                                         <textarea
-                                            id="poemMethodology"
+                                            id="courseTypeMethodology"
                                             className="form-control"
-                                            value={poemMethodology}
-                                            onChange={handleInputChange(setPoemMethodology)}
+                                            value={courseTypeMethodology}
+                                            onChange={handleInputChange(setcourseTypeMethodology)}
                                             required
                                         />
                                     </div>
@@ -347,21 +347,21 @@ const Courses = () => {
                                             type="file"
                                             className="form-control"
                                             accept="application/pdf"
-                                            onChange={handleFileChange('poemMethodology')}
+                                            onChange={handleFileChange('courseTypeMethodology')}
                                             required
                                         />
                                     </div>
                                 </div>
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="poemEvaluation" className="form-label">Evaluation of Poem:</label>
+                                <label htmlFor="courseTypeEvaluation" className="form-label">Evaluation of courseType:</label>
                                 <div className="row">
                                     <div className="col-md-9 mb-2 mb-md-0">
                                         <textarea
-                                            id="poemEvaluation"
+                                            id="courseTypeEvaluation"
                                             className="form-control"
-                                            value={poemEvaluation}
-                                            onChange={handleInputChange(setPoemEvaluation)}
+                                            value={courseTypeEvaluation}
+                                            onChange={handleInputChange(setcourseTypeEvaluation)}
                                             required
                                         />
                                     </div>
@@ -370,21 +370,21 @@ const Courses = () => {
                                             type="file"
                                             className="form-control"
                                             accept="application/pdf"
-                                            onChange={handleFileChange('poemEvaluation')}
+                                            onChange={handleFileChange('courseTypeEvaluation')}
                                             required
                                         />
                                     </div>
                                 </div>
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="poemConclusion" className="form-label">Conclusion of Poem:</label>
+                                <label htmlFor="courseTypeConclusion" className="form-label">Conclusion of courseType:</label>
                                 <div className="row">
                                     <div className="col-md-9 mb-2 mb-md-0">
                                         <textarea
-                                            id="poemConclusion"
+                                            id="courseTypeConclusion"
                                             className="form-control"
-                                            value={poemConclusion}
-                                            onChange={handleInputChange(setPoemConclusion)}
+                                            value={courseTypeConclusion}
+                                            onChange={handleInputChange(setcourseTypeConclusion)}
                                             required
                                         />
                                     </div>
@@ -393,21 +393,21 @@ const Courses = () => {
                                             type="file"
                                             className="form-control"
                                             accept="application/pdf"
-                                            onChange={handleFileChange('poemConclusion')}
+                                            onChange={handleFileChange('courseTypeConclusion')}
                                             required
                                         />
                                     </div>
                                 </div>
                             </div>
                             <div className="mb-3">
-                                <label htmlFor="poemReference" className="form-label">Reference of Poem:</label>
+                                <label htmlFor="courseTypeReference" className="form-label">Reference of courseType:</label>
                                 <div className="row">
                                     <div className="col-md-9 mb-2 mb-md-0">
                                         <textarea
-                                            id="poemReference"
+                                            id="courseTypeReference"
                                             className="form-control"
-                                            value={poemReference}
-                                            onChange={handleInputChange(setPoemReference)}
+                                            value={courseTypeReference}
+                                            onChange={handleInputChange(setcourseTypeReference)}
                                             required
                                         />
                                     </div>
@@ -416,13 +416,13 @@ const Courses = () => {
                                             type="file"
                                             className="form-control"
                                             accept="application/pdf"
-                                            onChange={handleFileChange('poemReference')}
+                                            onChange={handleFileChange('courseTypeReference')}
                                             required
                                         />
                                     </div>
                                 </div>
                             </div>
-                            <button type="submit" className="btn btn-primary">Save Poem</button>
+                            <button type="submit" className="btn btn-primary">Save courseType</button>
                         </form>
                     </Panel>
 
@@ -446,15 +446,15 @@ const Courses = () => {
                     )}
 
 
-{savedPoems.length > 0 && (
-    <Panel header="Saved types of poem" toggleable className="mt-4">
-        {savedPoems.map((data) => (
+{savedcourseTypes.length > 0 && (
+    <Panel header="Saved types of courseType" toggleable className="mt-4">
+        {savedcourseTypes.map((data) => (
             <div className="card mb-3" key={data.id}>
                 <div className="card-body">
                     <div className="d-flex justify-content-between align-items-center">
                         <div>
-                            <h5 className="card-title">{data.poemTitle}</h5>
-                            <p className="card-text">{data.poemIntroduction}</p>
+                            <h5 className="card-title">{data.courseTypeTitle}</h5>
+                            <p className="card-text">{data.courseTypeIntroduction}</p>
                         </div>
                         <button
                             onClick={() => handleDelete(

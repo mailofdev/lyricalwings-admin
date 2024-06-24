@@ -11,7 +11,11 @@ function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [poemsData, setPoemsData] = useState({ totalPoems: 0, emotionsCount: {} });
-  const [booksLength, setBooksLength] = useState(0); // State to store the length of books
+  const [booksLength, setBooksLength] = useState(0);
+  const [coursesIntroLength, setCoursesIntroLength] = useState(0);
+  const [coursesTypeLength, setCoursesTypeLength] = useState(0);
+  const [storyCount, setStoryCount] = useState(0);
+  const [novelCount, setNovelCount] = useState(0);
   const navigate = useNavigate(); // Initialize useNavigate hook
 
   useEffect(() => {
@@ -19,6 +23,8 @@ function Dashboard() {
     const usersRef = ref(db, 'users');
     const poemsRef = ref(db, 'AllPoems');
     const aboutRef = ref(db, 'About');
+    const coursesRef = ref(db, 'Courses');
+    const storyAndNovelsRef = ref(db, 'storyAndNovels');
 
     const fetchData = async () => {
       setLoadingMessage('Fetching user data...');
@@ -64,6 +70,38 @@ function Dashboard() {
           setBooksLength(0);
         }
       });
+
+      onValue(storyAndNovelsRef, (snapshot) => {
+        const storyAndNovelsData = snapshot.val();
+        let storyCount = 0;
+        let novelCount = 0;
+
+        if (storyAndNovelsData) {
+          Object.values(storyAndNovelsData).forEach(item => {
+            if (item.type === 'story') {
+              storyCount++;
+            } else if (item.type === 'novel') {
+              novelCount++;
+            }
+          });
+        }
+        setStoryCount(storyCount);
+        setNovelCount(novelCount);
+      });
+
+      onValue(coursesRef, (snapshot) => {
+        const coursesData = snapshot.val();
+        if (coursesData && coursesData.Introductions) {
+          setCoursesIntroLength(Object.keys(coursesData.Introductions).length); // Get length of 'Introductions'
+        } else {
+          setCoursesIntroLength(0);
+        }
+        if (coursesData && coursesData.courseType) {
+          setCoursesTypeLength(Object.keys(coursesData.courseType).length); // Get length of 'courseType'
+        } else {
+          setCoursesTypeLength(0);
+        }
+      });
     };
 
     fetchData();
@@ -71,6 +109,8 @@ function Dashboard() {
       off(usersRef);
       off(poemsRef);
       off(aboutRef);
+      off(coursesRef);
+      off(storyAndNovelsRef);
     };
   }, []);
 
@@ -120,8 +160,8 @@ function Dashboard() {
         ) : (
           <>
             <div className='d-flex flex-column'>
-              <div className="row row-cols-1 row-cols-md-1 row-cols-lg-3 g-4">
-                <div className="col">
+              <div className="row g-4">
+                <div className="col-6">
                   <div className="card h-100" onClick={() => navigate('/Users')}>
                     <div className="card-body cursor-pointer">
                       <div className='d-flex justify-content-between align-items-center'>
@@ -138,7 +178,7 @@ function Dashboard() {
                   </div>
                 </div>
 
-                <div className="col">
+                <div className="col-6">
                   <div className="card h-100" onClick={() => navigate('/PoemList/showall')}>
                     <div className="card-body cursor-pointer">
                       <div className='d-flex justify-content-between align-items-center'>
@@ -147,7 +187,7 @@ function Dashboard() {
                       </div>
                       <div className='d-flex flex-wrap justify-content-between'>
                         {Object.entries(emotionsCount).map(([emotion, count]) => (
-                          <div key={emotion} className="card-text mb-2 border border-dark rounded" onClick={(e) => { e.stopPropagation(); handleEmotionClick(emotion); }}>
+                          <div key={emotion} className="card-text border border-dark rounded py-1 px-2 " onClick={(e) => { e.stopPropagation(); handleEmotionClick(emotion); }}>
                             <small>{emotionToEmoji[emotion]}{' '}{count || 0}</small>
                           </div>
                         ))}
@@ -167,7 +207,42 @@ function Dashboard() {
                   </div>
                 </div>
 
-                
+                <div className="col">
+                  <div className="card h-100" >
+                    <div className="card-body">
+                      <div className='d-flex justify-content-between align-items-center'>
+                        <h5 className="card-title">Stories</h5>
+                        <h5>{storyCount || 0}</h5>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="col">
+                  <div className="card h-100">
+                    <div className="card-body">
+                      <div className='d-flex justify-content-between align-items-center'>
+                        <h5 className="card-title">Novels</h5>
+                        <h5>{novelCount || 0}</h5>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="col">
+                  <div className="card h-100" onClick={() => navigate('/Courses')}>
+                    <div className="card-body cursor-pointer">
+                      <div className='d-flex justify-content-between align-items-center'>
+                        {/* <h5 className="card-title">Courses intro</h5> */}
+                        {/* <div>{coursesIntroLength || 0}</div> */}
+                        <h5 className="card-title">Courses Types</h5>
+                        <h5>{coursesTypeLength || 0}</h5>
+                      </div>
+                     
+                    </div>
+                  </div>
+                </div>
+
               </div>
 
               <Panel header="Poem Emotions" toggleable>

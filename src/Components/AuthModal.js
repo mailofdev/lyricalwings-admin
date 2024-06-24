@@ -72,7 +72,6 @@ const AuthModal = ({ show, handleClose }) => {
                 ) : (
                    
                     <div className='d-flex gap-3 flex-column card shadow m-2 p-4'>
-                         <div>test</div>
                         <form onSubmit={handleSignInSubmit}>
                             <div className="mb-3">
                                 <label htmlFor="signInIdentifier" className="form-label">Email or Username</label>
