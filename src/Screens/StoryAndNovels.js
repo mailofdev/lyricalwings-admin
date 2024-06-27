@@ -5,7 +5,7 @@ import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
 import { Dialog } from 'primereact/dialog';
 import { Toast } from 'primereact/toast';
-import { ref, push, set, update, remove , db, get, child } from '../Config/firebase'; // Adjust the path to your firebaseConfig file
+import { ref, push, set, update, remove, db, get, child } from '../Config/firebase'; // Adjust the path to your firebaseConfig file
 import Loader from '../Components/Loader'; // Assuming Loader component is in the same directory
 import 'primereact/resources/themes/saga-blue/theme.css'; // Theme CSS
 import 'primereact/resources/primereact.min.css'; // PrimeReact CSS
@@ -31,7 +31,11 @@ const StoryAndNovels = () => {
             insertImageAsBase64URI: true
         },
         disablePlugins: "video,about,ai-assistant,clean-html,delete-command,iframe,mobile,powered-by-jodit,source,speech-recognize,xpath,wrap-nodes,spellcheck,file",
-        buttons: "bold,italic,underline,strikethrough,eraser,ul,ol,font,fontsize,paragraph,lineHeight,image,cut,copy,paste,selectall,copyformat,preview"
+        buttons: "bold,italic,underline,strikethrough,eraser,ul,ol,font,fontsize,paragraph,lineHeight,image,preview",
+        "askBeforePasteHTML": false,
+        "askBeforePasteFromWord": false,
+        "defaultActionOnPaste": "insert_only_text",
+
     }), []);
 
     const handleBlur = useCallback(newContent => {
@@ -49,9 +53,9 @@ const StoryAndNovels = () => {
             setLoading(true); // Set loading to true before saving
             await set(newStoryRef, { content, type: selectedType }); // Save type along with content
             toast.current.show({ severity: 'success', summary: 'Success', detail: 'Content saved successfully', life: 3000 });
-            setContent(''); 
+            setContent('');
             setSelectedType('story');
-            fetchStories(); 
+            fetchStories();
         } catch (error) {
             console.error('Error saving content to the database', error);
         } finally {
@@ -134,7 +138,7 @@ const StoryAndNovels = () => {
     const filteredNovels = stories.filter(story => story.type === 'novel');
 
     const renderStoriesPanel = () => (
-        <Panel header="Saved Stories" toggleable>
+        <Panel header="Stories" toggleable>
             {filteredStories.length === 0 ? (
                 <p>No stories available.</p>
             ) : (
@@ -152,7 +156,7 @@ const StoryAndNovels = () => {
     );
 
     const renderNovelsPanel = () => (
-        <Panel header="Saved Novels" toggleable>
+        <Panel header="Novels" toggleable>
             {filteredNovels.length === 0 ? (
                 <p>No novels available.</p>
             ) : (
@@ -173,7 +177,7 @@ const StoryAndNovels = () => {
         <div className='container gap-3 d-flex flex-column'>
             <Toast ref={toast} />
             {loading && <Loader loadingMessage="Loading..." />}
-            <Panel header="Write a story" toggleable>
+            <Panel header="" toggleable>
                 <JoditEditor
                     ref={editor}
                     value={content}
@@ -196,6 +200,7 @@ const StoryAndNovels = () => {
                     <Button label="Save" icon="pi pi-save" className="p-button-success mt-2" onClick={saveContentToDatabase} />
                 </div>
             </Panel>
+            {content}
             {renderStoriesPanel()}
             {renderNovelsPanel()}
             <Dialog header="Edit Story" visible={editDialogVisible} style={{ width: '50vw' }} onHide={() => setEditDialogVisible(false)}>
