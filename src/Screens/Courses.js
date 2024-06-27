@@ -239,7 +239,10 @@ const Courses = () => {
         <div className='container mt-5'>
             {loading ? <Loader loadingMessage="Loading..." /> : (
                 <>
-                    <Panel header="Add introduction" toggleable className="mb-4">
+                <div className='d-flex flex-column gap-4'>
+
+                
+                    <Panel header="Add introduction" toggleable>
                         <form onSubmit={handleSubmitIntroduction}>
                             <div className="mb-3">
                                 <label htmlFor="title" className="form-label">Introduction</label>
@@ -269,7 +272,7 @@ const Courses = () => {
                         </form>
                     </Panel>
 
-                    <Panel header="Add types of poem" toggleable className="mb-4">
+                    <Panel header="Add types of poem" toggleable>
                         <form onSubmit={handleSubmitCourseType}>
                             <div className="mb-3">
                                 <label htmlFor="title" className="form-label">Title</label>
@@ -397,7 +400,7 @@ const Courses = () => {
                             ))}
                         </Panel>
                     )}
-
+</div>
                 </>
             )}
         </div>
