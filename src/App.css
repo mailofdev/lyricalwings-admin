@@ -1,3 +1,10 @@
+
+.alert {
+  --bs-alert-padding-x: 0.5rem !important;
+  --bs-alert-padding-y: 0.5rem !important;
+  --bs-alert-margin-bottom: unset !important;
+
+}
 .cursor-pointer {
   cursor: pointer;
 }

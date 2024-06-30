@@ -6,6 +6,7 @@ import Loader from '../Components/Loader'; // Adjust the import path according t
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Panel } from 'primereact/panel';
 import { Button } from 'primereact/button';
+import { Divider } from 'primereact/divider';
 
 const Courses = () => {
     const [introductionTitle, setIntroductionTitle] = useState('');
@@ -80,6 +81,12 @@ const Courses = () => {
 
     const handleSubmitIntroduction = async (e) => {
         e.preventDefault();
+
+        if (savedIntroductions.length > 0 && !editMode) {
+            alert("Only one introduction can be saved.");
+            return;
+        }
+
         if (files.introductionTitle && introductionTitle) {
             setLoading(true);
             try {
@@ -119,14 +126,25 @@ const Courses = () => {
         e.preventDefault();
         setLoading(true);
         try {
+            // Fetch existing courseType data if in edit mode
+            let existingData = {};
+            if (editMode && editType === 'CourseType') {
+                const courseTypeRef = ref(db, `Courses/courseTypes/${editId}`);
+                const snapshot = await get(courseTypeRef);
+                if (snapshot.exists()) {
+                    existingData = snapshot.val();
+                }
+            }
+    
             const fileUrls = await Promise.all(Object.keys(files).map(async (key) => {
                 if (files[key]) {
                     return await uploadFile(files[key], `${key}_pdfs/${files[key].name}`);
                 }
-                return null;
+                return existingData[`${key}Url`] || null; // Retain existing URL if file is not changed
             }));
-
+    
             const courseTypeData = {
+                ...existingData, // Spread existing data to retain fields not being updated
                 courseTypeTitle,
                 courseTypeTitleUrl: fileUrls[0],
                 courseTypeIntroduction,
@@ -142,7 +160,7 @@ const Courses = () => {
                 courseTypeConclusion,
                 courseTypeConclusionUrl: fileUrls[6],
             };
-
+    
             if (editMode && editType === 'CourseType') {
                 const courseTypeRef = ref(db, `Courses/courseTypes/${editId}`);
                 await update(courseTypeRef, courseTypeData);
@@ -152,7 +170,7 @@ const Courses = () => {
                 await set(newCourseTypeRef, courseTypeData);
                 setSavedCourseTypes(prevData => [...prevData, { id: newCourseTypeRef.key, ...courseTypeData }]);
             }
-
+    
             setCourseTypeTitle('');
             setCourseTypeIntroduction('');
             setCourseTypeStructure('');
@@ -179,7 +197,7 @@ const Courses = () => {
             setLoading(false);
         }
     };
-
+    
     const handleDelete = async (id, pdfUrls) => {
         setLoading(true);
         try {
@@ -221,8 +239,8 @@ const Courses = () => {
         setEditId(id);
         setEditType(type);
         if (type === 'Introduction') {
-            const intro = savedIntroductions.find(item => item.id === id);
-            setIntroductionTitle(intro.title);
+            const introduction = savedIntroductions.find(item => item.id === id);
+            setIntroductionTitle(introduction.title);
         } else if (type === 'CourseType') {
             const courseType = savedCourseTypes.find(item => item.id === id);
             setCourseTypeTitle(courseType.courseTypeTitle);
@@ -239,168 +257,176 @@ const Courses = () => {
         <div className='container mt-5'>
             {loading ? <Loader loadingMessage="Loading..." /> : (
                 <>
-                <div className='d-flex flex-column gap-4'>
+                    <div className='d-flex flex-column gap-4'>
 
-                
-                    <Panel header="Add introduction" toggleable>
-                        <form onSubmit={handleSubmitIntroduction}>
-                            <div className="mb-3">
-                                <label htmlFor="title" className="form-label">Introduction</label>
-                                <div className="row">
-                                    <div className="col-md-9 mb-3 mb-md-0">
-                                        <textarea
-                                            id="title"
-                                            className="form-control"
-                                            value={introductionTitle}
-                                            onChange={handleInputChange(setIntroductionTitle)}
-                                        />
-                                    </div>
-                                    <div className="col-md-3 d-flex align-items-center">
-                                        <input
-                                            type="file"
-                                            id="pdf"
-                                            className="form-control"
-                                            accept="application/pdf"
-                                            onChange={handleFileChange('introductionTitle')}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="text-center">
-                                <button type="submit" className="btn btn-primary">{editMode && editType === 'Introduction' ? 'Update Introduction' : 'Save Introduction'}</button>
-                            </div>
-                        </form>
-                    </Panel>
-
-                    <Panel header="Add types of poem" toggleable>
-                        <form onSubmit={handleSubmitCourseType}>
-                            <div className="mb-3">
-                                <label htmlFor="title" className="form-label">Title</label>
-                                <div className="row">
-                                    <div className="col-md-9 mb-3 mb-md-0">
-                                        <input
-                                            type="text"
-                                            id="courseTypeTitle"
-                                            className="form-control"
-                                            value={courseTypeTitle}
-                                            onChange={handleInputChange(setCourseTypeTitle)}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="col-md-3 d-flex align-items-center">
-                                        <input
-                                            type="file"
-                                            id="pdf"
-                                            className="form-control"
-                                            accept="application/pdf"
-                                            onChange={handleFileChange('courseTypeTitle')}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            {[
-                                { label: 'Introduction', state: courseTypeIntroduction, setState: setCourseTypeIntroduction, fileKey: 'courseTypeIntroduction' },
-                                { label: 'Structure', state: courseTypeStructure, setState: setCourseTypeStructure, fileKey: 'courseTypeStructure' },
-                                { label: 'Literature', state: courseTypeLiterature, setState: setCourseTypeLiterature, fileKey: 'courseTypeLiterature' },
-                                { label: 'Methodology', state: courseTypeMethodology, setState: setCourseTypeMethodology, fileKey: 'courseTypeMethodology' },
-                                { label: 'Evaluation', state: courseTypeEvaluation, setState: setCourseTypeEvaluation, fileKey: 'courseTypeEvaluation' },
-                                { label: 'Conclusion', state: courseTypeConclusion, setState: setCourseTypeConclusion, fileKey: 'courseTypeConclusion' },
-                            ].map(({ label, state, setState, fileKey }) => (
-                                <div className="mb-3" key={fileKey}>
-                                    <label htmlFor={fileKey} className="form-label">{label}</label>
-                                    <div className="row">
-                                        <div className="col-md-9 mb-3 mb-md-0">
-                                            <textarea
-                                                id={fileKey}
-                                                className="form-control"
-                                                value={state}
-                                                onChange={handleInputChange(setState)}
-                                            />
-                                        </div>
-                                        <div className="col-md-3 d-flex align-items-center">
-                                            <input
-                                                type="file"
-                                                id={`${fileKey}Pdf`}
-                                                className="form-control"
-                                                accept="application/pdf"
-                                                onChange={handleFileChange(fileKey)}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                            <div className="text-center">
-                                <button type="submit" className="btn btn-primary">{editMode && editType === 'CourseType' ? 'Update type' : 'Save type'}</button>
-                            </div>
-                        </form>
-                    </Panel>
-
-                    {savedIntroductions.length > 0 && (
-                        <Panel header="Introductions" toggleable>
-                            {savedIntroductions.map((introduction, index) => (
-                                <div className="card shadow-sm p-3 m-3 d-flex gap-2">
-                                    <div className='d-flex justify-content-between align-items-center'>
-                                        <div>
-                                            <div className='ellipsis'>{index + 1}. {introduction.title}</div>
-                                        </div>
-                                        <div className='d-flex gap-2'>
-                                            <a href={introduction.pdfUrl} target="_blank" rel="noopener noreferrer">
-                                                <Button icon="pi pi-eye" className="p-button-rounded p-button-info p-button-outlined" />
-                                            </a>
-                                            <Button icon="pi pi-pencil" className="p-button-rounded p-button-info p-button-outlined" onClick={() => handleEdit(introduction.id, 'Introduction')} />
-                                            <Button icon="pi pi-trash" className="p-button-rounded p-button-danger p-button-outlined" onClick={() => handleDelete(introduction.id, [introduction.pdfUrl])} />
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </Panel>
-                    )}
-
-                    {savedCourseTypes.length > 0 && (
-                        <Panel header="Types" toggleable>
-                            {savedCourseTypes.map((courseType, index) => (
-                                <div className="card shadow-sm p-3 m-3 d-flex gap-2" key={courseType.id}>
-                                    <div className='d-flex justify-content-between align-items-center'>
-                                        <div>
-                                            <strong>{index + 1}. {courseType.courseTypeTitle}</strong>
-                                        </div>
-                                        <div className='d-flex gap-2'>
-                                            <Button icon="pi pi-pencil" className="p-button-rounded p-button-info p-button-outlined" onClick={() => handleEdit(courseType.id, 'CourseType')} />
-                                            <Button icon="pi pi-trash" className="p-button-rounded p-button-danger p-button-outlined" onClick={() => handleDelete(courseType.id, [
-                                                courseType.courseTypeTitleUrl,
-                                                courseType.courseTypeIntroductionUrl,
-                                                courseType.courseTypeStructureUrl,
-                                                courseType.courseTypeLiteratureUrl,
-                                                courseType.courseTypeMethodologyUrl,
-                                                courseType.courseTypeEvaluationUrl,
-                                                courseType.courseTypeConclusionUrl
-                                            ])} />
-                                        </div>
-                                    </div>
-                                    <div className='d-flex gap-2 flex-column'>
-                                        {[
-                                            { label: courseType.courseTypeIntroduction, url: courseType.courseTypeIntroductionUrl },
-                                            { label: courseType.courseTypeStructure, url: courseType.courseTypeStructureUrl },
-                                            { label: courseType.courseTypeLiterature, url: courseType.courseTypeLiteratureUrl },
-                                            { label: courseType.courseTypeMethodology, url: courseType.courseTypeMethodologyUrl },
-                                            { label: courseType.courseTypeEvaluation, url: courseType.courseTypeEvaluationUrl },
-                                            { label: courseType.courseTypeConclusion, url: courseType.courseTypeConclusionUrl },
-                                        ].map(({ label, url }) => url && (
-                                            <div className='d-flex justify-content-between align-items-center' key={label}>
-                                                <div className='ellipsis'>{label}</div>
-                                                <div>
-                                                    <a href={url} target="_blank" rel="noopener noreferrer">
-                                                        <Button icon="pi pi-eye" className="p-button-rounded p-button-info p-button-outlined" />
-                                                    </a>
+                        <Panel header="Add course" toggleable>
+                            <div className='gap-2 d-flex flex-column'>
+                                <div className='gap-2 d-flex flex-column'>
+                                    <form onSubmit={handleSubmitIntroduction}>
+                                        <div className="mb-3">
+                                            <label htmlFor="introductionTitle" className="form-label">Introduction</label>
+                                            <div className="row">
+                                                <div className="col-md-9 mb-3 mb-md-0">
+                                                    <textarea
+                                                        id="introductionTitle"
+                                                        className="form-control"
+                                                        value={introductionTitle}
+                                                        onChange={handleInputChange(setIntroductionTitle)}
+                                                        disabled={savedIntroductions.length > 0 && !editMode}
+                                                    />
+                                                </div>
+                                                <div className="col-md-3 d-flex align-items-center">
+                                                    <input
+                                                        type="file"
+                                                        id="introductionPdf"
+                                                        className="form-control"
+                                                        accept="application/pdf"
+                                                        onChange={handleFileChange('introductionTitle')}
+                                                        disabled={savedIntroductions.length > 0 && !editMode}
+                                                    />
                                                 </div>
                                             </div>
-                                        ))}
-                                    </div>
+                                        </div>
+                                        <div className="text-center">
+                                            <button disabled={savedIntroductions.length > 0 && !editMode} type="submit" className="btn btn-primary">{editMode && editType === 'Introduction' ? 'Update Introduction' : 'Save Introduction'}</button>
+                                        </div>
+                                    </form>
+                                    {savedIntroductions.length > 0 && !editMode ? (
+                                        <div className="alert alert-info">
+                                            Only one introduction can be saved. You can edit or delete the existing introduction.
+                                        </div>
+                                    ) : null}
                                 </div>
-                            ))}
+                                <Divider />
+                                <form onSubmit={handleSubmitCourseType}>
+                                    <div className="mb-3">
+                                        <label htmlFor="title" className="form-label">Title</label>
+                                        <div className="row">
+                                            <div className="col-md-9 mb-3 mb-md-0">
+                                                <input
+                                                    type="text"
+                                                    id="courseTypeTitle"
+                                                    className="form-control"
+                                                    value={courseTypeTitle}
+                                                    onChange={handleInputChange(setCourseTypeTitle)}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className="col-md-3 d-flex align-items-center">
+                                                <input
+                                                    type="file"
+                                                    id="pdf"
+                                                    className="form-control"
+                                                    accept="application/pdf"
+                                                    onChange={handleFileChange('courseTypeTitle')}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {[
+                                        { label: 'Introduction', state: courseTypeIntroduction, setState: setCourseTypeIntroduction, fileKey: 'courseTypeIntroduction' },
+                                        { label: 'Structure', state: courseTypeStructure, setState: setCourseTypeStructure, fileKey: 'courseTypeStructure' },
+                                        { label: 'Literature', state: courseTypeLiterature, setState: setCourseTypeLiterature, fileKey: 'courseTypeLiterature' },
+                                        { label: 'Methodology', state: courseTypeMethodology, setState: setCourseTypeMethodology, fileKey: 'courseTypeMethodology' },
+                                        { label: 'Evaluation', state: courseTypeEvaluation, setState: setCourseTypeEvaluation, fileKey: 'courseTypeEvaluation' },
+                                        { label: 'Conclusion', state: courseTypeConclusion, setState: setCourseTypeConclusion, fileKey: 'courseTypeConclusion' },
+                                    ].map(({ label, state, setState, fileKey }) => (
+                                        <div className="mb-3" key={fileKey}>
+                                            <label htmlFor={fileKey} className="form-label">{label}</label>
+                                            <div className="row">
+                                                <div className="col-md-9 mb-3 mb-md-0">
+                                                    <textarea
+                                                        id={fileKey}
+                                                        className="form-control"
+                                                        value={state}
+                                                        onChange={handleInputChange(setState)}
+                                                    />
+                                                </div>
+                                                <div className="col-md-3 d-flex align-items-center">
+                                                    <input
+                                                        type="file"
+                                                        id={`${fileKey}Pdf`}
+                                                        className="form-control"
+                                                        accept="application/pdf"
+                                                        onChange={handleFileChange(fileKey)}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <div className="text-center">
+                                        <button type="submit" className="btn btn-primary">{editMode && editType === 'CourseType' ? 'Update type' : 'Save type'}</button>
+                                    </div>
+                                </form>
+                            </div>
                         </Panel>
-                    )}
-</div>
+
+                        {savedIntroductions.length > 0 && (
+                            <Panel header="Introductions" toggleable>
+                                {savedIntroductions.map((introduction, index) => (
+                                    <div className="card shadow-sm p-3 m-3 d-flex gap-2">
+                                        <div className='d-flex justify-content-between align-items-center'>
+                                            <div>
+                                                <div className='ellipsis'>{index + 1}. {introduction.title}</div>
+                                            </div>
+                                            <div className='d-flex gap-2'>
+                                                <a href={introduction.pdfUrl} target="_blank" rel="noopener noreferrer">
+                                                    <Button icon="pi pi-eye" className="p-button-rounded p-button-info p-button-outlined" />
+                                                </a>
+                                                <Button icon="pi pi-pencil" className="p-button-rounded p-button-info p-button-outlined" onClick={() => handleEdit(introduction.id, 'Introduction')} />
+                                                <Button icon="pi pi-trash" className="p-button-rounded p-button-danger p-button-outlined" onClick={() => handleDelete(introduction.id, [introduction.pdfUrl])} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </Panel>
+                        )}
+
+                        {savedCourseTypes.length > 0 && (
+                            <Panel header="Types" toggleable>
+                                {savedCourseTypes.map((courseType, index) => (
+                                    <div className="card shadow-sm p-3 m-3 d-flex gap-2" key={courseType.id}>
+                                        <div className='d-flex justify-content-between align-items-center'>
+                                            <div>
+                                                <strong>{index + 1}. {courseType.courseTypeTitle}</strong>
+                                            </div>
+                                            <div className='d-flex gap-2'>
+                                                <Button icon="pi pi-pencil" className="p-button-rounded p-button-info p-button-outlined" onClick={() => handleEdit(courseType.id, 'CourseType')} />
+                                                <Button icon="pi pi-trash" className="p-button-rounded p-button-danger p-button-outlined" onClick={() => handleDelete(courseType.id, [
+                                                    courseType.courseTypeTitleUrl,
+                                                    courseType.courseTypeIntroductionUrl,
+                                                    courseType.courseTypeStructureUrl,
+                                                    courseType.courseTypeLiteratureUrl,
+                                                    courseType.courseTypeMethodologyUrl,
+                                                    courseType.courseTypeEvaluationUrl,
+                                                    courseType.courseTypeConclusionUrl
+                                                ])} />
+                                            </div>
+                                        </div>
+                                        <div className='d-flex gap-2 flex-column'>
+                                            {[
+                                                { label: courseType.courseTypeIntroduction, url: courseType.courseTypeIntroductionUrl },
+                                                { label: courseType.courseTypeStructure, url: courseType.courseTypeStructureUrl },
+                                                { label: courseType.courseTypeLiterature, url: courseType.courseTypeLiteratureUrl },
+                                                { label: courseType.courseTypeMethodology, url: courseType.courseTypeMethodologyUrl },
+                                                { label: courseType.courseTypeEvaluation, url: courseType.courseTypeEvaluationUrl },
+                                                { label: courseType.courseTypeConclusion, url: courseType.courseTypeConclusionUrl },
+                                            ].map(({ label, url }) => url && (
+                                                <div className='d-flex justify-content-between align-items-center' key={label}>
+                                                    <div className='ellipsis'>{label}</div>
+                                                    <div>
+                                                        <a href={url} target="_blank" rel="noopener noreferrer">
+                                                            <Button icon="pi pi-eye" className="p-button-rounded p-button-info p-button-outlined" />
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </Panel>
+                        )}
+                    </div>
                 </>
             )}
         </div>
