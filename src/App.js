@@ -12,7 +12,7 @@ import DetailPoem from './Screens/DetailPoem';
 import Courses from './Screens/Courses';
 import Users from './Screens/Users';
 import StoryAndNovels from './Screens/StoryAndNovels';
-
+import StoryAndNovelList from './Screens/StoryAndNovelList'
 function App() {
   return (
     <div style={{ paddingTop: '60px', paddingBottom: '60px' }}>
@@ -30,6 +30,7 @@ function App() {
           <Route path="/Courses" element={<Courses />} />
           <Route path="/Users" element={<Users />} />
           <Route path="/StoryAndNovels" element={<StoryAndNovels />} />
+          <Route path="/StoryAndNovelList/:type" element={<StoryAndNovelList />} />
         </Routes>
       </div>
     </div>

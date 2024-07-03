@@ -21,8 +21,6 @@ const DetailPoem = () => {
     const [newTitleValue, setNewTitleValue] = useState('');
     const [newPoemContent, setNewPoemContent] = useState('');
     const [newBackgroundOfPoem, setNewBackgroundOfPoem] = useState('');
-
-    console.log(JSON.stringify(poem))
     useEffect(() => {
         const fetchLikesAndComments = async () => {
             setIsLoading(true);

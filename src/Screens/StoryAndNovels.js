@@ -1,27 +1,21 @@
-import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useMemo, useCallback } from 'react';
 import JoditEditor from 'jodit-react';
 import { Panel } from 'primereact/panel';
 import { Button } from 'primereact/button';
-import { Card } from 'primereact/card';
-import { Dialog } from 'primereact/dialog';
-import { Toast } from 'primereact/toast';
-import { ref, push, set, update, remove, db, get, child } from '../Config/firebase'; // Adjust the path to your firebaseConfig file
+import { ref, push, set, db } from '../Config/firebase'; // Adjust the path to your firebaseConfig file
 import Loader from '../Components/Loader'; // Assuming Loader component is in the same directory
-import 'primereact/resources/themes/saga-blue/theme.css'; // Theme CSS
-import 'primereact/resources/primereact.min.css'; // PrimeReact CSS
-import 'primeicons/primeicons.css'; // PrimeIcons CSS
+import { useNavigate } from 'react-router-dom'; // Import useNavigate from react-router-dom for navigation
 import '../css/loader.css'; // Adjust path to your loader CSS
+import { Toast } from 'primereact/toast';
 
 const StoryAndNovels = () => {
     const editor = useRef(null);
+    const [title, setTitle] = useState(''); // State for title
     const [content, setContent] = useState('');
-    const [stories, setStories] = useState([]);
-    const [editDialogVisible, setEditDialogVisible] = useState(false);
-    const [editContent, setEditContent] = useState('');
-    const [editStoryId, setEditStoryId] = useState(null);
     const [selectedType, setSelectedType] = useState('story'); // 'story' or 'novel'
     const [loading, setLoading] = useState(false); // Loading state
     const toast = useRef(null);
+    const navigate = useNavigate();
 
     const config = useMemo(() => ({
         readonly: false,
@@ -43,19 +37,23 @@ const StoryAndNovels = () => {
     }, []);
 
     const saveContentToDatabase = async () => {
+        if (!title || title.trim() === '') {
+            toast.current.show({ severity: 'warn', summary: 'Warning', detail: 'Title is empty.', life: 3000 });
+            return;
+        }
         if (!content || content.trim() === '') {
             toast.current.show({ severity: 'warn', summary: 'Warning', detail: 'Content is empty.', life: 3000 });
             return;
         }
-        const storiesRef = ref(db, 'storyAndNovels');
+        const collectionName = selectedType === 'story' ? 'stories' : 'novels'; // Determine collection based on selectedType
+        const storiesRef = ref(db, collectionName); // Reference the correct collection
         const newStoryRef = push(storiesRef);
         try {
             setLoading(true); // Set loading to true before saving
-            await set(newStoryRef, { content, type: selectedType }); // Save type along with content
+            await set(newStoryRef, { title, content }); // Save title and content
             toast.current.show({ severity: 'success', summary: 'Success', detail: 'Content saved successfully', life: 3000 });
             setContent('');
-            setSelectedType('story');
-            fetchStories();
+            setTitle('');
         } catch (error) {
             console.error('Error saving content to the database', error);
         } finally {
@@ -63,121 +61,32 @@ const StoryAndNovels = () => {
         }
     };
 
-    const fetchStories = useCallback(async () => {
-        setLoading(true); // Set loading to true before fetching
-        const dbRef = ref(db);
-        try {
-            const snapshot = await get(child(dbRef, 'storyAndNovels'));
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                const storiesList = Object.keys(data).map(key => ({
-                    id: key,
-                    content: data[key].content,
-                    type: data[key].type
-                }));
-                setStories(storiesList);
-            } else {
-                setStories([]);
-                console.log('No stories available');
-            }
-        } catch (error) {
-            console.error('Error fetching stories from the database', error);
-        } finally {
-            setLoading(false); // Set loading to false after fetching
-        }
-    }, []);
-
-    const handleEdit = (story) => {
-        setEditContent(story.content);
-        setEditStoryId(story.id);
-        setEditDialogVisible(true);
-    };
-
-    const handleUpdate = async () => {
-        if (!editContent || editContent.trim() === '') {
-            toast.current.show({ severity: 'warn', summary: 'Warning', detail: 'Content is empty.', life: 3000 });
-            return;
-        }
-        const storyRef = ref(db, `storyAndNovels/${editStoryId}`);
-        try {
-            setLoading(true); // Set loading to true before updating
-            await update(storyRef, { content: editContent });
-            toast.current.show({ severity: 'success', summary: 'Success', detail: 'Content updated successfully', life: 3000 });
-            setEditDialogVisible(false);
-            fetchStories(); // Fetch stories after updating content
-        } catch (error) {
-            console.error('Error updating content in the database', error);
-        } finally {
-            setLoading(false); // Set loading to false after updating
-        }
-    };
-
-    const handleDelete = async (storyId) => {
-        const storyRef = ref(db, `storyAndNovels/${storyId}`);
-        try {
-            setLoading(true); // Set loading to true before deleting
-            await remove(storyRef);
-            toast.current.show({ severity: 'success', summary: 'Success', detail: 'Content deleted successfully', life: 3000 });
-            fetchStories(); // Fetch stories after deleting content
-        } catch (error) {
-            console.error('Error deleting content from the database', error);
-        } finally {
-            setLoading(false); // Set loading to false after deleting
-        }
-    };
-
-    useEffect(() => {
-        fetchStories();
-    }, [fetchStories]);
-
     const handleRadioChange = (event) => {
         setSelectedType(event.target.value);
     };
 
-    const filteredStories = stories.filter(story => story.type === 'story');
-    const filteredNovels = stories.filter(story => story.type === 'novel');
+    
 
-    const renderStoriesPanel = () => (
-        <Panel header="Stories" toggleable>
-            {filteredStories.length === 0 ? (
-                <p>No stories available.</p>
-            ) : (
-                filteredStories.map(story => (
-                    <div key={story.id} className="mb-2 card shadow-sm p-3">
-                        <div dangerouslySetInnerHTML={{ __html: story.content }} />
-                        <div className="d-flex justify-content-end mt-2">
-                            <Button icon="pi pi-pencil" className="p-button-warning mr-2" onClick={() => handleEdit(story)} />
-                            <Button icon="pi pi-trash" className="p-button-danger" onClick={() => handleDelete(story.id)} />
-                        </div>
-                    </div>
-                ))
-            )}
-        </Panel>
-    );
+      
+    const viewStories = (type) => {
+        navigate(`/StoryAndNovelList/${type}`, { state: { type: 'stories' } }); // Navigate to story list page with parameter
+    };
 
-    const renderNovelsPanel = () => (
-        <Panel header="Novels" toggleable>
-            {filteredNovels.length === 0 ? (
-                <p>No novels available.</p>
-            ) : (
-                filteredNovels.map(story => (
-                    <div key={story.id} className="mb-2 card shadow-sm p-3">
-                        <div dangerouslySetInnerHTML={{ __html: story.content }} />
-                        <div className="d-flex justify-content-end mt-2">
-                            <Button icon="pi pi-pencil" className="p-button-warning mr-2" onClick={() => handleEdit(story)} />
-                            <Button icon="pi pi-trash" className="p-button-danger" onClick={() => handleDelete(story.id)} />
-                        </div>
-                    </div>
-                ))
-            )}
-        </Panel>
-    );
+    const viewNovels = (type) => {
+        navigate(`/StoryAndNovelList/${type}`, { state: { type: 'novels' } }); // Navigate to novel list page with parameter
+    };
 
     return (
         <div className='container gap-3 d-flex flex-column'>
             <Toast ref={toast} />
             {loading && <Loader loadingMessage="Loading..." />}
             <Panel header="" toggleable>
+                <div className="p-fluid">
+                    <div className="p-field">
+                        <label htmlFor="title">Title</label>
+                        <input id="title" type="text" className="p-inputtext" value={title} onChange={(e) => setTitle(e.target.value)} />
+                    </div>
+                </div>
                 <JoditEditor
                     ref={editor}
                     value={content}
@@ -199,25 +108,13 @@ const StoryAndNovels = () => {
                 <div className='text-center'>
                     <Button label="Save" icon="pi pi-save" className="p-button-success mt-2" onClick={saveContentToDatabase} />
                 </div>
+                <div className='text-center mt-2'>
+                    <Button label="View Stories" icon="pi pi-list" className="p-button-text" onClick={() => viewStories('stories')} />
+                    <Button label="View Novels" icon="pi pi-list" className="p-button-text ml-2" onClick={() => viewNovels('novels')} />
+                </div>
             </Panel>
-            {content}
-            {renderStoriesPanel()}
-            {renderNovelsPanel()}
-            <Dialog header="Edit Story" visible={editDialogVisible} style={{ width: '50vw' }} onHide={() => setEditDialogVisible(false)}>
-                <JoditEditor
-                    ref={editor}
-                    value={editContent}
-                    config={config}
-                    tabIndex={1}
-                    onBlur={newContent => setEditContent(newContent)}
-                    onChange={newContent => setEditContent(newContent)}
-                />
-                <Button label="Update" icon="pi pi-check" className="p-button-success mt-2" onClick={handleUpdate} />
-            </Dialog>
         </div>
     );
 }
 
 export default StoryAndNovels;
-
-

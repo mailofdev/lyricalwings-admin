@@ -53,19 +53,6 @@ const PoemList = () => {
         }
     };
 
-    const handleDelete = async (poemId) => {
-        try {
-            setLoading(true);
-            await remove(ref(db, `AllPoems/${poemId}`));
-            const updatedPoems = poems.filter(poem => poem.id !== poemId);
-            setPoems(updatedPoems);
-            setFilteredPoems(updatedPoems);
-            setLoading(false);
-        } catch (error) {
-            console.error('Error deleting poem:', error);
-            setLoading(false);
-        }
-    };
 
     const handleEdit = (poem) => {
         navigate(`/DetailPoem`, { state: { poem } });
@@ -101,8 +88,6 @@ const PoemList = () => {
                                         <h5 className="card-title">{poem.titleValue}</h5>
                                         <div className="card-text home-poem-content" dangerouslySetInnerHTML={{ __html: poem.poemContent }}></div>
                                         <div className="d-flex justify-content-between mt-3">
-                                            {/* <Button variant="primary" onClick={() => handleEdit(poem)}>Edit</Button> */}
-                                            {/* <Button variant="danger" onClick={() => handleDelete(poem.id)}>Delete</Button> */}
                                         </div>
                                     </div>
                                 </div>
