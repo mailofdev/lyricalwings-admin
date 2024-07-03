@@ -78,7 +78,7 @@ function Dashboard() {
 
         if (storyAndNovelsData) {
           Object.values(storyAndNovelsData).forEach(item => {
-            if (item.type === 'story') {
+            if (item.type === 'stories') {
               storyCount++;
             } else if (item.type === 'novel') {
               novelCount++;

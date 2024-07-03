@@ -12,7 +12,7 @@ const StoryAndNovels = () => {
     const editor = useRef(null);
     const [title, setTitle] = useState(''); // State for title
     const [content, setContent] = useState('');
-    const [selectedType, setSelectedType] = useState('story'); // 'story' or 'novel'
+    const [selectedType, setSelectedType] = useState('stories'); // 'stories' or 'novel'
     const [loading, setLoading] = useState(false); // Loading state
     const toast = useRef(null);
     const navigate = useNavigate();
@@ -25,7 +25,7 @@ const StoryAndNovels = () => {
             insertImageAsBase64URI: true
         },
         disablePlugins: "video,about,ai-assistant,clean-html,delete-command,iframe,mobile,powered-by-jodit,source,speech-recognize,xpath,wrap-nodes,spellcheck,file",
-        buttons: "bold,italic,underline,strikethrough,eraser,ul,ol,font,fontsize,paragraph,lineHeight,image,preview",
+        buttons: "bold,italic,underline,strikethrough,eraser,ul,ol,font,fontsize,paragraph,lineHeight,image,preview, align",
         "askBeforePasteHTML": false,
         "askBeforePasteFromWord": false,
         "defaultActionOnPaste": "insert_only_text",
@@ -45,7 +45,7 @@ const StoryAndNovels = () => {
             toast.current.show({ severity: 'warn', summary: 'Warning', detail: 'Content is empty.', life: 3000 });
             return;
         }
-        const collectionName = selectedType === 'story' ? 'stories' : 'novels'; // Determine collection based on selectedType
+        const collectionName = selectedType === 'stories' ? 'stories' : 'novels'; // Determine collection based on selectedType
         const storiesRef = ref(db, collectionName); // Reference the correct collection
         const newStoryRef = push(storiesRef);
         try {
@@ -81,12 +81,13 @@ const StoryAndNovels = () => {
             <Toast ref={toast} />
             {loading && <Loader loadingMessage="Loading..." />}
             <Panel header="" toggleable>
+                <div className='d-flex gap-3 flex-column'>
                 <div className="p-fluid">
                     <div className="p-field">
-                        <label htmlFor="title">Title</label>
-                        <input id="title" type="text" className="p-inputtext" value={title} onChange={(e) => setTitle(e.target.value)} />
+                        <input id="title" type="text" className="p-inputtext" placeholder='title..' value={title} onChange={(e) => setTitle(e.target.value)} />
                     </div>
                 </div>
+                <div>
                 <JoditEditor
                     ref={editor}
                     value={content}
@@ -95,9 +96,10 @@ const StoryAndNovels = () => {
                     onBlur={handleBlur}
                     onChange={handleBlur}
                 />
-                <div className='text-center d-flex justify-content-center gap-4 my-2'>
+                </div>
+                <div className='text-center d-flex justify-content-center gap-4'>
                     <div className='d-flex gap-1'>
-                        <input type="radio" id="story" name="storyType" value="story" checked={selectedType === 'story'} onChange={handleRadioChange} />
+                        <input type="radio" id="story" name="storyType" value="story" checked={selectedType === 'stories'} onChange={handleRadioChange} />
                         <label htmlFor="story">Story</label>
                     </div>
                     <div className='d-flex gap-1'>
@@ -108,9 +110,10 @@ const StoryAndNovels = () => {
                 <div className='text-center'>
                     <Button label="Save" icon="pi pi-save" className="p-button-success mt-2" onClick={saveContentToDatabase} />
                 </div>
-                <div className='text-center mt-2'>
-                    <Button label="View Stories" icon="pi pi-list" className="p-button-text" onClick={() => viewStories('stories')} />
-                    <Button label="View Novels" icon="pi pi-list" className="p-button-text ml-2" onClick={() => viewNovels('novels')} />
+                <div className='justify-content-center gap-2 d-flex'>
+                    <Button label="View Stories" className="p-button-success" onClick={() => viewStories('stories')} />
+                    <Button label="View Novels"  className="p-button-success" onClick={() => viewNovels('novels')} />
+                </div>
                 </div>
             </Panel>
         </div>
