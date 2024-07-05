@@ -38,7 +38,7 @@ const Courses = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const introRef = ref(db, 'Courses/Introductions');
+                const introRef = ref(db, 'Courses/Introduction');
                 const introSnapshot = await get(introRef);
                 if (introSnapshot.exists()) {
                     const data = introSnapshot.val();
@@ -98,11 +98,11 @@ const Courses = () => {
                 };
 
                 if (editMode && editType === 'Introduction') {
-                    const introRef = ref(db, `Courses/Introductions/${editId}`);
+                    const introRef = ref(db, `Courses/Introduction/${editId}`);
                     await update(introRef, introductionData);
                     setSavedIntroductions(prevData => prevData.map(item => item.id === editId ? { id: editId, ...introductionData } : item));
                 } else {
-                    const newIntroRef = push(ref(db, 'Courses/Introductions'));
+                    const newIntroRef = push(ref(db, 'Courses/Introduction'));
                     await set(newIntroRef, introductionData);
                     setSavedIntroductions(prevData => [...prevData, { id: newIntroRef.key, ...introductionData }]);
                 }
