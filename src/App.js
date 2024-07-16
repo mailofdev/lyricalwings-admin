@@ -14,6 +14,7 @@ import Users from './Screens/Users';
 import StoryAndNovels from './Screens/StoryAndNovels';
 import StoryAndNovelList from './Screens/StoryAndNovelList'
 import DetailStoryAndNovels from './Screens/DetailStoryAndNovels';
+import UI from './Screens/UI';
 function App() {
   return (
     <div style={{ paddingTop: '60px', paddingBottom: '60px' }}>
@@ -33,6 +34,7 @@ function App() {
           <Route path="/StoryAndNovels" element={<StoryAndNovels />} />
           <Route path="/StoryAndNovelList/:type" element={<StoryAndNovelList />} />
           <Route path="/DetailStoryAndNovels/:item" element={<DetailStoryAndNovels />} />
+          <Route path="/UI" element={<UI />} />
         </Routes>
       </div>
     </div>

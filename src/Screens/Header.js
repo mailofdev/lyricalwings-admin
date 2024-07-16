@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Menu } from 'primereact/menu';
 import { GiHamburgerMenu } from "react-icons/gi";
 import { useNavigate } from 'react-router-dom';
-import { auth, signInWithEmailAndPassword, signOut } from '../Config/firebase';
+import { auth, signOut } from '../Config/firebase';
 import Loader from "../Components/Loader";
 import "../css/customSidebar.css";
 import '../App.css';
@@ -48,6 +48,11 @@ function Header() {
       icon: 'pi pi-info-circle',
       url: '/Users',
     },
+    {
+      label: 'UI customization',
+      icon: 'pi pi-info-circle',
+      url: '/UI',
+    },
   ];
 
   const handleSidebarToggle = () => {
@@ -66,14 +71,14 @@ function Header() {
     }
   };
 
-  const handleLogin = async (email, password) => {
-    try {
-      await auth.signOut(auth, email, password);
-      navigate('/Dashboard');
-    } catch (error) {
-      console.error("Error logging in:", error);
-    }
-  };
+  // const handleLogin = async (email, password) => {
+  //   try {
+  //     await auth.signOut(auth, email, password);
+  //     navigate('/Dashboard');
+  //   } catch (error) {
+  //     console.error("Error logging in:", error);
+  //   }
+  // };
 
   const menuItems = [
     {
