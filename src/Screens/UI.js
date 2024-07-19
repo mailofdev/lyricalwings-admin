@@ -19,28 +19,25 @@ const UI = () => {
     const fileInputRef = useRef(null);
     const [editId, setEditId] = useState(null); // Track the ID of the theme being edited
     const [loadingMessage, setLoadingMessage] = useState('');
-    const [appliedThemeId, setAppliedThemeId] = useState(null); // State to track applied theme ID
-
-
+    const [appliedTheme, setAppliedTheme] = useState(null); // State to track applied theme object
 
     useEffect(() => {
         fetchThemes();
-        const fetchAppliedThemeId = async () => {
+        const fetchAppliedTheme = async () => {
             try {
-                const snapshot = await get(ref(db, 'AppliedThemeId'));
+                const snapshot = await get(ref(db, 'AppliedTheme'));
                 if (snapshot.exists()) {
-                    setAppliedThemeId(snapshot.val());
+                    setAppliedTheme(snapshot.val());
                 } else {
-                    setAppliedThemeId(null); 
+                    setAppliedTheme(null);
                 }
             } catch (error) {
-                console.error('Error fetching applied theme ID:', error);
+                console.error('Error fetching applied theme:', error);
             }
         };
 
-        fetchAppliedThemeId();
+        fetchAppliedTheme();
     }, []);
-
 
     const fetchThemes = async () => {
         try {
@@ -86,7 +83,7 @@ const UI = () => {
         }
 
         try {
-            setLoadingMessage("Saving themes...");
+            setLoadingMessage("Saving theme...");
             setLoading(true); // Start loading indicator
             const ThemesRef = ref(db, 'Themes');
             let newId;
@@ -162,13 +159,14 @@ const UI = () => {
 
     const applyThemeToUserWebsite = async (theme) => {
         try {
+            setLoadingMessage("Applying theme...");
             setLoading(true); // Start loading indicator
 
-            // Update applied theme ID in Firebase
-            await set(ref(db, 'AppliedThemeId'), theme);
+            // Update applied theme object in Firebase
+            await set(ref(db, 'AppliedTheme'), theme);
 
-            // Update state with applied theme ID
-            setAppliedThemeId(theme);
+            // Update state with applied theme object
+            setAppliedTheme(theme);
 
             setLoadingMessage("Theme applied successfully!");
         } catch (error) {
@@ -178,7 +176,6 @@ const UI = () => {
             setLoading(false); // Stop loading indicator
         }
     };
-
 
     return (
         <div className="container gap-4 d-flex flex-column">
@@ -198,50 +195,86 @@ const UI = () => {
 
                     <div>
                         <div>Theme background color</div>
-                        <InputText
-                            className="form-control"
-                            type="color"
-                            id="themeBGColor"
-                            value={themeBGColor}
-                            onChange={(e) => setThemeBGColor(e.target.value)}
-                            required
-                        />
+                        <div className="d-flex gap-2">
+                            <InputText
+                                className="form-control"
+                                type="color"
+                                id="themeBGColor"
+                                value={themeBGColor}
+                                onChange={(e) => setThemeBGColor(e.target.value)}
+                                required
+                            />
+                            <InputText
+                                className="form-control"
+                                type="text"
+                                value={themeBGColor}
+                                onChange={(e) => setThemeBGColor(e.target.value)}
+                                required
+                            />
+                        </div>
                     </div>
 
                     <div>
                         <div>Theme font color</div>
-                        <InputText
-                            className="form-control"
-                            type="color"
-                            id="themeFontColor"
-                            value={themeFontColor}
-                            onChange={(e) => setThemeFontColor(e.target.value)}
-                            required
-                        />
+                        <div className="d-flex gap-2">
+                            <InputText
+                                className="form-control"
+                                type="color"
+                                id="themeFontColor"
+                                value={themeFontColor}
+                                onChange={(e) => setThemeFontColor(e.target.value)}
+                                required
+                            />
+                            <InputText
+                                className="form-control"
+                                type="text"
+                                value={themeFontColor}
+                                onChange={(e) => setThemeFontColor(e.target.value)}
+                                required
+                            />
+                        </div>
                     </div>
 
                     <div>
                         <div>Theme button color</div>
-                        <InputText
-                            className="form-control"
-                            type="color"
-                            id="themeButtonColor"
-                            value={themeButtonColor}
-                            onChange={(e) => setThemeButtonColor(e.target.value)}
-                            required
-                        />
+                        <div className="d-flex gap-2">
+                            <InputText
+                                className="form-control"
+                                type="color"
+                                id="themeButtonColor"
+                                value={themeButtonColor}
+                                onChange={(e) => setThemeButtonColor(e.target.value)}
+                                required
+                            />
+                            <InputText
+                                className="form-control"
+                                type="text"
+                                value={themeButtonColor}
+                                onChange={(e) => setThemeButtonColor(e.target.value)}
+                                required
+                            />
+                        </div>
                     </div>
 
                     <div>
                         <div>Theme button text color</div>
-                        <InputText
-                            className="form-control"
-                            type="color"
-                            id="themeButtonTextColor"
-                            value={themeButtonTextColor}
-                            onChange={(e) => setThemeButtonTextColor(e.target.value)}
-                            required
-                        />
+                        <div className="d-flex gap-2">
+                            <InputText
+                                className="form-control"
+                                type="color"
+                                id="themeButtonTextColor"
+                                value={themeButtonTextColor}
+                                onChange={(e) => setThemeButtonTextColor(e.target.value)}
+                                required
+                            />
+                            <InputText
+                                className="form-control"
+                                type="text"
+                                value={themeButtonTextColor}
+                                onChange={(e) => setThemeButtonTextColor(e.target.value)}
+                                required
+                            />
+                        </div>
                     </div>
 
                     <div>
@@ -277,13 +310,10 @@ const UI = () => {
                                 variant="outline-info"
                                 onClick={() => applyThemeToUserWebsite(theme)}
                                 disabled={loading}>
-                                {appliedThemeId.id === theme.id ? 'Applied' : 'Apply Theme'}
+                                {appliedTheme && appliedTheme.id === theme.id ? 'Applied' : 'Apply Theme'}
                             </Button>
-
                         </div>
                     </div>
-
-
                 ))}
             </div>
         </div>
