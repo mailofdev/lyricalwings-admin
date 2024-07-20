@@ -37,7 +37,7 @@ const PoemList = () => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
                 let poemsArray = Object.values(data);
-                
+
                 if (emotion !== 'showall') {
                     poemsArray = poemsArray.filter(poem => poem.emotion === emotion);
                 }
@@ -83,12 +83,13 @@ const PoemList = () => {
                     <div className="row">
                         {filteredPoems.slice(first, first + rows).map((poem) => (
                             <div key={poem.id} className="col-md-4 col-lg-4 mb-3">
-                                <div className="custom-card h-100">
+                                <div className="custom-card rounded h-100" style={{
+                                    backgroundImage: poem.fileUrl ? `url(${poem.fileUrl})` : 'none',
+                                    backgroundColor: poem.fileUrl ? 'transparent' : poem.cardColor
+                                }}>
                                     <div className="card-body" onClick={() => handleEdit(poem)}>
-                                        <h5 className="card-title">{poem.titleValue}</h5>
-                                        <div className="card-text home-poem-content" dangerouslySetInnerHTML={{ __html: poem.poemContent }}></div>
-                                        <div className="d-flex justify-content-between mt-3">
-                                        </div>
+                                        <h5 style={{ color: poem.fontColor }} className="card-title">{poem.titleValue}</h5>
+                                        <div style={{ color: poem.fontColor }} className="card-text home-poem-content" dangerouslySetInnerHTML={{ __html: poem.poemContent }}></div>
                                     </div>
                                 </div>
                             </div>

@@ -98,7 +98,7 @@ const PoemForm = () => {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    if (file && file.type === 'image/jpeg' && file.size >= 20000 && file.size <= 500000) {
+    if (file && file.type === 'image/jpeg' && file.size >= 0 && file.size <= 1000000) {
       setSelectedFile(file);
     } else {
       alert('Please select a JPG image between 20KB and 500KB.');
