@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { db, storage, ref as storageRef, uploadBytes, getDownloadURL, get, ref, push, set, remove } from '../config/firebase';
+import { db, storage, ref as storageRef, uploadBytes, getDownloadURL, get, ref, push, set, remove } from '../Config/firebase';
 
 // Async thunks for poems
 export const fetchPoems = createAsyncThunk('content/fetchPoems', async () => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { db, ref, update, remove } from '../config/firebase';
+import { db, ref, update, remove } from '../Config/firebase';
 import 'react-quill/dist/quill.snow.css';
 import { Button } from 'primereact/button';
 import Loader from '../Components/Loader';

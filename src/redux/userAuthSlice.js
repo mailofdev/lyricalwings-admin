@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { ref, get, remove, set } from 'firebase/database';
 import { getAuth, deleteUser as firebaseDeleteUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
-import { db, auth } from '../config/firebase';
+import { db, auth } from '../Config/firebase';
 
 // Helper function to map Firebase User object to plain object
 const mapFirebaseUserToPlainObject = (firebaseUser) => {

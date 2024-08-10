@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../config/firebase';
+import { db } from '../Config/firebase';
 import { get, ref, remove } from "firebase/database";
 import Button from 'react-bootstrap/Button';
 import Loader from '../Components/Loader';

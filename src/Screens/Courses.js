@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ref, set, get, remove, update, push } from "firebase/database";
-import { storage, db } from '../config/firebase';
+import { storage, db } from '../Config/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import Loader from '../Components/Loader';
 import { Panel } from 'primereact/panel';

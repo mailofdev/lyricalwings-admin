@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Button, Form, Container, Row, Col } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { auth } from '../config/firebase';
+import { auth } from '../Config/firebase';
 import Loader from '../Components/Loader';
 import "../css/loader.css";
 import { useNavigate } from 'react-router-dom';

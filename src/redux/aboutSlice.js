@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { db, ref, set, get } from '../config/firebase';
+import { db, ref, set, get } from '../Config/firebase';
 
 export const fetchAboutData = createAsyncThunk(
   'about/fetchData',
