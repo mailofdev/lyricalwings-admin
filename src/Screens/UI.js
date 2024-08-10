@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { db, storage } from '../Config/firebase';
+import { db, storage } from '../config/firebase';
 import { get, ref, push, set, remove } from 'firebase/database';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'react-bootstrap';

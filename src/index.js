@@ -3,15 +3,20 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-// index.js or App.js
-import 'primereact/resources/themes/saga-blue/theme.css'; // Choose your theme
-import 'primereact/resources/primereact.min.css'; // Core PrimeReact CSS
-import 'primeicons/primeicons.css'; // PrimeIcons CSS
+import 'primereact/resources/themes/saga-blue/theme.css';
+import 'primereact/resources/primereact.min.css'; 
+import 'primeicons/primeicons.css'; 
+import { Provider } from 'react-redux';
+import store from './redux/store';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
+      <Provider store={store}>
     <App />
+    </Provider>
   </React.StrictMode>
 );
 

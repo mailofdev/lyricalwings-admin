@@ -1,10 +1,153 @@
 
+.navbar{
+  background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%) !important;
+}
+.nav-link-custom {
+  position: relative;
+  color: lightgray;
+  text-decoration: none;
+}
+
+
+.nav-link-custom::after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background-color: black;
+  bottom: 0;
+  left: 0;
+  transform: scaleX(0);
+  transition: transform 0.4s ease;
+}
+
+.nav-link-custom:hover::after,
+.nav-link-custom.active::after {
+  transform: scaleX(1);
+}
+
+
+/* < - - - - - - - - - -  //#region common */
+
+.modal-gradient {
+  background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%) !important;
+}
+
+.modal-body-gradient {
+  background: linear-gradient(135deg, #80deea 0%, #b9fbc0 100%) !important;
+}
+
+.form-gradient {
+  background: linear-gradient(135deg, #ffffff 0%, #e9edf3 100%) !important;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(90deg, rgb(78, 164, 235) 0%, rgba(2,136,209,1) 100%);
+}
+
+/* General Gradient for All Poems */
+.bg-gradient-all-poems {
+  background: linear-gradient(90deg, #f7fafc 0%, #e2e8f0 100%);
+  transition: background 0.3s ease-in;
+}
+
+/* Happy Emotion Gradient */
+.bg-gradient-happiness {
+  background: linear-gradient(90deg, #fbc2eb 0%, #a6c1ee 100%);
+  transition: background 0.3s ease-in;
+}
+
+/* Sad Emotion Gradient */
+.bg-gradient-sadness {
+  background: linear-gradient(90deg, #89f7fe 0%, #66a6ff 100%);
+  transition: background 0.3s ease-in;
+}
+
+/* Angry Emotion Gradient */
+.bg-gradient-anger {
+  background: linear-gradient(90deg, #ff758c 0%, #ff7eb3 100%);
+  transition: background 0.3s ease-in;
+}
+
+/* Disgust Emotion Gradient */
+.bg-gradient-disgust {
+  background: linear-gradient(90deg, #cfd9df 0%, #e2ebf0 100%);
+  transition: background 0.3s ease-in;
+}
+
+/* Fear Emotion Gradient */
+.bg-gradient-fear {
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transition: background 0.3s ease-in;
+}
+
+/* Surprise Emotion Gradient */
+.bg-gradient-surprise {
+  background: linear-gradient(90deg, #fbc7d4 0%, #9796f0 100%);
+  transition: background 0.3s ease-in;
+}
+
+/* Gradient for Show All (Story and Novel) */
+.bg-gradient-show-all {
+  background: linear-gradient(90deg, #ffecd2 0%, #fcb69f 100%);
+  transition: background 0.3s ease;
+}
+
+/* Gradient for Story */
+.bg-gradient-story {
+  background: linear-gradient(90deg, #89f7fe 0%, #66a6ff 100%);
+  transition: background 0.3s ease;
+}
+
+/* Gradient for Novel */
+.bg-gradient-novel {
+  background: linear-gradient(90deg, #fbc7d4 0%, #9796f0 100%);
+  transition: background 0.3s ease;
+}
+
+/* Hover Effects */
+.bg-gradient-all-poems:hover,
+.bg-gradient-happiness:hover,
+.bg-gradient-sadness:hover,
+.bg-gradient-anger:hover,
+.bg-gradient-disgust:hover,
+.bg-gradient-fear:hover,
+.bg-gradient-surprise:hover,
+.bg-gradient-show-all:hover, 
+.bg-gradient-story:hover,
+.bg-gradient-novel:hover {
+  background-position: right center;
+  filter: brightness(1.5);
+}
+
+
+
+
+.bg-none {
+  background: none !important;
+}
+
+.bg-transparent {
+  background: transparent !important;
+}
+.mt-40{
+  margin-top: 40px;
+}
+.pt-40{
+  padding-top: 40px;
+}
+/* < - - - - - - - - - -  //#region auth modal */
+
+
+
+/* < - - - - - - - - - -  //#region common */
+
 .alert {
   --bs-alert-padding-x: 0.5rem !important;
   --bs-alert-padding-y: 0.5rem !important;
   --bs-alert-margin-bottom: unset !important;
-
 }
+
 .cursor-pointer {
   cursor: pointer;
 }
@@ -18,7 +161,13 @@
   -webkit-box-orient: vertical;
   white-space: normal;
 }
-.popup_menu{
+
+/* < - - - - - - - - - -  //#region common */
+
+
+/* < - - - - - - - - - -  //#region header */
+
+.popup_menu {
   position: absolute;
   top: 59px !important;
   left: 1574.77px;
@@ -26,26 +175,95 @@
   transform-origin: center top;
 }
 
+/* < - - - - - - - - - -  //#region header */
 
-/* Dashboard.css */
 
-.p-datatable .p-datatable-header, .p-datatable .p-datatable-footer {
+
+
+/* < - - - - - - - - - -  //#region scroll bar */
+
+::-webkit-scrollbar {
+  width: 0px !important;
+  /* Width of the scrollbar */
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  /* Color of the track */
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+  /* Color of the handle */
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+  /* Color of the handle on hover */
+}
+
+/* < - - - - - - - - - -  //#region scroll bar */
+
+
+/* < - - - - - - - - - -  //#region body */
+
+/* Ensure the body covers the full viewport */
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(to right, #e0f7fa, #80deea); 
+  height: 100%;
+}
+
+/* Ensure the main container in App covers the full height */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-select {
+  padding: unset !important;
+}
+
+ul {
+  padding-left: unset !important;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* //#endregion body - - - - - - - - - - > */
+
+/* < - - - - - - - - - -  //#region prime override classes */
+
+.p-dropdown .p-dropdown-label {
+  width: 100% !important;
+}
+
+.p-dropdown-trigger {
+  display: none;
+}
+
+.p-datatable .p-datatable-header,
+.p-datatable .p-datatable-footer {
   background-color: #f8f9fa !important;
 }
 
-.p-datatable .p-datatable-tbody > tr > td {
+.p-datatable .p-datatable-tbody>tr>td {
   border: 1px solid #dee2e6 !important;
 }
 
-.p-datatable .p-datatable-tbody > tr:nth-child(even) {
+.p-datatable .p-datatable-tbody>tr:nth-child(even) {
   background-color: #f2f2f2 !important;
 }
 
-.p-datatable .p-datatable-tbody > tr:hover {
+.p-datatable .p-datatable-tbody>tr:hover {
   background-color: #e9ecef !important;
 }
 
-.p-datatable .p-datatable-thead > tr > th {
+.p-datatable .p-datatable-thead>tr>th {
   background-color: #343a40 !important;
   color: #ffffff !important;
   border: 1px solid #dee2e6 !important;
@@ -66,8 +284,10 @@
   color: white !important;
 }
 
-.p-paginator .p-paginator-first, .p-paginator .p-paginator-prev,
-.p-paginator .p-paginator-next, .p-paginator .p-paginator-last {
+.p-paginator .p-paginator-first,
+.p-paginator .p-paginator-prev,
+.p-paginator .p-paginator-next,
+.p-paginator .p-paginator-last {
   background-color: #ffffff !important;
   border: 1px solid #dee2e6 !important;
   color: #343a40 !important;
@@ -75,118 +295,24 @@
   margin: 0 5px !important;
 }
 
-/* Ensure paginator arrows are visible and red */
 .p-paginator-icon {
-  font-size: 1.25rem !important;
+  /* font-size: 1.25rem !important;
   background-color: transparent !important;
-  color: black !important;
+  color: black !important; */
 }
 
-.p-paginator-next{
-  font-size: 1.25rem !important;
+.p-paginator-next {
+  /* font-size: 1.25rem !important;
   background-color: transparent !important;
-  color: black !important;
+  color: black !important; */
 }
 
-.nextPageIcon{
-  font-size: 1.25rem !important;
-  /* background-color: transparent !important; */
-  color: black !important;
-}
-/* Dashboard.css */
-
-
-.ql-editor {
-  height: 300px !important;
-}
-.p-paginator{
+.p-paginator {
   gap: 16px;
 }
-.p-link{
+
+.p-link {
   padding: 0px 5px !important;
 }
-.poems-container {
-  overflow-y: auto;
-  max-height: calc(-40px + 100vh);
-  margin-top: 45px;
-  margin-bottom: 50px;
-}
 
-.fixed-top-content {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background-color: white;
-  z-index: 1000; 
-}
-
-
-.main-content {
-  /* padding-top: 60px */
-}
-
-
-.custom-textarea {
-  min-height: 130px;
-}
-
-
-/* Style the scrollbar */
-::-webkit-scrollbar {
-  width: 0px !important; /* Width of the scrollbar */
-}
-
-/* Track */
-::-webkit-scrollbar-track {
-  background: #f1f1f1; /* Color of the track */
-}
-
-/* Handle */
-::-webkit-scrollbar-thumb {
-  background: #888; /* Color of the handle */
-}
-
-/* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
-  background: #555; /* Color of the handle on hover */
-}
-
-
-@media (max-width: 576px) {
-  .form-height {
-    align-self: unset;
-    justify-content: unset;
-    align-items: unset;
-    height: unset;
-  }
-  .form-padding{
-    padding: 0rem 0rem 0.5rem 0rem;
-  }
-}
-
-@media (min-width: 577px) and (max-width: 992px) {
-  .form-height {
-    align-self: unset;
-    justify-content: unset;
-    align-items: unset;
-    height: unset;
-  }
-  .form-padding{
-    padding: 0rem 0rem 0.5rem 0rem;
-  }
-}
-
-@media (min-width: 993px) {
-  .form-height {
-    display: flex;
-    align-self: center;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-  .form-padding{
-    padding: 0.5rem 0.25rem 0.5rem 0.5rem;
-  }
-}
-
+/* //#endregion prime override classes - - - - - - - - - - > */

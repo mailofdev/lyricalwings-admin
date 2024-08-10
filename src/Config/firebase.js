@@ -1,9 +1,7 @@
-
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, get, child, remove, update, push} from "firebase/database";
-import { getStorage } from "firebase/storage";
+import { getDatabase, ref, set, get, child, remove, update, push, equalTo, orderByChild } from "firebase/database";
+import { getStorage, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
-
 
 const firebaseConfig = {
   apiKey: "AIzaSyCyL_tdbtD2XEHE7FNz6aqhuf-Zet8bBug",
@@ -17,9 +15,9 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
- const app = initializeApp(firebaseConfig);
- const db = getDatabase(app); 
- const storage = getStorage(app);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app); 
+const storage = getStorage(app);
 const auth = getAuth(app);
 
 const emailPasswordSignUp = (email, password) => {
@@ -35,5 +33,5 @@ const googleLogin = () => {
   return signInWithPopup(auth, provider);
 };
 
-export { app, db, storage, auth,push, remove, update, child, ref, set, get, signOut, emailPasswordSignUp, emailPasswordLogin, googleLogin };
-
+export { app, db, storage, auth, push, remove, update, child, ref, 
+  set, get, signOut, emailPasswordSignUp, emailPasswordLogin, googleLogin, uploadBytes, getDownloadURL, equalTo, orderByChild, getDatabase };

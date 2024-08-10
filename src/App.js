@@ -10,16 +10,19 @@ import AuthModal from './Components/AuthModal';
 import About from './Screens/About';
 import DetailPoem from './Screens/DetailPoem';
 import Courses from './Screens/Courses';
-import Users from './Screens/Users';
-import StoryAndNovels from './Screens/StoryAndNovels';
+import User from './Screens/User';
+import StoryAndNovel from './Screens/StoryAndNovel';
 import StoryAndNovelList from './Screens/StoryAndNovelList'
 import DetailStoryAndNovels from './Screens/DetailStoryAndNovels';
 import UI from './Screens/UI';
+import ItemList from './Screens/ItemList';
+import ItemDetails from './Screens/ItemDetails';
+
 function App() {
   return (
-    <div style={{ paddingTop: '60px', paddingBottom: '60px' }}>
+    <div>
       <Header />
-      <div className='m-4'>
+      <div className='pt-40 mt-40'>
         <Routes>
         <Route path="/" element={<AuthModal show={true} handleClose={() => {}} />} />
         <Route path="*" element={<AuthModal show={true} handleClose={() => {}} />} />
@@ -27,14 +30,12 @@ function App() {
           <Route path="/Dashboard/*" element={<Dashboard />} />
           <Route path="/PoemForm" element={<PoemForm />} />
           <Route path="/About" element={<About />} />
-          <Route path="/PoemList/:emotion" element={<PoemList />} />
-          <Route path="/DetailPoem" element={<DetailPoem />} />
           <Route path="/Courses" element={<Courses />} />
-          <Route path="/Users" element={<Users />} />
-          <Route path="/StoryAndNovels" element={<StoryAndNovels />} />
-          <Route path="/StoryAndNovelList/:type" element={<StoryAndNovelList />} />
-          <Route path="/DetailStoryAndNovels/:item" element={<DetailStoryAndNovels />} />
-          <Route path="/UI" element={<UI />} />
+          <Route path="/User" element={<User />} />
+          <Route path="/StoryAndNovel" element={<StoryAndNovel />} />
+          <Route path="/ItemList/:type" element={<ItemList />} /> 
+          <Route path="/item/:id" element={<ItemDetails />} />
+
         </Routes>
       </div>
     </div>

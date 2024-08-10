@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ref, set, get, remove, update, push } from "firebase/database";
-import { storage, db } from '../Config/firebase';
+import { storage, db } from '../config/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import Loader from '../Components/Loader';
 import { Panel } from 'primereact/panel';
@@ -337,7 +337,7 @@ const Courses = () => {
                                             <div className="d-flex justify-content-between align-items-center">
                                                 <div className='d-flex gap-2 flex-column w-100'>
                                                     <div className='d-flex flex-row align-items-center justify-content-between'>
-                                                        <div className='ellipsis font-weight-bold'>{type.title}</div>
+                                                        <div className='ellipsis'>{type.title}</div>
                                                         <div className='d-flex gap-2'>
                                                             <button className="btn btn-warning" onClick={() => handleEditType(id, type)}><FaEdit /></button>
                                                             <button className="btn btn-danger" onClick={() => handleDeleteType(id)}><FaTrash /></button>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ref, get, db } from '../Config/firebase';
+import { ref, get, db } from '../config/firebase';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Paginator } from 'primereact/paginator';
 import Loader from '../Components/Loader';

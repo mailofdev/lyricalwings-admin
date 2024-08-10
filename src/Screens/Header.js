@@ -1,123 +1,143 @@
-import React, { useState, useRef } from 'react';
-import { Menu } from 'primereact/menu';
-import { GiHamburgerMenu } from "react-icons/gi";
-import { useNavigate } from 'react-router-dom';
-import { auth, signOut } from '../Config/firebase';
-import Loader from "../Components/Loader";
-import "../css/customSidebar.css";
-import '../App.css';
-import "../css/loader.css";
-import CustomSidebar from '../Components/CustomSidebar';
+import React, { useState, useEffect, useRef } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
+import { FaUserCircle } from 'react-icons/fa';
+import { useSelector, useDispatch } from 'react-redux';
+import { signoutUser } from '../redux/userAuthSlice';
 
-function Header() {
-  const [visible, setVisible] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
+const Header = ({ theme }) => {
+  const [open, setOpen] = useState(false);
+  const activeTime = 20;
+  const [timer, setTimer] = useState(activeTime * 60);
+  const navRef = useRef(null);
   const navigate = useNavigate();
-  const menu = useRef(null);
+  const dispatch = useDispatch();
+  const user = useSelector(state => state.userAuth.auth.user);
 
-  const sidebarItems = [
-    {
-      label: 'Dashboard',
-      icon: 'pi pi-home',
-      url: '/Dashboard',
-    },
-    {
-      label: 'Poems',
-      icon: 'pi pi-pencil',
-      url: '/PoemForm',
-    },
-   
-    {
-      label: 'About',
-      icon: 'pi pi-info-circle',
-      url: '/About',
-    },
-    {
-      label: 'Story and Novel',
-      icon: 'pi pi-info-circle',
-      url: '/StoryAndNovels',
-    },
-    
-    {
-      label: 'Courses',
-      icon: 'pi pi-info-circle',
-      url: '/Courses',
-    },
-    {
-      label: 'Users',
-      icon: 'pi pi-info-circle',
-      url: '/Users',
-    },
-    {
-      label: 'UI customization',
-      icon: 'pi pi-info-circle',
-      url: '/UI',
-    },
-  ];
+  useEffect(() => {
+    let inactivityTimer;
+    const inactivityTime = activeTime * 60 * 1000;
 
-  const handleSidebarToggle = () => {
-    setVisible(!visible);
-  };
+    const resetTimer = () => {
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+      }
+      inactivityTimer = setTimeout(() => {
+        handleSignout();
+      }, inactivityTime);
+    };
 
-  const handleLogout = async () => {
-    setLoggingOut(true);
-    try {
-      await signOut(auth);
-      navigate('/AuthModal');
-      setLoggingOut(false);
-    } catch (error) {
-      console.error("Error logging out:", error);
-      setLoggingOut(false);
+    const handleActivity = () => {
+      resetTimer();
+      setTimer(activeTime * 60);
+    };
+
+    const updateTimerDisplay = () => {
+      setTimer(prev => {
+        if (prev <= 0) {
+          handleSignout();
+          return 0;
+        }
+        return prev - 1;
+      });
+    };
+
+    const timerInterval = setInterval(updateTimerDisplay, 1000);
+
+    document.addEventListener('mousedown', handleActivity);
+    document.addEventListener('mousemove', handleActivity);
+    document.addEventListener('keydown', handleActivity);
+    document.addEventListener('scroll', handleActivity);
+    document.addEventListener('touchstart', handleActivity);
+
+    resetTimer();
+
+    return () => {
+      clearTimeout(inactivityTimer);
+      clearInterval(timerInterval);
+      document.removeEventListener('mousedown', handleActivity);
+      document.removeEventListener('mousemove', handleActivity);
+      document.removeEventListener('keydown', handleActivity);
+      document.removeEventListener('scroll', handleActivity);
+      document.removeEventListener('touchstart', handleActivity);
+    };
+  }, []);
+
+  const handleClickOutside = (event) => {
+    if (navRef.current && !navRef.current.contains(event.target)) {
+      setOpen(false);
     }
   };
 
-  // const handleLogin = async (email, password) => {
-  //   try {
-  //     await auth.signOut(auth, email, password);
-  //     navigate('/Dashboard');
-  //   } catch (error) {
-  //     console.error("Error logging in:", error);
-  //   }
-  // };
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
-  const menuItems = [
-    {
-      label: 'Logout',
-      icon: 'pi pi-sign-out',
-      command: () => handleLogout(),
-    },
-  ];
+  const handleSignout = async () => {
+    try {
+      await dispatch(signoutUser());
+      navigate('/');
+    } catch (error) {
+      console.error("Sign out failed: ", error);
+    }
+  };
+
+  const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  };
 
   return (
-    <header className="fixed-top bg-light">
-      <div className="bg-primary-subtle text-light p-2 mt-2 mx-2 border border-1 rounded shadow-sm">
-        <div className="d-flex flex-row justify-content-between align-items-center">
-          <button onClick={handleSidebarToggle} className="toggle-button">
-            <GiHamburgerMenu size={22} />
-          </button>
-          <div>Logo</div>
-          <Menu model={menuItems} popup ref={menu} id="popup_menu"  className='popup_menu'/>
-          <button 
-            className="p-link profile-menu-button" 
-            onClick={(event) => menu.current.toggle(event)} 
-            aria-controls="popup_menu" 
-            aria-haspopup
-          >
-            <i className="pi pi-user"></i> 
-          </button>
-        </div>
+    <Navbar ref={navRef} expand="lg" fixed="top" expanded={open} className='navbar'>
+      <div className="container-fluid">
+        <Navbar.Brand as={NavLink} to="/">
+          <img src="logo.png" alt="LyricalWings Logo" style={{ maxWidth: '200px' }} />
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" onClick={() => setOpen(!open)} />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className="ms-auto d-flex gap-4">
+            <Nav.Item>
+              <Nav.Link as={NavLink} exact to="/Dashboard" className="nav-link-custom">Dashboard</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link as={NavLink} to="/PoemForm" className="nav-link-custom">Poem</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link as={NavLink} to="/StoryAndNovel" className="nav-link-custom">Story and novels</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link as={NavLink} to="/Courses" className="nav-link-custom">Courses</Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link as={NavLink} to="/About" className="nav-link-custom">About</Nav.Link>
+            </Nav.Item>
+            <NavDropdown
+              title={<span><FaUserCircle size={30} /> {user ? user.displayName : 'anonymous'}</span>}
+              id="basic-nav-dropdown"
+              align="end"
+              className='me-2'
+            >
+              {!user && <NavDropdown.Item as={NavLink} to="/Login">Login</NavDropdown.Item>}
+              {user && (
+                <>
+                  <NavDropdown.Item onClick={handleSignout}>Sign Out</NavDropdown.Item>
+                </>
+              )}
+            </NavDropdown>
+          </Nav>
+          {timer <= 180 && (
+                <div className="text-danger">
+                  You will logout in: {formatTime(timer)}
+                </div>
+              )}
+        </Navbar.Collapse>
       </div>
-      <div className="main-content">
-        <CustomSidebar
-          visible={visible}
-          onHide={() => setVisible(false)}
-          sidebarItems={sidebarItems}
-          handleSidebarToggle={handleSidebarToggle}
-        />
-      </div>
-      {loggingOut && <Loader loadingMessage="Logging out..." />}
-    </header>
+    </Navbar>
   );
-}
+};
 
 export default Header;

@@ -1,99 +1,96 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { db, storage } from '../Config/firebase';
-import { get, ref, push, set } from 'firebase/database';
+// src/components/PoemForm.js
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchPoems, postPoem } from '../redux/contentSlice';
 import { InputText } from 'primereact/inputtext';
+import { Dropdown } from 'primereact/dropdown';
 import { useNavigate } from 'react-router-dom';
 import { Panel } from 'primereact/panel';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
 import { Button } from 'react-bootstrap';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import Loader from '../Components/Loader';
+import JoditEditor from 'jodit-react';
+import ResponsiveCard from '../Components/ResponsiveCard';
+
 
 const PoemForm = () => {
   const [isFormValid, setIsFormValid] = useState(false);
-  const [titleValue, setTitleValue] = useState('');
-  const [backgroundOfPoem, setBackgroundOfPoem] = useState('');
-  const [poemContent, setPoemContent] = useState('');
-  const [emotion, setEmotion] = useState('');
+  const [title, setTitle] = useState('');
+  const [subTitle, setSubTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [type, setType] = useState('');
   const [fontColor, setFontColor] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
-  const [poems, setPoems] = useState([]);
-  const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  const toast = useRef(null);
+  const dispatch = useDispatch();
+  const poems = useSelector((state) => state.content.poems || []);
+  const loading = useSelector((state) => state.content.loading);
+  const { dashboardPoems, status, error } = useSelector((state) => state.dashboard);
+
+  const happinessCount = dashboardPoems.emotionsCount.happiness;
+  const sadnessCount = dashboardPoems.emotionsCount.sadness;
+  const angerCount = dashboardPoems.emotionsCount.anger;
+  const disgustCount = dashboardPoems.emotionsCount.disgust;
+  const fearCount = dashboardPoems.emotionsCount.fear;
+  const surpriseCount = dashboardPoems.emotionsCount.surprise;
+  const typeOptions = [
+    { label: 'Happiness', value: 'happiness' },
+    { label: 'Sadness', value: 'sadness' },
+    { label: 'Anger', value: 'anger' },
+    { label: 'Fear', value: 'fear' },
+    { label: 'Disgust', value: 'disgust' },
+    { label: 'Surprise', value: 'surprise' }
+  ];
+
+  const fontColorOptions = [
+    { label: 'Black', value: 'black' },
+    { label: 'White', value: 'white' },
+    { label: 'Blue', value: 'blue' },
+    { label: 'Purple', value: 'purple' },
+    { label: 'Red', value: 'red' },
+    { label: 'Brown', value: 'brown' }
+  ];
+
+  const config = useMemo(() => ({
+    readonly: false,
+    placeholder: 'Start typing...',
+    autofocus: true,
+    uploader: {
+      insertImageAsBase64URI: true,
+    },
+    disablePlugins: "video,about,ai-assistant,clean-html,delete-command,iframe,mobile,powered-by-jodit,source,speech-recognize,xpath,wrap-nodes,spellcheck,file",
+    buttons: "bold,italic,underline,strikethrough,eraser,ul,ol,font,fontsize,paragraph,lineHeight,image,preview,align",
+    askBeforePasteHTML: false,
+    askBeforePasteFromWord: false,
+    defaultActionOnPaste: "insert_only_text",
+  }), []);
 
   useEffect(() => {
-    const auth = getAuth();
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUser(user);
-      } else {
-        setUser(null);
-        navigate('/login'); // Redirect to login if not authenticated
-      }
-    });
-  }, [navigate]);
+    setIsFormValid(title !== '' && subTitle !== '' && content !== '' && type !== '' && fontColor !== '');
+  }, [title, subTitle, content, type, fontColor]);
 
   useEffect(() => {
-    setIsFormValid(titleValue !== '' && backgroundOfPoem !== '' && poemContent !== '' && emotion !== '' && fontColor !== '');
-  }, [titleValue, backgroundOfPoem, poemContent, emotion, fontColor]);
-
-  const fetchPoems = async () => {
-    try {
-      const AllPoemsRef = ref(db, 'AllPoems');
-      const snapshot = await get(AllPoemsRef);
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const poemsArray = Object.values(data).reverse();
-        setPoems(poemsArray);
-        updateLatestPoemOfEveryEmotion(poemsArray);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const updateLatestPoemOfEveryEmotion = (poemsArray) => {
-    const latestPoems = {};
-    poemsArray.forEach(poem => {
-      if (!latestPoems[poem.emotion]) {
-        latestPoems[poem.emotion] = poem;
-      }
-    });
-    saveLatestPoemOfEveryEmotion(latestPoems);
-  };
-
-  const saveLatestPoemOfEveryEmotion = async (latestPoems) => {
-    try {
-      const latestPoemsRef = ref(db, 'latestPoemOfEveryEmotion');
-      await set(latestPoemsRef, latestPoems);
-    } catch (error) {
-      console.error('Error saving latest poems of every emotion:', error);
-    }
-  };
+    dispatch(fetchPoems());
+  }, [dispatch]);
 
   const handleTitleChange = (event) => {
-    const { value } = event.target;
-    setTitleValue(value);
+    setTitle(event.target.value);
   };
 
-  const handleBackgroundChange = (value) => {
-    setBackgroundOfPoem(value);
+
+  const handleSubTitleChange = useCallback((newContent) => {
+    setSubTitle(newContent);
+  }, []);
+
+  const handleContentChange = useCallback((newContent) => {
+    setContent(newContent);
+  }, []);
+
+  const handleTypeChange = (e) => {
+    setType(e.value);
   };
 
-  const handlePoemContentChange = (value) => {
-    setPoemContent(value);
-  };
-
-  const handleEmotionChange = (event) => {
-    const { value } = event.target;
-    setEmotion(value);
-  };
-
-  const handleFontColorChange = (event) => {
-    const { value } = event.target;
-    setFontColor(value);
+  const handleFontColorChange = (e) => {
+    setFontColor(e.value);
   };
 
   const handleFileChange = (event) => {
@@ -101,149 +98,136 @@ const PoemForm = () => {
     if (file && file.type === 'image/jpeg' && file.size >= 0 && file.size <= 1000000) {
       setSelectedFile(file);
     } else {
-      alert('Please select a JPG image between 20KB and 500KB.');
+      alert('Please select a JPG image between 0KB and 1000KB.');
     }
   };
 
   const handlePost = async () => {
     try {
-      const AllPoemsRef = ref(db, 'AllPoems');
-      const newId = push(AllPoemsRef).key;
-      const emotionToColorMap = {
-        sadness: '#cce5ff',
-        happiness: '#e2f0cb',
-        anger: '#ffd6cc',
-        fear: '#ffebcc',
-        disgust: '#f0f0f0',
-        surprise: '#f5e6ff'
-      };
-      const cardColor = emotionToColorMap[emotion];
       const poemData = {
-        titleValue,
-        backgroundOfPoem,
-        poemContent,
-        emotion,
+        title,
+        subTitle,
+        content,
+        type,
         fontColor,
-        id: newId,
-        cardColor,
-        likes: {},
-        comments: {},
-        timestamp: Date.now(),
-        fileName: selectedFile ? selectedFile.name : null
+        selectedFile,
       };
-
-      if (selectedFile) {
-        const fileRef = storageRef(storage, `poemImages/${newId}/${selectedFile.name}`);
-        await uploadBytes(fileRef, selectedFile);
-        const downloadUrl = await getDownloadURL(fileRef); // Get download URL
-        poemData.fileUrl = downloadUrl; // Add file URL to poemData
-      }
-
-      await set(ref(db, `AllPoems/${newId}`), poemData);
-
-      fetchPoems();
-
-      setTitleValue('');
-      setBackgroundOfPoem('');
-      setPoemContent('');
-      setEmotion('');
+      await dispatch(postPoem(poemData));
+      setTitle('');
+      setSubTitle('');
+      setContent('');
+      setType('');
       setFontColor('');
       setSelectedFile(null);
-      navigate(`/PoemList/${emotion}`, { state: { poems: [...poems, poemData] } });
-
+      navigate(`/ItemList/${type}`, { state: { poems: [...poems, poemData] } });
     } catch (error) {
       console.error('Error posting poem:', error);
       alert(error.message);
     }
   };
 
-  const handleClick = (emotion) => {
-    const filteredPoems = poems.filter(poem => poem.emotion === emotion);
-    navigate(`/PoemList/${emotion}`, { state: { poems: filteredPoems } });
+  const handleClick = (type) => {
+    const filteredPoems = poems.filter((poem) => poem.type === type);
+    navigate(`/ItemList/${type}`, { state: { poems: filteredPoems } });
   };
 
   return (
-    <div className="container gap-4 d-flex flex-column">
+    <div className="container gap-4 d-flex flex-column pb-4 mb-4">
       <Panel header="Write a poem..">
+        {loading && <Loader loadingMessage={'Loading...'} />}
         <div className="d-flex flex-column gap-3">
           <InputText
             className="form-control"
             type="text"
             id="title"
-            value={titleValue}
+            value={title}
             onChange={handleTitleChange}
             placeholder="Enter the Title"
             required
           />
-          <div className="QuillEditor">
-            <ReactQuill
-              theme="snow"
-              value={backgroundOfPoem}
-              onChange={handleBackgroundChange}
-              placeholder="Background of Poem"
+          <div className="">
+            <JoditEditor
+              value={subTitle}
+              config={config}
+              tabIndex={1}
+              onBlur={handleSubTitleChange}
+              onChange={handleSubTitleChange}
             />
           </div>
-          <div className="QuillEditor">
-            <ReactQuill
-              theme="snow"
-              value={poemContent}
-              onChange={handlePoemContentChange}
-              placeholder="Write Your Poem Here"
+          <div className="">
+            <JoditEditor
+              value={content}
+              config={config}
+              tabIndex={1}
+              onBlur={handleContentChange}
+              onChange={handleContentChange}
             />
           </div>
-          <select
+          <Dropdown
+            value={type}
+            options={typeOptions}
+            onChange={handleTypeChange}
+            placeholder="Select emotion"
             className="form-select"
-            value={emotion}
-            onChange={handleEmotionChange}
-            required
-          >
-            <option value="" disabled>Select emotion</option>
-            <option value="happiness">Happiness</option>
-            <option value="sadness">Sadness</option>
-            <option value="anger">Anger</option>
-            <option value="fear">Fear</option>
-            <option value="disgust">Disgust</option>
-            <option value="surprise">Surprise</option>
-          </select>
-
-          <select
-            className="form-select"
-            value={fontColor}
-            onChange={handleFontColorChange}
-            required
-          >
-            <option value="" disabled>Select font color</option>
-            <option value="black">Black</option>
-            <option value="white">White</option>
-            <option value="blue">Blue</option>
-            <option value="purple">Purple</option>
-            <option value="red">Red</option>
-            <option value="green">Green</option>
-            <option value="yellow">Yellow</option>
-          </select>
-
-          <InputText
-            type="file"
-            onChange={handleFileChange}
           />
-          <Button
-            className="w-50 align-self-center d-flex justify-content-center btn btn-light btn-outline-success border border-1 border-success"
-            onClick={handlePost}
-            disabled={!isFormValid}
-          >
-            Save
-          </Button>
-          <div className="d-flex justify-content-between flex-wrap px-2">
-          <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('showall')}>All</Button>
-            <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('happiness')}>Happiness</Button>
-            <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('anger')}>Anger</Button>
-            <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('disgust')}>Disgust</Button>
-            <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('fear')}>Fear</Button>
-            <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('surprise')}>Surprise</Button>
-            <Button className="my-2 btn btn-light btn-outline-primary border border-1 border-primary" onClick={() => handleClick('sadness')}>Sadness</Button>
+          <Dropdown
+            value={fontColor}
+            options={fontColorOptions}
+            onChange={handleFontColorChange}
+            placeholder="Select font color"
+            className="form-select"
+          />
+          {/* <input type="file" className="form-control-file form-control" accept="image/jpeg" onChange={handleFileChange} /> */}
+          <div className='text-center'>
+            <Button
+              className="btn btn-primary"
+              onClick={handlePost}
+              disabled={!isFormValid}
+            >
+              Save {type} poem
+            </Button>
           </div>
         </div>
       </Panel>
+
+      <div className="d-flex justify-content-center gap-2 flex-wrap">
+
+        <ResponsiveCard xs={12} sm={6} md={2} lg={2}
+          customshadow="shadow-md" bgGradient="bg-gradient-all-poems" textColor="text-dark" title="All poems"
+          count={dashboardPoems.totalPoems || 0} onClick={() => handleClick('showall')}
+        />
+
+        <ResponsiveCard xs={12} sm={6} md={2} lg={2}
+          customshadow="shadow-md" bgGradient="bg-gradient-happiness" textColor="text-dark" title="Happy"
+          count={happinessCount || 0} onClick={() => handleClick('happiness')}
+        />
+
+        <ResponsiveCard xs={12} sm={6} md={2} lg={2}
+          customshadow="shadow-md" bgGradient="bg-gradient-sadness" textColor="text-dark" title="Sad"
+          count={sadnessCount || 0} onClick={() => handleClick('sadness')}
+        />
+
+        <ResponsiveCard xs={12} sm={6} md={2} lg={2}
+          customshadow="shadow-md" bgGradient="bg-gradient-anger" textColor="text-dark" title="Angry"
+          count={angerCount || 0} onClick={() => handleClick('anger')}
+        />
+
+        <ResponsiveCard xs={12} sm={6} md={2} lg={2}
+          customshadow="shadow-md" bgGradient="bg-gradient-disgust" textColor="text-dark" title="Disgust"
+          count={disgustCount || 0} onClick={() => handleClick('disgust')}
+        />
+
+        <ResponsiveCard xs={12} sm={6} md={2} lg={2}
+          customshadow="shadow-md" bgGradient="bg-gradient-fear" textColor="text-light" title="Fear"
+          count={fearCount || 0} onClick={() => handleClick('fear')}
+        />
+
+        <ResponsiveCard xs={12} sm={6} md={2} lg={2}
+          customshadow="shadow-md" bgGradient="bg-gradient-surprise" textColor="text-dark" title="Surprise"
+          count={surpriseCount || 0} onClick={() => handleClick('surprise')}
+        />
+
+      </div>
     </div>
   );
 };
