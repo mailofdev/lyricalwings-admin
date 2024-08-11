@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { db, storage, ref as storageRef, uploadBytes, getDownloadURL, get, ref, push, set, remove } from '../Config/firebase';
+import { db, get, ref, push, set, remove } from '../Config/firebase';
 
 // Async thunks for poems
 export const fetchPoems = createAsyncThunk('content/fetchPoems', async () => {
@@ -15,7 +15,7 @@ export const fetchPoems = createAsyncThunk('content/fetchPoems', async () => {
 });
 
 export const postPoem = createAsyncThunk('content/postPoem', async (poemData) => {
-  const { title, subTitle, content, type, fontColor, selectedFile } = poemData;
+  const { title, subTitle, content, type, fontColor } = poemData;
   const isShowDangerouslySetInnerHTML = true;
   const isPoem = true;
   const AllPoemsRef = ref(db, 'AllPoems');
@@ -42,15 +42,7 @@ export const postPoem = createAsyncThunk('content/postPoem', async (poemData) =>
     likes: {},
     comments: {},
     timestamp: Date.now(),
-    fileName: selectedFile ? selectedFile.name : null,
   };
-
-  if (selectedFile) {
-    const fileRef = storageRef(storage, `poemImages/${newId}/${selectedFile.name}`);
-    await uploadBytes(fileRef, selectedFile);
-    const downloadUrl = await getDownloadURL(fileRef);
-    newPoemData.fileUrl = downloadUrl;
-  }
 
   await set(ref(db, `AllPoems/${newId}`), newPoemData);
   return { type: 'poems', item: newPoemData };

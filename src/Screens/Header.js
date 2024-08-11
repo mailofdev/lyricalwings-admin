@@ -124,7 +124,7 @@ const Header = ({ theme }) => {
               <NavDropdown.Item as={NavLink} to="/About">
                 LyricalWings
               </NavDropdown.Item>
-              <NavDropdown.Item as={NavLink} to="/TermsAndConditions">
+              <NavDropdown.Item as={NavLink} to="/About">
                 Terms and Conditions
               </NavDropdown.Item>
             </NavDropdown>
