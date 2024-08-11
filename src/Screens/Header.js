@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
-import { FaUserCircle } from 'react-icons/fa';
+import { FaUserCircle, FaHome, FaPenFancy, FaBook, FaChalkboardTeacher, FaInfoCircle } from 'react-icons/fa';
 import { useSelector, useDispatch } from 'react-redux';
 import { signoutUser } from '../redux/userAuthSlice';
 
@@ -101,20 +101,33 @@ const Header = ({ theme }) => {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto d-flex gap-4">
             <Nav.Item>
-              <Nav.Link as={NavLink} exact to="/Dashboard" className="nav-link-custom">Dashboard</Nav.Link>
+              <Nav.Link as={NavLink} exact to="/Dashboard" className="nav-link-custom">
+                <FaHome /> Dashboard
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link as={NavLink} to="/PoemForm" className="nav-link-custom">Poem</Nav.Link>
+              <Nav.Link as={NavLink} to="/PoemForm" className="nav-link-custom">
+                <FaPenFancy /> Poem
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link as={NavLink} to="/StoryAndNovel" className="nav-link-custom">Story and novels</Nav.Link>
+              <Nav.Link as={NavLink} to="/StoryAndNovel" className="nav-link-custom">
+                <FaBook /> Story and novels
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link as={NavLink} to="/Courses" className="nav-link-custom">Courses</Nav.Link>
+              <Nav.Link as={NavLink} to="/Courses" className="nav-link-custom">
+                <FaChalkboardTeacher /> Courses
+              </Nav.Link>
             </Nav.Item>
-            <Nav.Item>
-              <Nav.Link as={NavLink} to="/About" className="nav-link-custom">About</Nav.Link>
-            </Nav.Item>
+            <NavDropdown title={<span><FaInfoCircle /> About</span>} id="about-dropdown" className="nav-link-custom">
+              <NavDropdown.Item as={NavLink} to="/About">
+                LyricalWings
+              </NavDropdown.Item>
+              <NavDropdown.Item as={NavLink} to="/TermsAndConditions">
+                Terms and Conditions
+              </NavDropdown.Item>
+            </NavDropdown>
             <NavDropdown
               title={<span><FaUserCircle size={30} /> {user ? user.displayName : 'anonymous'}</span>}
               id="basic-nav-dropdown"
@@ -130,10 +143,10 @@ const Header = ({ theme }) => {
             </NavDropdown>
           </Nav>
           {timer <= 180 && (
-                <div className="text-danger">
-                  You will logout in: {formatTime(timer)}
-                </div>
-              )}
+            <div className="text-danger">
+              You will logout in: {formatTime(timer)}
+            </div>
+          )}
         </Navbar.Collapse>
       </div>
     </Navbar>
