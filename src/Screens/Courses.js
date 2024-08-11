@@ -10,6 +10,7 @@ const Courses = () => {
     const dispatch = useDispatch();
     const { courses, status, error } = useSelector((state) => state.courses);
     const [editingCourse, setEditingCourse] = useState(null);
+    const [formKey, setFormKey] = useState(0);
 
     const formConfig = [
         {
@@ -24,7 +25,7 @@ const Courses = () => {
         if (status === 'idle') {
           dispatch(fetchCourses());
         }
-      }, [status, dispatch]);
+    }, [status, dispatch]);
       
     const handleAddCourse = async (formData) => {
         try {
@@ -35,6 +36,7 @@ const Courses = () => {
 
                 await dispatch(addCourse({ title: formData.title, fileURL })).unwrap();
                 alert('Course added successfully!');
+                setFormKey(prevKey => prevKey + 1); // Reset the form
             } else {
                 alert('Please upload a file.');
             }
@@ -59,6 +61,7 @@ const Courses = () => {
             })).unwrap();
             alert('Course updated successfully!');
             setEditingCourse(null);
+            setFormKey(prevKey => prevKey + 1); // Reset the form
         } catch (err) {
             alert(`Failed to update course: ${err.message}`);
         }
@@ -85,6 +88,7 @@ const Courses = () => {
                                 {editingCourse ? 'Update Course' : 'Add New Course'}
                             </Card.Title>
                             <DynamicForm2
+                                key={formKey}
                                 formConfig={formConfig}
                                 onSubmit={editingCourse ? handleUpdateCourse : handleAddCourse}
                                 initialValues={editingCourse ? { title: editingCourse.title, file: null } : {}}
