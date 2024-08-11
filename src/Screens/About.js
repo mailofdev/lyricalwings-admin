@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchAboutData, saveAboutData, deleteAboutData } from '../redux/aboutSlice';
 import Loader from "../Components/Loader";
-import "../css/customSidebar.css";
 import '../App.css';
 import "../css/loader.css";
 import { Panel } from 'primereact/panel';

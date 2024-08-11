@@ -120,10 +120,12 @@ const Header = ({ theme }) => {
                 <FaChalkboardTeacher /> Courses
               </Nav.Link>
             </Nav.Item>
-            <NavDropdown title={<span><FaInfoCircle /> About</span>} id="about-dropdown" className="nav-link-custom">
-              <NavDropdown.Item as={NavLink} to="/About">
-                LyricalWings
-              </NavDropdown.Item>
+            <Nav.Item>
+              <Nav.Link as={NavLink} to="/About" className="nav-link-custom">
+                <FaInfoCircle /> About 
+              </Nav.Link>
+            </Nav.Item>
+            <NavDropdown title={<span>Other</span>} id="about-dropdown" className="nav-link-custom">
               <NavDropdown.Item as={NavLink} to="/About">
                 Terms and Conditions
               </NavDropdown.Item>
