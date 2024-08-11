@@ -4,8 +4,9 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import JoditEditor from 'jodit-react';
 
-const DynamicForm = ({ formConfig, onSubmit, className = '', title = '' }) => {
+const DynamicForm = ({ formConfig, onSubmit, className = '', title = '', requiredFields = [] }) => {
   const [formData, setFormData] = useState({});
+
   const handleEditorChange = (content, name) => {
     setFormData({ ...formData, [name]: content });
   };
@@ -19,27 +20,34 @@ const DynamicForm = ({ formConfig, onSubmit, className = '', title = '' }) => {
     setFormData({ ...formData, [name]: value });
   };
 
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!formData.title || !formData.content) {
-      alert("Title and content are required.");
+  
+    // Collect missing required fields and convert to lowercase
+    const missingFields = requiredFields
+      .filter(field => !formData[field])
+      .map(field => field.toLowerCase());
+  
+    if (missingFields.length > 0) {
+      // Create a string of missing field names, separated by commas
+      const missingFieldsString = missingFields.join(', ');
+      alert(`The following fields are required: ${missingFieldsString}`);
       return;
     }
-
-    const CombilnedFormData = new FormData();
-
+  
+    const combinedFormData = new FormData();
+  
     Object.keys(formData).forEach(key => {
       if (formData[key] instanceof File) {
-        CombilnedFormData.append(key, formData[key], formData[key].name);
+        combinedFormData.append(key, formData[key], formData[key].name);
       } else {
-        CombilnedFormData.append(key, formData[key]);
+        combinedFormData.append(key, formData[key]);
       }
     });
-
-    await onSubmit(CombilnedFormData);
+  
+    await onSubmit(combinedFormData);
   };
+  
 
   return (
     <Form onSubmit={handleSubmit} className={className}>
@@ -101,9 +109,11 @@ const DynamicForm = ({ formConfig, onSubmit, className = '', title = '' }) => {
             : null}
         </React.Fragment>
       ))}
+      <div className='text-center'>
       <Button type="submit" variant="primary">
-        Save
+        Save 
       </Button>
+      </div>
     </Form>
   );
 };

@@ -136,37 +136,37 @@ const PoemForm = () => {
 
       <div className="d-flex justify-content-center gap-2 flex-wrap">
 
-        <ResponsiveCard xs={12} sm={6} md={2} lg={2}
-          customshadow="shadow-md" bgGradient="bg-gradient-all-poems" textColor="text-dark" title="All poems"
-          count={dashboardPoems.totalPoems || 0} onClick={() => handleClick('showall')}
+        <ResponsiveCard xs={3} sm={3} md={2} lg={1}
+          customshadow="shadow-md" bgGradient="bg-gradient-all-poems" textColor="text-dark" title="All"
+          count={dashboardPoems.totalPoems} onClick={() => handleClick('showall')}
         />
 
-        <ResponsiveCard xs={12} sm={6} md={2} lg={2}
+        <ResponsiveCard xs={3} sm={3} md={2} lg={1}
           customshadow="shadow-md" bgGradient="bg-gradient-happiness" textColor="text-dark" title="Happy"
           count={happinessCount || 0} onClick={() => handleClick('happiness')}
         />
 
-        <ResponsiveCard xs={12} sm={6} md={2} lg={2}
+        <ResponsiveCard xs={3} sm={3} md={2} lg={1}
           customshadow="shadow-md" bgGradient="bg-gradient-sadness" textColor="text-dark" title="Sad"
           count={sadnessCount || 0} onClick={() => handleClick('sadness')}
         />
 
-        <ResponsiveCard xs={12} sm={6} md={2} lg={2}
+        <ResponsiveCard xs={3} sm={3} md={2} lg={1}
           customshadow="shadow-md" bgGradient="bg-gradient-anger" textColor="text-dark" title="Angry"
           count={angerCount || 0} onClick={() => handleClick('anger')}
         />
 
-        <ResponsiveCard xs={12} sm={6} md={2} lg={2}
+        <ResponsiveCard xs={3} sm={3} md={2} lg={1}
           customshadow="shadow-md" bgGradient="bg-gradient-disgust" textColor="text-dark" title="Disgust"
           count={disgustCount || 0} onClick={() => handleClick('disgust')}
         />
 
-        <ResponsiveCard xs={12} sm={6} md={2} lg={2}
+        <ResponsiveCard xs={3} sm={3} md={2} lg={1}
           customshadow="shadow-md" bgGradient="bg-gradient-fear" textColor="text-light" title="Fear"
           count={fearCount || 0} onClick={() => handleClick('fear')}
         />
 
-        <ResponsiveCard xs={12} sm={6} md={2} lg={2}
+        <ResponsiveCard xs={3} sm={3} md={2} lg={1}
           customshadow="shadow-md" bgGradient="bg-gradient-surprise" textColor="text-dark" title="Surprise"
           count={surpriseCount || 0} onClick={() => handleClick('surprise')}
         />
