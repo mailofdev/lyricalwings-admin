@@ -3,11 +3,21 @@ import { ref, set, get, remove, update } from 'firebase/database';
 import { db, storage } from '../Config/firebase';
 import { ref as storageRef, deleteObject, getDownloadURL, uploadBytes } from 'firebase/storage';
 
-export const addCourse = createAsyncThunk('courses/addCourse', async ({ title, fileURL }) => {
-  const courseRef = ref(db, `courses/${title}`);
-  await set(courseRef, { title, fileURL });
-  return { title, fileURL };
-});
+// export const addCourse = createAsyncThunk('courses/addCourse', async ({ title, fileURL }) => {
+//   const courseRef = ref(db, `courses/${title}`);
+//   await set(courseRef, { title, fileURL });
+//   return { title, fileURL };
+// });
+export const addCourse = createAsyncThunk('courses/addCourse', async (courseData, { rejectWithValue }) => {
+    try {
+      const courseRef = ref(db, 'courses');
+      await set(courseRef, courseData);
+      return { id: courseRef.id, ...courseData };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 export const fetchCourses = createAsyncThunk('courses/fetchCourses', async () => {
   const coursesRef = ref(db, 'courses');
@@ -18,6 +28,7 @@ export const fetchCourses = createAsyncThunk('courses/fetchCourses', async () =>
     return {};
   }
 });
+
 
 
 export const deleteCourse = createAsyncThunk('courses/deleteCourse', async (title) => {

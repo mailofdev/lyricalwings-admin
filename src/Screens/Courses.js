@@ -5,6 +5,7 @@ import { storage } from '../Config/firebase';
 import DynamicForm2 from '../Components/DynamicForm2';
 import { addCourse, fetchCourses, deleteCourse, updateCourse } from '../redux/courseSlice';
 import { Button, Card, ListGroup } from 'react-bootstrap';
+import { v4 as uuidv4 } from 'uuid';
 
 const Courses = () => {
     const dispatch = useDispatch();
@@ -15,50 +16,91 @@ const Courses = () => {
     const formConfig = [
         {
             fields: [
-                { type: 'input', name: 'title', label: 'Title' },
+                { type: 'textarea', name: 'title', label: 'Title' },
                 { type: 'file', name: 'file', label: 'Upload File' },
+
+                { type: 'textarea', name: 'titleOfType', label: 'Title' },
+                { type: 'file', name: 'titleOfTypeFile', label: 'Upload File' },
+
+                { type: 'textarea', name: 'introOfType', label: 'Introduction' },
+                { type: 'file', name: 'introOfTypeFile', label: 'Upload File' },
+
+                { type: 'textarea', name: 'structureOfType', label: 'Structure' },
+                { type: 'file', name: 'structureOfTypeFile', label: 'Upload File' },
+
+                { type: 'textarea', name: 'literatureOfType', label: 'Literature' },
+                { type: 'file', name: 'literatureOfTypeFile', label: 'Upload File' },
+
+                { type: 'textarea', name: 'methodologyOfType', label: 'Methodology' },
+                { type: 'file', name: 'methodologyOfTypeFile', label: 'Upload File' },
+
+                { type: 'textarea', name: 'evaluationOfType', label: 'Evaluation' },
+                { type: 'file', name: 'evaluationOfTypeFile', label: 'Upload File' },
+
+                { type: 'textarea', name: 'conclusionOfType', label: 'Conclusion' },
+                { type: 'file', name: 'conclusionOfTypeFile', label: 'Upload File' },
+
             ],
         },
     ];
 
     useEffect(() => {
         if (status === 'idle') {
-          dispatch(fetchCourses());
+            dispatch(fetchCourses());
         }
     }, [status, dispatch]);
-      
+
     const handleAddCourse = async (formData) => {
         try {
-            if (formData.file) {
-                const fileRef = storageRef(storage, `courses/${formData.file.name}`);
-                await uploadBytes(fileRef, formData.file);
-                const fileURL = await getDownloadURL(fileRef);
-
-                await dispatch(addCourse({ title: formData.title, fileURL })).unwrap();
-                alert('Course added successfully!');
-                setFormKey(prevKey => prevKey + 1); // Reset the form
-            } else {
-                alert('Please upload a file.');
+            const courseData = { id: uuidv4() };
+    
+            for (const [key, value] of Object.entries(formData)) {
+                if (value instanceof File) {
+                    if (value.size > 0) {  // Check if file is not empty
+                        const fileRef = storageRef(storage, `courses/${formData.title}/${key}`);
+                        await uploadBytes(fileRef, value);
+                        courseData[key] = await getDownloadURL(fileRef);
+                    }
+                } else if (value !== undefined && value !== null && value.trim() !== '') {
+                    courseData[key] = value;
+                }
             }
+    
+            // Remove any properties with undefined values
+            Object.keys(courseData).forEach(key => courseData[key] === undefined && delete courseData[key]);
+    
+            console.log('Course data being sent:', courseData);  // Log the data before sending
+    
+            await dispatch(addCourse(courseData)).unwrap();
+            alert('Course added successfully!');
+            setFormKey(prevKey => prevKey + 1); // Reset the form
         } catch (err) {
+            console.error('Error adding course:', err);  // Log the full error
             alert(`Failed to add course: ${err.message}`);
         }
     };
-
+    
     const handleUpdateCourse = async (formData) => {
         try {
-            let fileURL = editingCourse.fileURL;
-            if (formData.file) {
-                const fileRef = storageRef(storage, `courses/${formData.file.name}`);
-                await uploadBytes(fileRef, formData.file);
-                fileURL = await getDownloadURL(fileRef);
+            const fileUploads = {};
+            for (const [key, value] of Object.entries(formData)) {
+                if (value instanceof File) {
+                    const fileRef = storageRef(storage, `courses/${formData.title}/${key}`);
+                    await uploadBytes(fileRef, value);
+                    fileUploads[key] = await getDownloadURL(fileRef);
+                }
             }
-
-            await dispatch(updateCourse({
-                oldTitle: editingCourse.title,
-                newTitle: formData.title,
-                file: formData.file
-            })).unwrap();
+    
+            const courseData = {
+                id: editingCourse.id,
+                ...Object.fromEntries(
+                    Object.entries(formData).map(([key, value]) => 
+                        [key, value instanceof File ? fileUploads[key] : (value || editingCourse[key])]
+                    )
+                )
+            };
+    
+            await dispatch(updateCourse(courseData)).unwrap();
             alert('Course updated successfully!');
             setEditingCourse(null);
             setFormKey(prevKey => prevKey + 1); // Reset the form
@@ -66,11 +108,12 @@ const Courses = () => {
             alert(`Failed to update course: ${err.message}`);
         }
     };
+    
 
-    const handleDeleteCourse = async (title) => {
+    const handleDeleteCourse = async (id) => {
         if (window.confirm('Are you sure you want to delete this course?')) {
             try {
-                await dispatch(deleteCourse(title)).unwrap();
+                await dispatch(deleteCourse(id)).unwrap();
                 alert('Course deleted successfully!');
             } catch (err) {
                 alert(`Failed to delete course: ${err.message}`);
@@ -111,15 +154,15 @@ const Courses = () => {
                             {status === 'failed' && <p className="text-center text-danger">Error: {error}</p>}
                             {status === 'succeeded' && (
                                 <ListGroup>
-                                    {Object.entries(courses).map(([title, course]) => (
-                                        <ListGroup.Item key={title} className="d-flex justify-content-between align-items-center">
+                                    {Object.entries(courses).map(([id, course]) => (
+                                        <ListGroup.Item key={id} className="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <h5>{title}</h5>
+                                                <h5>{course.title}</h5>
                                                 <a href={course.fileURL} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-primary">View File</a>
                                             </div>
                                             <div>
-                                                <Button variant="warning" size="sm" className="me-2" onClick={() => setEditingCourse({ title, fileURL: course.fileURL })}>Edit</Button>
-                                                <Button variant="danger" size="sm" onClick={() => handleDeleteCourse(title)}>Delete</Button>
+                                                <Button variant="warning" size="sm" className="me-2" onClick={() => setEditingCourse({ id, ...course })}>Edit</Button>
+                                                <Button variant="danger" size="sm" onClick={() => handleDeleteCourse(id)}>Delete</Button>
                                             </div>
                                         </ListGroup.Item>
                                     ))}
