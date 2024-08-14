@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Button, Row } from 'react-bootstrap';
 import { InputText } from 'primereact/inputtext';
 
-const DynamicForm2 = ({ formConfig, onSubmit, className = '', title = '', requiredFields = [], fileName = '', initialValues = {} }) => {
+const DynamicForm2 = ({ formConfig, onSubmit, className = '', title = '', requiredFields = [], fileName = '', initialValues = {}, buttonName }) => {
   const [formData, setFormData] = useState(initialValues || {});
 
   useEffect(() => {
@@ -74,11 +74,11 @@ const DynamicForm2 = ({ formConfig, onSubmit, className = '', title = '', requir
                       name={subField.name}
                       onChange={handleChange}
                     />
-                    {formData[subField.name] && (
+                    {/* {formData[subField.name] && (
                       <div className="mt-2">
                         <strong>Selected File:</strong> {formData[subField.name].name}
                       </div>
-                    )}
+                    )} */}
                   </Form.Group>
                 )}
               </Row>
@@ -88,7 +88,7 @@ const DynamicForm2 = ({ formConfig, onSubmit, className = '', title = '', requir
       ))}
       <div className='text-center'>
         <Button type="submit" variant="primary">
-          Save
+          {buttonName}
         </Button>
       </div>
     </Form>
