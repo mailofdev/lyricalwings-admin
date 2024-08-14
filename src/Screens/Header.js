@@ -101,7 +101,7 @@ const Header = ({ theme }) => {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto d-flex gap-4">
             <Nav.Item>
-              <Nav.Link as={NavLink} exact to="/Dashboard" className="nav-link-custom">
+              <Nav.Link as={NavLink} exact={true} to="/Dashboard" className="nav-link-custom">
                 <FaHome /> Dashboard
               </Nav.Link>
             </Nav.Item>

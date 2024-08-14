@@ -1,41 +1,101 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { db, ref, set, get } from '../Config/firebase';
+import { get, ref, push, update, remove } from 'firebase/database';
+import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { db, storage } from '../Config/firebase';
 
-export const fetchAboutData = createAsyncThunk(
-  'about/fetchData',
-  async (sectionKey, { rejectWithValue }) => {
+export const fetchItems = createAsyncThunk(
+  'about/fetchItems',
+  async (_, { rejectWithValue }) => {
     try {
-      const aboutRef = ref(db, `About/${sectionKey}`);
-      const snapshot = await get(aboutRef);
+      const itemsRef = ref(db, 'BookData');
+      const snapshot = await get(itemsRef);
       if (snapshot.exists()) {
-        return { [sectionKey]: snapshot.val() };
+        return Object.entries(snapshot.val()).map(([id, data]) => ({ id, ...data }));
       }
-      return { [sectionKey]: {} };
+      return [];
     } catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
 
-export const saveAboutData = createAsyncThunk(
-  'about/saveData',
-  async ({ sectionKey, id, data }, { rejectWithValue }) => {
+export const addItem = createAsyncThunk(
+  'about/addItem',
+  async (itemData, { rejectWithValue }) => {
     try {
-      const aboutRef = ref(db, `About/${sectionKey}/${id}`);
-      await set(aboutRef, data);
-      return { sectionKey, id, data };
+      const itemsRef = ref(db, 'BookData');
+      const newItemRef = push(itemsRef);
+      
+      if (itemData.bookFile) {
+        const fileRef = storageRef(storage, `covers/${newItemRef.key}_${itemData.bookFile.name}`);
+        await uploadBytes(fileRef, itemData.bookFile);
+        const downloadURL = await getDownloadURL(fileRef);
+        itemData.bookFileUrl = downloadURL;
+        delete itemData.bookFile;
+      }
+
+      await update(newItemRef, itemData);
+      return { id: newItemRef.key, ...itemData };
     } catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
 
-export const deleteAboutData = createAsyncThunk(
-  'about/deleteData',
-  async ({ sectionKey, id }, { rejectWithValue }) => {
+
+
+export const updateItem = createAsyncThunk(
+  'about/updateItem',
+  async ({ id, itemData }, { rejectWithValue, getState }) => {
     try {
-      await set(ref(db, `About/${sectionKey}/${id}`), null);
-      return { sectionKey, id };
+      const itemRef = ref(db, `BookData/${id}`);
+
+      // Get the current item data
+      const snapshot = await get(itemRef);
+      const currentItem = snapshot.val();
+
+      if (itemData.bookFile) {
+        // Delete the existing file if it exists
+        if (currentItem.bookFileUrl) {
+          const oldFileRef = storageRef(storage, currentItem.bookFileUrl);
+          await deleteObject(oldFileRef);
+        }
+
+        // Upload the new file
+        const fileRef = storageRef(storage, `covers/${id}_${itemData.bookFile.name}`);
+        await uploadBytes(fileRef, itemData.bookFile);
+        const downloadURL = await getDownloadURL(fileRef);
+        itemData.bookFileUrl = downloadURL;
+        delete itemData.bookFile;
+      } else if (itemData.bookFileUrl === null) {
+        // If bookFileUrl is explicitly set to null, delete the existing file
+        if (currentItem.bookFileUrl) {
+          const oldFileRef = storageRef(storage, currentItem.bookFileUrl);
+          await deleteObject(oldFileRef);
+        }
+        // Remove the bookFileUrl from the itemData
+        delete itemData.bookFileUrl;
+      } else {
+        // If no new file is provided and bookFileUrl is not null, keep the existing bookFileUrl
+        itemData.bookFileUrl = currentItem.bookFileUrl;
+      }
+
+      // Update the item in the database
+      await update(itemRef, itemData);
+      return { id, ...itemData };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const deleteItem = createAsyncThunk(
+  'about/deleteItem',
+  async (id, { rejectWithValue }) => {
+    try {
+      const itemRef = ref(db, `BookData/${id}`);
+      await remove(itemRef);
+      return id;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -45,59 +105,70 @@ export const deleteAboutData = createAsyncThunk(
 const aboutSlice = createSlice({
   name: 'about',
   initialState: {
-    aboutUs: {},
-    aboutme: {},
-    myBooks: {},
+    BookData: [],
     loading: false,
     error: null,
-    saveLoading: false,
-    deleteLoading: false,
   },
-  reducers: {},
+  reducers: {
+    clearError: (state) => {
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
-      // Fetch Data
-      .addCase(fetchAboutData.pending, (state) => {
+      .addCase(fetchItems.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchAboutData.fulfilled, (state, action) => {
+      .addCase(fetchItems.fulfilled, (state, action) => {
         state.loading = false;
-        Object.assign(state, action.payload);
+        state.BookData = action.payload;
       })
-      .addCase(fetchAboutData.rejected, (state, action) => {
+      .addCase(fetchItems.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      // Save Data
-      .addCase(saveAboutData.pending, (state) => {
-        state.saveLoading = true;
+      .addCase(addItem.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
-      .addCase(saveAboutData.fulfilled, (state, action) => {
-        state.saveLoading = false;
-        const { sectionKey, id, data } = action.payload;
-        state[sectionKey][id] = data;
+      .addCase(addItem.fulfilled, (state, action) => {
+        state.loading = false;
+        state.BookData.push(action.payload);
       })
-      .addCase(saveAboutData.rejected, (state, action) => {
-        state.saveLoading = false;
+      .addCase(addItem.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       })
-      // Delete Data
-      .addCase(deleteAboutData.pending, (state) => {
-        state.deleteLoading = true;
+      .addCase(updateItem.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
-      .addCase(deleteAboutData.fulfilled, (state, action) => {
-        state.deleteLoading = false;
-        const { sectionKey, id } = action.payload;
-        delete state[sectionKey][id];
+      .addCase(updateItem.fulfilled, (state, action) => {
+        state.loading = false;
+        const index = state.BookData.findIndex(item => item.id === action.payload.id);
+        if (index !== -1) {
+          state.BookData[index] = action.payload;
+        }
       })
-      .addCase(deleteAboutData.rejected, (state, action) => {
-        state.deleteLoading = false;
+      .addCase(updateItem.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteItem.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteItem.fulfilled, (state, action) => {
+        state.loading = false;
+        state.BookData = state.BookData.filter(item => item.id !== action.payload);
+      })
+      .addCase(deleteItem.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       });
   },
 });
 
+export const { clearError } = aboutSlice.actions;
 export default aboutSlice.reducer;

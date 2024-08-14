@@ -1,212 +1,162 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchAboutData, saveAboutData, deleteAboutData } from '../redux/aboutSlice';
-import Loader from "../Components/Loader";
-import '../App.css';
-import "../css/loader.css";
-import { Panel } from 'primereact/panel';
-import { Button } from 'primereact/button';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import { ConfirmPopup } from 'primereact/confirmpopup';
-import { confirmPopup } from 'primereact/confirmpopup';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Button } from 'react-bootstrap';
+import Loader from '../Components/Loader';
+import AdvancedForm from '../Components/AdvancedForm';
+import { fetchItems, addItem, updateItem, deleteItem, clearError } from '../redux/aboutSlice';
 import { Toast } from 'primereact/toast';
+import { Dialog } from 'primereact/dialog';
+import 'primereact/resources/themes/saga-blue/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
 
-function AboutSection({ sectionName, sectionKey }) {
+const About = () => {
     const dispatch = useDispatch();
-    const aboutData = useSelector(state => state.about[sectionKey]);
-    const loading = useSelector(state => state.about.loading);
-
-    const [text, setText] = useState('');
-    const [bookLink, setBookLink] = useState('');
-    const [editing, setEditing] = useState(false);
-    const [dataId, setDataId] = useState('');
-    const [showAddPanel, setShowAddPanel] = useState(false);
-    const [contentChanged, setContentChanged] = useState(false);
-    const [wordCount, setWordCount] = useState(0);
-
+    const { BookData, loading, error } = useSelector((state) => state.about);
+    const [editingItem, setEditingItem] = useState(null);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
     const toast = useRef(null);
 
-    useEffect(() => {
-        dispatch(fetchAboutData(sectionKey));
-    }, [dispatch, sectionKey]);
-
-    const countWords = (text) => {
-        return text.trim().split(/\s+/).length;
-    };
-
-    const saveData = async () => {
-        let minWordCount = 250;
-        let maxWordCount = 300;
-
-        if (sectionKey === "myBooks") {
-            minWordCount = 20;
-            maxWordCount = 50;
-        }
-
-        if (wordCount < minWordCount || wordCount > maxWordCount) {
-            toast.current.show({ severity: 'warn', summary: 'Warning', detail: `Content must be between ${minWordCount} and ${maxWordCount} words.`, life: 3000 });
-            return;
-        }
-
-        const data = { text };
-        if (sectionKey === "myBooks" && bookLink.trim() !== "") {
-            data.bookLink = bookLink;
-        }
-
-        const id = editing ? dataId : Date.now().toString();
-
-        try {
-            await dispatch(saveAboutData({ sectionKey, id, data })).unwrap();
-            setEditing(false);
-            setText('');
-            setBookLink('');
-            setShowAddPanel(false);
-            setContentChanged(false);
-            toast.current.show({ severity: 'success', summary: 'Success', detail: 'Data saved successfully', life: 3000 });
-        } catch (error) {
-            console.error("Error saving data:", error);
-            toast.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to save data', life: 3000 });
-        }
-    };
-
-    const deleteData = useCallback(async (id) => {
-        try {
-            await dispatch(deleteAboutData({ sectionKey, id })).unwrap();
-            setText('');
-            setBookLink('');
-            setEditing(false);
-            setShowAddPanel(false);
-            toast.current.show({ severity: 'success', summary: 'Success', detail: 'Data deleted successfully', life: 3000 });
-        } catch (error) {
-            console.error("Error deleting data:", error);
-            toast.current.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete data', life: 3000 });
-        }
-    }, [dispatch, sectionKey]);
-
-    const confirmDelete = useCallback((event, id) => {
-        confirmPopup({
-            target: event.currentTarget,
-            message: 'Are you sure you want to delete this content?',
-            icon: 'pi pi-exclamation-triangle',
-            accept: () => deleteData(id),
+    const fetchData = useCallback(() => {
+        dispatch(fetchItems()).catch((error) => {
+            console.error('Error fetching items:', error);
+            showToast('error', 'Error', 'Failed to fetch items');
         });
-    }, [deleteData]);
+    }, [dispatch]);
 
-    const editData = useCallback((id) => {
-        setText(aboutData[id].text);
-        if (aboutData[id].bookLink) {
-            setBookLink(aboutData[id].bookLink);
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    useEffect(() => {
+        if (error) {
+            console.error('Redux error:', error);
+            showToast('error', 'Error', error);
+            setTimeout(() => dispatch(clearError()), 5000);
         }
-        setEditing(true);
-        setDataId(id);
-        setShowAddPanel(true);
-    }, [aboutData]);
+    }, [error, dispatch]);
 
-    const cancelEdit = () => {
-        setText('');
-        setBookLink('');
-        setEditing(false);
-        setShowAddPanel(false);
-        setContentChanged(false);
+    const formConfig = [
+        {
+            fields: [
+                { type: 'input', name: 'title', label: 'Enter name of book' },
+                { type: 'textarea', name: 'content', label: 'Book description' },
+                { type: 'input', name: 'link', label: 'Book link' },
+                { type: 'file', name: 'bookFile', label: 'Cover Image (PNG, JPG, or PDF)' }
+            ]
+        }
+    ];
+
+    const handleFormSubmit = async (data, formType, itemId = null) => {
+        try {
+            console.log('Submitting form:', data, formType, itemId);
+            if (formType === 'add') {
+                const result = await dispatch(addItem(data)).unwrap();
+                console.log('Item added successfully:', result);
+                showToast('success', 'Success', 'Item added successfully');
+            } else if (formType === 'edit' && itemId) {
+                const result = await dispatch(updateItem({ id: itemId, itemData: data })).unwrap();
+                console.log('Item updated successfully:', result);
+                showToast('success', 'Success', 'Item updated successfully');
+                setEditingItem(null);
+            }
+            fetchData();
+        } catch (error) {
+            console.error("Error submitting form:", error);
+            showToast('error', 'Error', error.message);
+        }
     };
 
-    const handleChange = (value) => {
-        const wordCount = countWords(value);
-        setText(value);
-        setWordCount(wordCount);
-        setContentChanged(value.trim() !== '');
+    const handleDelete = async (id) => {
+        setItemToDelete(id);
+        setShowDeleteDialog(true);
     };
 
-    return (
-        <div className='card shadow-sm'>
-            <Panel header={sectionName} toggleable>
-                {showAddPanel ? (
-                    <div className="card">
-                        <div className='p-2'>
-                            <div>{editing ? "Edit content" : "Add content"}</div>
-                            <ReactQuill
-                                theme="snow"
-                                key={editing ? dataId : 'new'}
-                                value={text}
-                                onChange={handleChange}
-                            />
-                            {sectionKey === "myBooks" && (
-                                <input
-                                    type="url"
-                                    placeholder="Book Link"
-                                    value={bookLink}
-                                    onChange={(e) => setBookLink(e.target.value)}
-                                    className="mt-2 w-100"
-                                />
-                            )}
-                            <div className='text-center'>
-                                <Button
-                                    label={editing ? "Update" : "Save"}
-                                    onClick={saveData}
-                                    className="mt-2"
-                                    disabled={!contentChanged || (aboutData && Object.keys(aboutData).length >= 3)}
-                                />
-                                <Button label="Cancel" onClick={cancelEdit} className="mt-2 ml-2 p-button-secondary" />
-                            </div>
-                            <div className='text-right'>
-                                {sectionKey === "myBooks" ? (
-                                    <small>{wordCount} words (20-50 words required)</small>
-                                ) : (
-                                    <small>{wordCount} words (250-300 words required)</small>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    (sectionKey === "myBooks" || (sectionKey === "aboutUs" || sectionKey === "aboutme") && (!aboutData || Object.keys(aboutData).length < 1)) && (
-                        <Button label="Add content" onClick={() => setShowAddPanel(true)} className="mt-2" />
-                    )
-                )}
+    const confirmDelete = async () => {
+        try {
+            await dispatch(deleteItem(itemToDelete)).unwrap();
+            console.log('Item deleted successfully');
+            showToast('success', 'Success', 'Item deleted successfully');
+            fetchData();
+        } catch (error) {
+            console.error("Error deleting item:", error);
+            showToast('error', 'Error', error.message);
+        }
+        setShowDeleteDialog(false);
+        setItemToDelete(null);
+    };
 
-                {loading ? <Loader loadingMessage="loading.." /> : (
-                    aboutData && Object.keys(aboutData).length > 0 && (
-                        <div className="mt-4">
-                            {Object.entries(aboutData).map(([key, data]) => (
-                                <div key={key} className="mb-2 card shadow-sm p-2">
-                                    <div dangerouslySetInnerHTML={{ __html: data.text }}></div>
-                                    {data.bookLink && (
-                                        <div>
-                                            <a href={data.bookLink} target="_blank" rel="noopener noreferrer">Book Link</a>
-                                        </div>
-                                    )}
-                                    <div className="mt-2 d-flex gap-2">
-                                        <Button label="Edit" onClick={() => editData(key)} className="p-button-warning mr-2" />
-                                        <Button label="Delete" onClick={(e) => confirmDelete(e, key)} className="p-button-danger" />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )
-                )}
-            </Panel>
-            <ConfirmPopup />
-            <Toast ref={toast} />
-        </div>
-    );
-}
+    const showToast = (severity, summary, detail) => {
+        toast.current.show({ severity, summary, detail, life: 3000 });
+    };
 
-function About() {
     return (
         <div className='container'>
-            <div className='gap-3 d-flex flex-column'>
-                <div className='card shadow-sm'>
-                    <AboutSection sectionName="My Books" sectionKey="myBooks" />
+            <Toast ref={toast} />
+            {loading && <Loader />}
+
+                <AdvancedForm
+                    formConfig={formConfig}
+                    className='dynamic-form'
+                    onSubmit={handleFormSubmit}
+                    editingItem={editingItem}
+                    title={editingItem ? "Edit book" : "Add book"}
+                    requiredFields={['title', 'content']}
+                    buttonLabel={editingItem ? 'Update' : 'Add'}
+                />
+
+
+            {BookData.length > 0 && (
+                <div>
+                    {BookData.map((item) => (
+                        <div key={item.id} className="card mb-3">
+                            <div className="card-body">
+                                <h3 className="card-title">{item.title}</h3>
+                                <p className="card-text">{item.content}</p>
+                                {item.link && (
+                                    <a href={item.link} className="card-link" target="_blank" rel="noopener noreferrer">Book Link</a>
+                                )}
+                                {item.bookFileUrl && (
+                                    <div className="mt-2">
+                                        {item.bookFileUrl.toLowerCase().endsWith('.pdf') ? (
+                                            <a href={item.bookFileUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-secondary">
+                                                View PDF Cover
+                                            </a>
+                                        ) : (
+                                            <a href={item.bookFileUrl} target="_blank" rel="noopener noreferrer">
+                                                <img src={item.bookFileUrl} alt="Book cover" style={{ maxWidth: '100px', maxHeight: '100px' }} className="img-thumbnail" />
+                                            </a>
+                                        )}
+                                    </div>
+                                )}
+                                <div className="mt-3">
+                                    <Button variant="primary" onClick={() => {
+                                        setEditingItem(item);
+                                    }} className="me-2">Edit</Button>
+                                    <Button variant="danger" onClick={() => handleDelete(item.id)}>Delete</Button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
-                <div className='card shadow-sm'>
-                    <AboutSection sectionName="About Us" sectionKey="aboutUs" />
-                </div>
-                <div className='card shadow-sm'>
-                    <AboutSection sectionName="About Me" sectionKey="aboutme" />
-                </div>
-            </div>
+            )}
+
+            <Dialog
+                header="Confirm Delete"
+                visible={showDeleteDialog}
+                onHide={() => setShowDeleteDialog(false)}
+                footer={(
+                    <div>
+                        <Button variant="secondary" onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
+                        <Button variant="danger" onClick={confirmDelete}>Delete</Button>
+                    </div>
+                )}
+            >
+                <p>Are you sure you want to delete this item?</p>
+            </Dialog>
         </div>
     );
-}
+};
 
 export default About;
