@@ -15,12 +15,6 @@ const Books = () => {
     const [itemToDelete, setItemToDelete] = useState(null);
     const toast = useRef(null);
 
-    // const fetchData = () => {
-    //     dispatch(fetchItems()).catch((error) => {
-    //         console.error('Error fetching items:', error);
-    //         showToast('error', 'Error', 'Failed to fetch items');
-    //     });
-    // };
 
     useEffect(() => {
         fetchItems();
@@ -41,7 +35,7 @@ const Books = () => {
                 { type: 'input', name: 'title', label: 'Enter name of book' },
                 { type: 'textarea', name: 'content', label: 'Book description' },
                 { type: 'input', name: 'link', label: 'Book link' },
-                { type: 'file', name: 'bookFile', label: 'Cover Image (PNG, JPG, or PDF)' }
+                // { type: 'file', name: 'bookFile', label: 'Cover Image (PNG, JPG, or PDF)' }
             ]
         }
     ];

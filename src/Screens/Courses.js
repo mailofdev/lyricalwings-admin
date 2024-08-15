@@ -6,6 +6,7 @@ import CourseForm from '../Components/CourseForm';
 import { fetchItems, addItem, updateItem, deleteItem, clearError } from '../redux/courseSlice';
 import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
+import { FaEdit, FaTrash } from 'react-icons/fa';
 
 const Courses = () => {
     const dispatch = useDispatch();
@@ -18,46 +19,39 @@ const Courses = () => {
     const formConfig = [
         {
             fields: [
-                { type: 'input', name: 'titleOfPoem', label: 'Title of poem' },
-                { type: 'textarea', name: 'introductionOfPoem', label: 'Introduction of poem' },
-                { type: 'textarea', name: 'structureOfPoem', label: 'Structure of poem' },
-                { type: 'file', name: 'structureFileURL', label: 'Upload structure of poem' },
-                { type: 'textarea', name: 'literatureOfPoem', label: 'Literature of poem' },
-                { type: 'file', name: 'literatureFileURL', label: 'Upload literature of poem' },
-                { type: 'textarea', name: 'methodologyOfPoem', label: 'Methodology of poem' },
-                { type: 'file', name: 'methodologyFileURL', label: 'Upload methodology of poem' },
-                { type: 'textarea', name: 'evalutionOfPoem', label: 'Evaluation of poem' },
-                { type: 'file', name: 'evalutionFileURL', label: 'Upload evaluation of poem' },
-                { type: 'textarea', name: 'conclusionOfPoem', label: 'Conclusion of poem' },
-                { type: 'file', name: 'conclusionFileURL', label: 'Upload conclusion of poem' },
+                { type: 'input', name: 'titleOfType', label: 'Title of type' },
+                { type: 'textarea', name: 'introductionOfType', label: 'Introduction of type' },
+                { type: 'textarea', name: 'structureOfType', label: 'Structure of type' },
+                { type: 'file', name: 'structureFileURL', label: 'Upload file of structure' },
+                { type: 'textarea', name: 'literatureOfType', label: 'Literature of type' },
+                { type: 'file', name: 'literatureFileURL', label: 'Upload file of literature' },
+                { type: 'textarea', name: 'methodologyOfType', label: 'Methodology of type' },
+                { type: 'file', name: 'methodologyFileURL', label: 'Upload file of methodology' },
+                { type: 'textarea', name: 'evalutionOfType', label: 'Evaluation of type' },
+                { type: 'file', name: 'evalutionFileURL', label: 'Upload file of evalution' },
+                { type: 'textarea', name: 'conclusionOfType', label: 'Conclusion of type' },
+                { type: 'file', name: 'conclusionFileURL', label: 'Upload file of conclusion' },
             ]
         }
     ];
 
     useEffect(() => {
         dispatch(fetchItems());
-        if (error) {
-            console.error('Redux error:', error);
-            showToast('error', 'Error', error);
-            setTimeout(() => dispatch(clearError()), 5000);
-        }
-    }, [dispatch, error]);
+    }, [dispatch]);
 
     const handleFormSubmit = async (data, formType, itemId = null) => {
         try {
-            console.log('Submitting form:', data, formType, itemId);
             const fileFields = formConfig[0].fields
                 .filter(field => field.type === 'file')
                 .map(field => field.name);
-    
-            // Process file fields
+
             const processedData = { ...data };
             fileFields.forEach(field => {
                 if (processedData[field] && processedData[field].objectURL) {
                     processedData[field] = processedData[field].objectURL;
                 }
             });
-    
+
             if (formType === 'add') {
                 await dispatch(addItem({ itemData: processedData, fileFields })).unwrap();
                 showToast('success', 'Success', 'Item added successfully');
@@ -66,7 +60,7 @@ const Courses = () => {
                 showToast('success', 'Success', 'Item updated successfully');
                 setEditingItem(null);
             }
-            dispatch(fetchItems());
+            fetchItems()
         } catch (error) {
             console.error("Error submitting form:", error);
             showToast('error', 'Error', error.message);
@@ -85,7 +79,7 @@ const Courses = () => {
                 .map(field => field.name);
             await dispatch(deleteItem({ id: itemToDelete, fileFields })).unwrap();
             showToast('success', 'Success', 'Item deleted successfully');
-            dispatch(fetchItems());
+            fetchItems()
         } catch (error) {
             console.error("Error deleting item:", error);
             showToast('error', 'Error', error.message);
@@ -99,7 +93,7 @@ const Courses = () => {
     };
 
     return (
-        <div className='container'>
+        <div className='container d-flex flex-column gap-3'>
             <Toast ref={toast} />
             {loading && <Loader loadingMessage="Loading courses" />}
 
@@ -109,35 +103,43 @@ const Courses = () => {
                 onSubmit={handleFormSubmit}
                 editingItem={editingItem}
                 title={editingItem ? "Edit course" : "Add course"}
-                requiredFields={['titleOfPoem']}
-                buttonLabel={editingItem ? 'Update' : 'Add'}
-                maxFileSize={15000000} // 5MB max file size
+                requiredFields={['titleOfType']}
+                buttonLabel={editingItem ? "Update course" : "Add course"}
+                maxFileSize={15000000}
             />
 
             {CourseData.length > 0 && (
                 <div>
                     {CourseData.map((item) => (
-                        <div key={item.id} className="card mb-3">
-                            <div className="card-body">
-                                <h3 className="card-title">{item.titleOfPoem}</h3>
+                        <div key={item.id} className="dynamic-form card shadow-sm mb-4">
+                            <div className='gap-2 d-flex flex-column'>
                                 {formConfig[0].fields.map((field) => (
                                     field.type !== 'file' && (
-                                        <p key={field.name} className="card-text">
-                                            <strong>{field.label}:</strong> {item[field.name]}
-                                        </p>
+                                        <div className='card p-2'>
+                                            <p key={field.name} className="">
+                                               <strong>{field.label}:</strong> {item[field.name]}
+                                            </p>
+                                        </div>
                                     )
                                 ))}
-                                {formConfig[0].fields.map((field) => (
-                                    field.type === 'file' && item[field.name] && (
-                                        <p key={field.name}>
-                                            <strong>{field.label}:</strong>{' '}
-                                            <a href={item[field.name]} target="_blank" rel="noopener noreferrer">View File</a>
-                                        </p>
-                                    )
-                                ))}
-                                <div className="mt-3">
-                                    <Button variant="primary" onClick={() => setEditingItem(item)} className="me-2">Edit</Button>
-                                    <Button variant="danger" onClick={() => handleDelete(item.id)}>Delete</Button>
+
+
+                                <div className='d-flex gap-1 justify-content-center flex-wrap'>
+                                    {formConfig[0].fields.map((field) => (
+                                        field.type === 'file' && item[field.name] && (
+
+                                            <Button key={field.name} variant="outline-secondary">
+                                                <a href={item[field.name]} target="_blank" rel="noopener noreferrer" className="text-decoration-none text-primary">
+                                                    {field.name.replace(/[.#$[\]]/g, '_').replace('FileURL', '')}
+                                                </a>
+                                            </Button>
+                                        )
+                                    ))}
+                                </div>
+
+                                <div className='d-flex gap-2 justify-content-center flex-wrap'>
+                                    <Button variant="primary" onClick={() => setEditingItem(item)}> <FaEdit/> </Button>
+                                    <Button variant="danger" onClick={() => handleDelete(item.id)}> <FaTrash/> </Button>
                                 </div>
                             </div>
                         </div>

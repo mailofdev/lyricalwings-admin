@@ -77,7 +77,7 @@ const CourseForm = ({ formConfig, onSubmit, className = '', title = '', required
       await onSubmit(formData, editingItem ? 'edit' : 'add', editingItem?.id);
       setFormData({});
       setErrors({});
-      
+
       // Clear file inputs
       Object.keys(fileUploadRefs.current).forEach(refName => {
         if (fileUploadRefs.current[refName]) {
@@ -97,8 +97,8 @@ const CourseForm = ({ formConfig, onSubmit, className = '', title = '', required
       {formConfig.map((field, fieldIndex) => (
         <React.Fragment key={fieldIndex}>
           {Array.isArray(field.fields) && field.fields.map((subField, index) => (
-            <Row key={index}>
-              <Form.Group controlId={`${subField.name}-${index}`} className="mb-3">
+            <Row key={index} className='my-3'>
+              <Form.Group controlId={`${subField.name}-${index}`} className="">
                 <Form.Label>{subField.label}</Form.Label>
                 {subField.type === 'input' && (
                   <InputText

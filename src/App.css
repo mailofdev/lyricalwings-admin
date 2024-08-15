@@ -4,13 +4,15 @@
 }
 
 .btn.active {
-  background-color: #007bff; /* Change this color to fit your design */
+  background-color: #007bff;
+  /* Change this color to fit your design */
   color: #fff;
   border-color: #007bff;
 }
 
 .btn.inactive {
-  background-color: #e9ecef; /* Change this color to fit your design */
+  background-color: #e9ecef;
+  /* Change this color to fit your design */
   color: #495057;
   border-color: #ced4da;
 }
@@ -18,13 +20,14 @@
 .disabled-div {
   pointer-events: none;
   opacity: 0.6;
-  cursor: not-allowed; 
+  cursor: not-allowed;
 }
 
 
-.navbar{
+.navbar {
   background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%) !important;
 }
+
 .nav-link-custom {
   position: relative;
   color: lightgray;
@@ -65,7 +68,7 @@
 }
 
 .bg-gradient-primary {
-  background: linear-gradient(90deg, rgb(78, 164, 235) 0%, rgba(2,136,209,1) 100%);
+  background: linear-gradient(90deg, rgb(78, 164, 235) 0%, rgba(2, 136, 209, 1) 100%);
 }
 
 /* General Gradient for All Poems */
@@ -136,7 +139,7 @@
 .bg-gradient-disgust:hover,
 .bg-gradient-fear:hover,
 .bg-gradient-surprise:hover,
-.bg-gradient-show-all:hover, 
+.bg-gradient-show-all:hover,
 .bg-gradient-story:hover,
 .bg-gradient-novel:hover {
   background-position: right center;
@@ -153,12 +156,15 @@
 .bg-transparent {
   background: transparent !important;
 }
-.mt-40{
+
+.mt-40 {
   margin-top: 40px;
 }
-.pt-40{
+
+.pt-40 {
   padding-top: 40px;
 }
+
 /* < - - - - - - - - - -  //#region auth modal */
 
 
@@ -233,10 +239,12 @@
 
 /* < - - - - - - - - - -  //#region body */
 
-/* Ensure the body covers the full viewport */
+p {
+  margin: unset !important;
+}
 body {
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(to right, #e0f7fa, #80deea); 
+  background: linear-gradient(to right, #e0f7fa, #80deea);
   height: 100%;
 }
 
@@ -247,8 +255,9 @@ body {
   flex-direction: column;
 }
 
-.form-select {
-  padding: unset !important;
+.form-label, .form-select {
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 ul {
@@ -260,6 +269,58 @@ ul {
 /* //#endregion body - - - - - - - - - - > */
 
 /* < - - - - - - - - - -  //#region prime override classes */
+
+.p-button .p-button-icon-left{
+  margin: 0.3rem !important;
+}
+ .p-button-label {
+  display: none; 
+}
+
+.p-fileupload-row {
+  margin-top: 6px;
+  border-radius: 6px !important;
+  border: 0.5px solid black !important;
+}
+
+.p-button {
+  padding: 0.3rem !important;
+  border-radius: 6px !important;
+  border: 0.5px solid black !important;
+}
+
+.p-button:disabled {
+  cursor: default !important;
+}
+
+.p-fileupload .p-fileupload-buttonbar .p-button {
+  margin-right: unset !important;
+}
+
+.p-fileupload-content>.p-progressbar {
+  width: unset !important;
+}
+
+.p-fileupload .p-fileupload-buttonbar {
+  background: unset !important;
+  padding: unset !important;
+  border: unset !important;
+  color: unset !important;
+  border-bottom: unset !important;
+  border-top-right-radius: unset !important;
+  border-top-left-radius: unset !important;
+  gap: 0.5rem;
+}
+
+.p-fileupload .p-fileupload-content {
+  background: unset !important;
+  padding: unset !important;
+  border: unset !important;
+  color: unset !important;
+  border-bottom: unset !important;
+  border-top-right-radius: unset !important;
+  border-top-left-radius: unset !important;
+}
 
 .p-dropdown .p-dropdown-label {
   width: 100% !important;
