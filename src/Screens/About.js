@@ -7,6 +7,7 @@ import { fetchItems, addItem, updateItem, deleteItem, clearError } from '../redu
 import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
 import { FaEdit, FaTrash } from 'react-icons/fa';
+import { MdCancel } from "react-icons/md";
 
 const About = () => {
     const dispatch = useDispatch();
@@ -29,7 +30,7 @@ const About = () => {
 
     useEffect(() => {
         fetchData();
-    }, [fetchData]);
+    }, []);
 
     useEffect(() => {
         if (error) {
@@ -37,7 +38,7 @@ const About = () => {
             showToast('error', 'Error', error);
             setTimeout(() => dispatch(clearError()), 5000);
         }
-    }, [error, dispatch]);
+    }, [error]);
 
     const formConfig = {
         aboutMe: [
@@ -115,14 +116,24 @@ const About = () => {
                         About Us
                     </Button>
                 </div>
-                <AdvancedForm
-                    className='dynamic-form'
-                    onSubmit={handleFormSubmit}
-                    formConfig={formConfig[itemType]}
-                    editingItem={editingItem}
-                    isEditMode={isEditMode}
-                    isFormDisabled={isFormDisabled}
-                />
+
+                <div className={isFormDisabled ? 'disabled-div' : ''}>
+                    <AdvancedForm
+                        className='dynamic-form'
+                        onSubmit={handleFormSubmit}
+                        formConfig={formConfig[itemType]}
+                        editingItem={editingItem}
+                        isEditMode={isEditMode}
+                    />
+                </div>
+                {items.length > 0 && (
+                    <div className='text-center text-danger'>
+                        {isFormDisabled
+                            ? 'You have already added data. You can now edit the existing information.'
+                            : 'You are currently editing the data. Feel free to make changes.'}
+                    </div>
+                )}
+
                 {loading && <Loader loadingMessage="Loading about data." />}
                 {!loading && items.length === 0 && <p>No items found.</p>}
                 {!loading && items.length > 0 && (
@@ -145,8 +156,9 @@ const About = () => {
                 header="Confirm Deletion"
                 footer={
                     <>
-                        <Button label="Yes" icon="pi pi-check" onClick={confirmDelete} />
-                        <Button label="No" icon="pi pi-times" onClick={() => setShowDeleteDialog(false)} />
+                        <div className='text-center'>
+                            <Button label="No" variant='danger' icon="pi pi-times" onClick={confirmDelete} > <FaTrash /> Delete </Button>
+                        </div>
                     </>
                 }
             >

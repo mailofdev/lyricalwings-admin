@@ -20,11 +20,11 @@ const Books = () => {
             console.error('Error fetching items:', error);
             showToast('error', 'Error', 'Failed to fetch items');
         });
-    }, [dispatch]);
+    }, []);
 
     useEffect(() => {
         fetchData();
-    }, [fetchData]);
+    }, []);
 
     useEffect(() => {
         if (error) {
@@ -32,7 +32,7 @@ const Books = () => {
             showToast('error', 'Error', error);
             setTimeout(() => dispatch(clearError()), 5000);
         }
-    }, [error, dispatch]);
+    }, [error]);
 
     const formConfig = [
         {
@@ -93,15 +93,15 @@ const Books = () => {
             <Toast ref={toast} />
             {loading && <Loader loadingMessage="Loading books" />}
 
-                <AdvancedForm
-                    formConfig={formConfig}
-                    className='dynamic-form'
-                    onSubmit={handleFormSubmit}
-                    editingItem={editingItem}
-                    title={editingItem ? "Edit book" : "Add book"}
-                    requiredFields={['title', 'content', 'link']}
-                    buttonLabel={editingItem ? 'Update' : 'Add'}
-                />
+            <AdvancedForm
+                formConfig={formConfig}
+                className='dynamic-form'
+                onSubmit={handleFormSubmit}
+                editingItem={editingItem}
+                title={editingItem ? "Edit book" : "Add book"}
+                requiredFields={['title', 'content', 'link']}
+                buttonLabel={editingItem ? 'Update' : 'Add'}
+            />
 
 
             {BookData.length > 0 && (

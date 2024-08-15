@@ -16,8 +16,8 @@ const StoryAndNovel = () => {
 
 
   useEffect(() => {
-    dispatch(fetchStoryAndNovel());
-  }, [dispatch]);
+    fetchStoryAndNovel();
+  }, []);
 
 
   const handleFormSubmit = async (data) => {
