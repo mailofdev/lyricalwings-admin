@@ -1,18 +1,19 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { get, ref, push, update, remove } from 'firebase/database';
-import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { db, storage } from '../Config/firebase';
+import { db } from '../Config/firebase';
 
 export const fetchItems = createAsyncThunk(
   'about/fetchItems',
   async (_, { rejectWithValue }) => {
     try {
-      const itemsRef = ref(db, 'BookData');
-      const snapshot = await get(itemsRef);
-      if (snapshot.exists()) {
-        return Object.entries(snapshot.val()).map(([id, data]) => ({ id, ...data }));
-      }
-      return [];
+      const aboutMeRef = ref(db, 'collection/aboutMeData');
+      const aboutUsRef = ref(db, 'collection/aboutUsData');
+      const [aboutMeSnapshot, aboutUsSnapshot] = await Promise.all([get(aboutMeRef), get(aboutUsRef)]);
+
+      const aboutMeData = aboutMeSnapshot.exists() ? Object.entries(aboutMeSnapshot.val()).map(([id, data]) => ({ id, ...data })) : [];
+      const aboutUsData = aboutUsSnapshot.exists() ? Object.entries(aboutUsSnapshot.val()).map(([id, data]) => ({ id, ...data })) : [];
+
+      return { aboutMeData, aboutUsData };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -21,68 +22,25 @@ export const fetchItems = createAsyncThunk(
 
 export const addItem = createAsyncThunk(
   'about/addItem',
-  async (itemData, { rejectWithValue }) => {
+  async ({ type, itemData }, { rejectWithValue }) => {
     try {
-      const itemsRef = ref(db, 'BookData');
+      const itemsRef = ref(db, `collection/${type}Data`);
       const newItemRef = push(itemsRef);
-      
-      if (itemData.bookFile) {
-        const fileRef = storageRef(storage, `covers/${newItemRef.key}_${itemData.bookFile.name}`);
-        await uploadBytes(fileRef, itemData.bookFile);
-        const downloadURL = await getDownloadURL(fileRef);
-        itemData.bookFileUrl = downloadURL;
-        delete itemData.bookFile;
-      }
-
       await update(newItemRef, itemData);
-      return { id: newItemRef.key, ...itemData };
+      return { id: newItemRef.key, ...itemData, type };
     } catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
 
-
-
 export const updateItem = createAsyncThunk(
   'about/updateItem',
-  async ({ id, itemData }, { rejectWithValue, getState }) => {
+  async ({ id, type, itemData }, { rejectWithValue }) => {
     try {
-      const itemRef = ref(db, `BookData/${id}`);
-
-      // Get the current item data
-      const snapshot = await get(itemRef);
-      const currentItem = snapshot.val();
-
-      if (itemData.bookFile) {
-        // Delete the existing file if it exists
-        if (currentItem.bookFileUrl) {
-          const oldFileRef = storageRef(storage, currentItem.bookFileUrl);
-          await deleteObject(oldFileRef);
-        }
-
-        // Upload the new file
-        const fileRef = storageRef(storage, `covers/${id}_${itemData.bookFile.name}`);
-        await uploadBytes(fileRef, itemData.bookFile);
-        const downloadURL = await getDownloadURL(fileRef);
-        itemData.bookFileUrl = downloadURL;
-        delete itemData.bookFile;
-      } else if (itemData.bookFileUrl === null) {
-        // If bookFileUrl is explicitly set to null, delete the existing file
-        if (currentItem.bookFileUrl) {
-          const oldFileRef = storageRef(storage, currentItem.bookFileUrl);
-          await deleteObject(oldFileRef);
-        }
-        // Remove the bookFileUrl from the itemData
-        delete itemData.bookFileUrl;
-      } else {
-        // If no new file is provided and bookFileUrl is not null, keep the existing bookFileUrl
-        itemData.bookFileUrl = currentItem.bookFileUrl;
-      }
-
-      // Update the item in the database
+      const itemRef = ref(db, `collection/${type}Data/${id}`);
       await update(itemRef, itemData);
-      return { id, ...itemData };
+      return { id, type, ...itemData };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -91,11 +49,11 @@ export const updateItem = createAsyncThunk(
 
 export const deleteItem = createAsyncThunk(
   'about/deleteItem',
-  async (id, { rejectWithValue }) => {
+  async ({ id, type }, { rejectWithValue }) => {
     try {
-      const itemRef = ref(db, `BookData/${id}`);
+      const itemRef = ref(db, `collection/${type}Data/${id}`);
       await remove(itemRef);
-      return id;
+      return { id, type };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -105,69 +63,54 @@ export const deleteItem = createAsyncThunk(
 const aboutSlice = createSlice({
   name: 'about',
   initialState: {
-    BookData: [],
+    aboutMeData: [],
+    aboutUsData: [],
     loading: false,
-    error: null,
+    error: null
   },
   reducers: {
     clearError: (state) => {
       state.error = null;
-    },
+    }
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchItems.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(fetchItems.fulfilled, (state, action) => {
+        state.aboutMeData = action.payload.aboutMeData;
+        state.aboutUsData = action.payload.aboutUsData;
         state.loading = false;
-        state.BookData = action.payload;
       })
       .addCase(fetchItems.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.payload;
-      })
-      .addCase(addItem.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+        state.loading = false;
       })
       .addCase(addItem.fulfilled, (state, action) => {
-        state.loading = false;
-        state.BookData.push(action.payload);
-      })
-      .addCase(addItem.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      .addCase(updateItem.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(updateItem.fulfilled, (state, action) => {
-        state.loading = false;
-        const index = state.BookData.findIndex(item => item.id === action.payload.id);
-        if (index !== -1) {
-          state.BookData[index] = action.payload;
+        if (action.payload.type === 'aboutMe') {
+          state.aboutMeData.push(action.payload);
+        } else {
+          state.aboutUsData.push(action.payload);
         }
       })
-      .addCase(updateItem.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      .addCase(deleteItem.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      .addCase(updateItem.fulfilled, (state, action) => {
+        const { id, type, ...updatedData } = action.payload;
+        const items = type === 'aboutMe' ? state.aboutMeData : state.aboutUsData;
+        const index = items.findIndex(item => item.id === id);
+        if (index !== -1) {
+          items[index] = { ...items[index], ...updatedData };
+        }
       })
       .addCase(deleteItem.fulfilled, (state, action) => {
-        state.loading = false;
-        state.BookData = state.BookData.filter(item => item.id !== action.payload);
-      })
-      .addCase(deleteItem.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+        const { id, type } = action.payload;
+        const items = type === 'aboutMe' ? state.aboutMeData : state.aboutUsData;
+        const index = items.findIndex(item => item.id === id);
+        if (index !== -1) {
+          items.splice(index, 1);
+        }
       });
-  },
+  }
 });
 
 export const { clearError } = aboutSlice.actions;

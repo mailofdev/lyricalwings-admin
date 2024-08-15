@@ -1,3 +1,26 @@
+.btn {
+  border: 1px solid transparent;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.btn.active {
+  background-color: #007bff; /* Change this color to fit your design */
+  color: #fff;
+  border-color: #007bff;
+}
+
+.btn.inactive {
+  background-color: #e9ecef; /* Change this color to fit your design */
+  color: #495057;
+  border-color: #ced4da;
+}
+
+.disabled-div {
+  pointer-events: none;
+  opacity: 0.6;
+  cursor: not-allowed; 
+}
+
 
 .navbar{
   background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%) !important;
