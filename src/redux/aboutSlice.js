@@ -6,8 +6,8 @@ export const fetchItems = createAsyncThunk(
   'about/fetchItems',
   async (_, { rejectWithValue }) => {
     try {
-      const aboutMeRef = ref(db, 'collection/aboutMeData');
-      const aboutUsRef = ref(db, 'collection/aboutUsData');
+      const aboutMeRef = ref(db, 'about/aboutMeData');
+      const aboutUsRef = ref(db, 'about/aboutUsData');
       const [aboutMeSnapshot, aboutUsSnapshot] = await Promise.all([get(aboutMeRef), get(aboutUsRef)]);
 
       const aboutMeData = aboutMeSnapshot.exists() ? Object.entries(aboutMeSnapshot.val()).map(([id, data]) => ({ id, ...data })) : [];
@@ -24,7 +24,7 @@ export const addItem = createAsyncThunk(
   'about/addItem',
   async ({ type, itemData }, { rejectWithValue }) => {
     try {
-      const itemsRef = ref(db, `collection/${type}Data`);
+      const itemsRef = ref(db, `about/${type}Data`);
       const newItemRef = push(itemsRef);
       await update(newItemRef, itemData);
       return { id: newItemRef.key, ...itemData, type };
@@ -38,7 +38,7 @@ export const updateItem = createAsyncThunk(
   'about/updateItem',
   async ({ id, type, itemData }, { rejectWithValue }) => {
     try {
-      const itemRef = ref(db, `collection/${type}Data/${id}`);
+      const itemRef = ref(db, `about/${type}Data/${id}`);
       await update(itemRef, itemData);
       return { id, type, ...itemData };
     } catch (error) {
@@ -51,7 +51,7 @@ export const deleteItem = createAsyncThunk(
   'about/deleteItem',
   async ({ id, type }, { rejectWithValue }) => {
     try {
-      const itemRef = ref(db, `collection/${type}Data/${id}`);
+      const itemRef = ref(db, `about/${type}Data/${id}`);
       await remove(itemRef);
       return { id, type };
     } catch (error) {
