@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button } from 'react-bootstrap';
 import Loader from '../Components/Loader';
@@ -15,16 +15,16 @@ const Books = () => {
     const [itemToDelete, setItemToDelete] = useState(null);
     const toast = useRef(null);
 
-    const fetchData = useCallback(() => {
-        dispatch(fetchItems()).catch((error) => {
-            console.error('Error fetching items:', error);
-            showToast('error', 'Error', 'Failed to fetch items');
-        });
-    }, []);
+    // const fetchData = () => {
+    //     dispatch(fetchItems()).catch((error) => {
+    //         console.error('Error fetching items:', error);
+    //         showToast('error', 'Error', 'Failed to fetch items');
+    //     });
+    // };
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        fetchItems();
+    });
 
     useEffect(() => {
         if (error) {
@@ -32,7 +32,8 @@ const Books = () => {
             showToast('error', 'Error', error);
             setTimeout(() => dispatch(clearError()), 5000);
         }
-    }, [error]);
+    });
+
 
     const formConfig = [
         {
@@ -58,7 +59,7 @@ const Books = () => {
                 showToast('success', 'Success', 'Item updated successfully');
                 setEditingItem(null);
             }
-            fetchData();
+            fetchItems();
         } catch (error) {
             console.error("Error submitting form:", error);
             showToast('error', 'Error', error.message);
@@ -75,7 +76,7 @@ const Books = () => {
             await dispatch(deleteItem(itemToDelete)).unwrap();
             console.log('Item deleted successfully');
             showToast('success', 'Success', 'Item deleted successfully');
-            fetchData();
+            fetchItems();
         } catch (error) {
             console.error("Error deleting item:", error);
             showToast('error', 'Error', error.message);

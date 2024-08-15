@@ -1,88 +1,63 @@
-import { createSlice, createAsyncThunk, createAction } from '@reduxjs/toolkit';
-import { ref, set, get, remove } from 'firebase/database';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { get, ref, push, update, remove } from 'firebase/database';
+import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from '../Config/firebase';
-import { ref as storageRef, deleteObject, getDownloadURL, uploadBytes } from 'firebase/storage';
 
-const sanitizeTitle = (title) => {
-  if (typeof title !== 'string' || !title.trim()) {
-    throw new Error('Title is required and must be a non-empty string');
-  }
-  return title.trim().replace(/[.#$[\]]/g, '_');
+// Helper function to upload a file and get its URL
+const uploadFile = async (file, path) => {
+  if (!file) return null;
+  const fileRef = storageRef(storage, path);
+  await uploadBytes(fileRef, file);
+  return await getDownloadURL(fileRef);
 };
 
-const handleFileOperation = async (file, path) => {
-  if (file) {
-    const fileRef = storageRef(storage, path);
-    await uploadBytes(fileRef, file);
-    return await getDownloadURL(fileRef);
-  }
-  return null;
+// Helper function to delete a file
+const deleteFile = async (url) => {
+  if (!url) return;
+  const fileRef = storageRef(storage, url);
+  await deleteObject(fileRef);
 };
-
-const deleteFileIfExists = async (fileURL) => {
-  if (fileURL) {
-    const fileRef = storageRef(storage, fileURL);
-    try {
-      await deleteObject(fileRef);
-    } catch (error) {
-      console.error("Error deleting file:", error);
-    }
-  }
-};
-
-export const addItem = createAsyncThunk(
-  'courses/addItem',
-  async ({ type, ...rest }, { rejectWithValue }) => {
-    try {
-      const titleField = type === 'intro' ? 'introTitle' : 'titleOfPoem';
-      const title = sanitizeTitle(rest[titleField]);
-
-      const itemRef = ref(db, `courses/${type}/${title}`);
-      const fileFields = ['introFileURL', 'structureFileURL', 'literatureFileURL', 'methodologyFileURL', 'evalutionFileURL', 'conclusionFileURL'];
-      
-      for (let field of fileFields) {
-        if (rest[field] && rest[field].file) {
-          rest[field] = await handleFileOperation(rest[field].file, `courses/${type}/${title}/${field}/${rest[field].name}`);
-        }
-      }
-
-      await set(itemRef, { [titleField]: title, ...rest });
-      return { type, [titleField]: title, ...rest };
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
 
 export const fetchItems = createAsyncThunk(
   'courses/fetchItems',
-  async (type, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const itemsRef = ref(db, `courses/${type}`);
+      const itemsRef = ref(db, 'CourseData');
       const snapshot = await get(itemsRef);
-      return { type, items: snapshot.exists() ? snapshot.val() : {} };
+      if (snapshot.exists() && snapshot.val()) {
+        return Object.entries(snapshot.val()).map(([id, data]) => ({ id, ...data }));
+      }
+      return [];
     } catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
 
-export const deleteItem = createAsyncThunk(
-  'courses/deleteItem',
-  async ({ type, title }, { rejectWithValue }) => {
+export const addItem = createAsyncThunk(
+  'courses/addItem',
+  async ({ itemData, fileFields }, { rejectWithValue }) => {
     try {
-      const sanitizedTitle = sanitizeTitle(title);
-      const itemRef = ref(db, `courses/${type}/${sanitizedTitle}`);
-      const snapshot = await get(itemRef);
-      if (snapshot.exists()) {
-        const item = snapshot.val();
-        const fileFields = ['introFileURL', 'structureFileURL', 'literatureFileURL', 'methodologyFileURL', 'evalutionFileURL', 'conclusionFileURL'];
-        for (let field of fileFields) {
-          await deleteFileIfExists(item[field]);
+      const itemsRef = ref(db, 'CourseData');
+      const newItemRef = push(itemsRef);
+      const id = newItemRef.key;
+
+      // Upload files and get URLs
+      for (const field of fileFields) {
+        if (itemData[field]) {
+          // Check if it's a blob URL
+          if (itemData[field].startsWith('blob:')) {
+            const response = await fetch(itemData[field]);
+            const blob = await response.blob();
+            itemData[field] = await uploadFile(blob, `CourseData/${id}_${field}`);
+          } else if (itemData[field] instanceof File) {
+            itemData[field] = await uploadFile(itemData[field], `CourseData/${id}_${field}`);
+          }
         }
       }
-      await remove(itemRef);
-      return { type, title: sanitizedTitle };
+
+      await update(newItemRef, itemData);
+      return { id, ...itemData };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -91,114 +66,133 @@ export const deleteItem = createAsyncThunk(
 
 export const updateItem = createAsyncThunk(
   'courses/updateItem',
-  async ({ type, oldTitle, newTitle, ...rest }, { rejectWithValue }) => {
+  async ({ id, itemData, fileFields }, { rejectWithValue }) => {
     try {
-      const titleField = type === 'intro' ? 'introTitle' : 'titleOfPoem';
-      const sanitizedOldTitle = sanitizeTitle(oldTitle);
-      const sanitizedNewTitle = sanitizeTitle(newTitle);
+      const itemRef = ref(db, `CourseData/${id}`);
+      const snapshot = await get(itemRef);
+      const currentItem = snapshot.val();
 
-      const oldItemRef = ref(db, `courses/${type}/${sanitizedOldTitle}`);
-      const newItemRef = ref(db, `courses/${type}/${sanitizedNewTitle}`);
-
-      const snapshot = await get(oldItemRef);
-      if (!snapshot.exists()) {
-        return rejectWithValue('Item not found');
-      }
-      const oldItem = snapshot.val();
-
-      const fileFields = ['introFileURL', 'structureFileURL', 'literatureFileURL', 'methodologyFileURL', 'evaluationFileURL', 'conclusionFileURL'];
-      const updatedItem = { ...oldItem, ...rest };
-
-      for (let field of fileFields) {
-        if (rest[field] && rest[field].file) {
-          await deleteFileIfExists(oldItem[field]);
-          updatedItem[field] = await handleFileOperation(rest[field].file, `courses/${type}/${sanitizedNewTitle}/${field}/${rest[field].name}`);
-        } else if (rest[field] === null) {
-          // If the field is explicitly set to null, remove it
-          delete updatedItem[field];
+      // Handle file updates
+      for (const field of fileFields) {
+        if (itemData[field]) {
+          if (itemData[field].startsWith('blob:')) {
+            // New file uploaded
+            if (currentItem[field]) {
+              await deleteFile(currentItem[field]);
+            }
+            const response = await fetch(itemData[field]);
+            const blob = await response.blob();
+            itemData[field] = await uploadFile(blob, `CourseData/${id}_${field}`);
+          } else if (itemData[field] instanceof File) {
+            // New file uploaded
+            if (currentItem[field]) {
+              await deleteFile(currentItem[field]);
+            }
+            itemData[field] = await uploadFile(itemData[field], `CourseData/${id}_${field}`);
+          }
+        } else if (itemData[field] === null) {
+          // File removed
+          if (currentItem[field]) {
+            await deleteFile(currentItem[field]);
+          }
+          delete itemData[field];
+        } else {
+          // No change, keep existing URL
+          itemData[field] = currentItem[field];
         }
-        // If the field is not in rest, keep the old value
       }
 
-      if (sanitizedOldTitle !== sanitizedNewTitle) {
-        await remove(oldItemRef);
-      }
-      await set(newItemRef, { [titleField]: sanitizedNewTitle, ...updatedItem });
-
-      return { type, oldTitle: sanitizedOldTitle, newTitle: sanitizedNewTitle, [titleField]: sanitizedNewTitle, ...updatedItem };
+      await update(itemRef, itemData);
+      return { id, ...itemData };
     } catch (error) {
-      return rejectWithValue(error.message || 'An error occurred while updating the item');
+      return rejectWithValue(error.message);
     }
   }
 );
 
-export const clearError = createAction('courses/clearError');
+export const deleteItem = createAsyncThunk(
+  'courses/deleteItem',
+  async ({ id, fileFields }, { rejectWithValue }) => {
+    try {
+      const itemRef = ref(db, `CourseData/${id}`);
+      const snapshot = await get(itemRef);
+      const currentItem = snapshot.val();
+
+      // Delete all associated files
+      for (const field of fileFields) {
+        if (currentItem[field]) {
+          await deleteFile(currentItem[field]);
+        }
+      }
+
+      await remove(itemRef);
+      return id;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 const courseSlice = createSlice({
   name: 'courses',
   initialState: {
-    intro: {},
-    types: {},
-    status: 'idle',
+    CourseData: [],
+    loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    clearError(state) {
+      state.error = null;
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchItems.pending, (state) => {
-        state.status = 'loading';
+        state.loading = true;
       })
       .addCase(fetchItems.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state[action.payload.type] = action.payload.items;
+        state.loading = false;
+        state.CourseData = action.payload;
+      })
+      .addCase(fetchItems.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       })
       .addCase(addItem.pending, (state) => {
-        state.status = 'loading';
-        state.error = null;
+        state.loading = true;
       })
       .addCase(addItem.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        const { type, ...rest } = action.payload;
-        const titleField = type === 'intro' ? 'introTitle' : 'titleOfPoem';
-        state[type][rest[titleField]] = rest;
+        state.loading = false;
+        state.CourseData.push(action.payload);
       })
       .addCase(addItem.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.payload || 'An unknown error occurred';
+        state.loading = false;
+        state.error = action.payload;
       })
       .addCase(updateItem.pending, (state) => {
-        state.status = 'loading';
-        state.error = null;
+        state.loading = true;
       })
       .addCase(updateItem.fulfilled, (state, action) => {
-        const { type, oldTitle, newTitle, ...rest } = action.payload;
-        const titleField = type === 'intro' ? 'introTitle' : 'titleOfPoem';
-        state.status = 'succeeded';
-        if (oldTitle !== newTitle) {
-          delete state[type][oldTitle];
-        }
-        state[type][newTitle] = { [titleField]: newTitle, ...rest };
+        state.loading = false;
+        state.CourseData = state.CourseData.map(item => item.id === action.payload.id ? action.payload : item);
       })
       .addCase(updateItem.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.payload || 'An unknown error occurred';
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(deleteItem.pending, (state) => {
+        state.loading = true;
       })
       .addCase(deleteItem.fulfilled, (state, action) => {
-        const { type, title } = action.payload;
-        delete state[type][title];
+        state.loading = false;
+        state.CourseData = state.CourseData.filter(item => item.id !== action.payload);
       })
-      .addCase(clearError, (state) => {
-        state.error = null;
-        state.status = 'idle';
-      })
-      .addMatcher(
-        (action) => action.type.endsWith('/rejected'),
-        (state, action) => {
-          state.status = 'failed';
-          state.error = action.error.message || 'An unknown error occurred';
-        }
-      );
+      .addCase(deleteItem.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 
+export const { clearError } = courseSlice.actions;
 export default courseSlice.reducer;

@@ -1,255 +1,164 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import DynamicForm2 from '../Components/DynamicForm2';
-import { addItem, fetchItems, deleteItem, updateItem, clearError } from '../redux/courseSlice';
-import { Button, Row, Col, Container, Modal } from 'react-bootstrap';
-import { FaEdit, FaEye, FaTrash } from 'react-icons/fa';
-import { MdCancel } from "react-icons/md";
+import { Button } from 'react-bootstrap';
+import Loader from '../Components/Loader';
+import CourseForm from '../Components/CourseForm';
+import { fetchItems, addItem, updateItem, deleteItem, clearError } from '../redux/courseSlice';
 import { Toast } from 'primereact/toast';
-import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
-
-const sanitizeTitle = (title) => {
-    if (typeof title !== 'string' || !title.trim()) {
-        throw new Error('Title is required and must be a non-empty string');
-    }
-    return title.trim().replace(/[.#$[\]]/g, '_');
-};
-
-const CourseItem = React.memo(({ title, item, type, onEdit, onDelete, onFileView }) => (
-    <div className='d-flex gap-2 flex-column mb-3'>
-        <div className="fw-bold">{title}</div>
-        {item.introductionOfPoem && <div>{item.introductionOfPoem}</div>}
-
-        {item.structureOfPoem && <div>{item.structureOfPoem}</div>}
-        {item.literatureOfPoem && <div>{item.literatureOfPoem}</div>}
-        {item.methodologyOfPoem && <div>{item.methodologyOfPoem}</div>}
-        {item.evalutionOfPoem && <div>{item.evalutionOfPoem}</div>}
-        {item.conclusionOfPoem && <div>{item.conclusionOfPoem}</div>}
-        
-        <div className='d-flex justify-content-between flex-wrap'>
-            <Button variant="warning" onClick={onEdit}><FaEdit /></Button>
-            {['introFileURL', 'structureFileURL', 'literatureFileURL', 'methodologyFileURL', 'evalutionFileURL', 'conclusionFileURL'].map(field =>
-                item[field] && (
-                    <Button key={field} variant="outline-primary" onClick={() => onFileView(item[field], field)}>
-                        <FaEye /> <span className='text-uppercase'>{field.replace('FileURL', '')}</span>
-                    </Button>
-                )
-            )}
-            <Button variant="danger" onClick={onDelete}><FaTrash /></Button>
-        </div>
-    </div>
-));
-
+import { Dialog } from 'primereact/dialog';
 
 const Courses = () => {
     const dispatch = useDispatch();
-    const { intro, types, status, error } = useSelector((state) => state.courses);
-    const [editing, setEditing] = useState({ type: null, item: null });
-    const [formKey, setFormKey] = useState(0);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const { CourseData, loading, error } = useSelector((state) => state.courses);
+    const [editingItem, setEditingItem] = useState(null);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
     const toast = useRef(null);
 
-    const [showFileModal, setShowFileModal] = useState(false);
-    const [currentFileUrl, setCurrentFileUrl] = useState('');
-
-    const openFileModal = (fileUrl) => {
-        setCurrentFileUrl(fileUrl);
-        setShowFileModal(true);
-    };
-
-    const formConfigs = {
-        intro: [
-            {
-                fields: [
-                    { type: 'textarea', name: 'introTitle', label: 'Title', required: true },
-                    { type: 'file', name: 'introFileURL', label: 'Upload File' },
-                ],
-            },
-        ],
-        types: [
-            {
-                fields: [
-                    { type: 'input', name: 'titleOfPoem', label: 'Title of poem', required: true },
-                    { type: 'textarea', name: 'introductionOfPoem', label: 'Introduction of poem' },
-                    { type: 'textarea', name: 'structureOfPoem', label: 'Structure of poem' },
-                    { type: 'file', name: 'structureFileURL', label: 'Upload structure of poem' },
-                    { type: 'textarea', name: 'literatureOfPoem', label: 'Literature of poem' },
-                    { type: 'file', name: 'literatureFileURL', label: 'Upload literature of poem' },
-                    { type: 'textarea', name: 'methodologyOfPoem', label: 'Methodology of poem' },
-                    { type: 'file', name: 'methodologyFileURL', label: 'Upload methodology of poem' },
-                    { type: 'textarea', name: 'evalutionOfPoem', label: 'Evaluation of poem' },
-                    { type: 'file', name: 'evalutionFileURL', label: 'Upload evaluation of poem' },
-                    { type: 'textarea', name: 'conclusionOfPoem', label: 'Conclusion of poem' },
-                    { type: 'file', name: 'conclusionFileURL', label: 'Upload conclusion of poem' },
-                ],
-            },
-        ],
-    };
+    const formConfig = [
+        {
+            fields: [
+                { type: 'input', name: 'titleOfPoem', label: 'Title of poem' },
+                { type: 'textarea', name: 'introductionOfPoem', label: 'Introduction of poem' },
+                { type: 'textarea', name: 'structureOfPoem', label: 'Structure of poem' },
+                { type: 'file', name: 'structureFileURL', label: 'Upload structure of poem' },
+                { type: 'textarea', name: 'literatureOfPoem', label: 'Literature of poem' },
+                { type: 'file', name: 'literatureFileURL', label: 'Upload literature of poem' },
+                { type: 'textarea', name: 'methodologyOfPoem', label: 'Methodology of poem' },
+                { type: 'file', name: 'methodologyFileURL', label: 'Upload methodology of poem' },
+                { type: 'textarea', name: 'evalutionOfPoem', label: 'Evaluation of poem' },
+                { type: 'file', name: 'evalutionFileURL', label: 'Upload evaluation of poem' },
+                { type: 'textarea', name: 'conclusionOfPoem', label: 'Conclusion of poem' },
+                { type: 'file', name: 'conclusionFileURL', label: 'Upload conclusion of poem' },
+            ]
+        }
+    ];
 
     useEffect(() => {
-        dispatch(fetchItems('intro'));
-        dispatch(fetchItems('types'));
-        return () => {
-            dispatch(clearError());
-        };
-    }, [dispatch]);
-
-    const showToast = useCallback((severity, summary, detail) => {
-        toast.current.show({ severity, summary, detail, life: 3000 });
-    }, []);
-
-    const validateForm = (formData, type) => {
-        const errors = {};
-        if (!formData[type === 'intro' ? 'introTitle' : 'titleOfPoem']) {
-            errors.title = 'Title is required';
+        dispatch(fetchItems());
+        if (error) {
+            console.error('Redux error:', error);
+            showToast('error', 'Error', error);
+            setTimeout(() => dispatch(clearError()), 5000);
         }
-        // Add more field-specific validations here
-        return errors;
-    };
+    }, [dispatch, error]);
 
-    const handleSubmit = async (formData, type) => {
-        const errors = validateForm(formData, type);
-        if (Object.keys(errors).length > 0) {
-            showToast('error', 'Validation Error', 'Please correct the form errors');
-            return;
-        }
-        setIsSubmitting(true);
+    const handleFormSubmit = async (data, formType, itemId = null) => {
         try {
-            let titleField = type === 'intro' ? 'introTitle' : 'titleOfPoem';
-            const sanitizedTitle = sanitizeTitle(formData[titleField]);
-
-            const serializableData = Object.keys(formData).reduce((acc, key) => {
-                if (formData[key] instanceof File) {
-                    acc[key] = {
-                        name: formData[key].name,
-                        file: formData[key]
-                    };
-                } else {
-                    acc[key] = formData[key];
+            console.log('Submitting form:', data, formType, itemId);
+            const fileFields = formConfig[0].fields
+                .filter(field => field.type === 'file')
+                .map(field => field.name);
+    
+            // Process file fields
+            const processedData = { ...data };
+            fileFields.forEach(field => {
+                if (processedData[field] && processedData[field].objectURL) {
+                    processedData[field] = processedData[field].objectURL;
                 }
-                return acc;
-            }, {});
-
-            if (editing.type) {
-                const updateData = Object.keys(serializableData).reduce((acc, key) => {
-                    if (serializableData[key] !== undefined) {
-                        acc[key] = serializableData[key];
-                    }
-                    return acc;
-                }, {});
-
-                const resultAction = await dispatch(updateItem({
-                    type,
-                    oldTitle: editing.item[titleField],
-                    newTitle: sanitizedTitle,
-                    ...updateData
-                }));
-
-                if (updateItem.fulfilled.match(resultAction)) {
-                    setEditing({ type: null, item: null });
-                    showToast('success', 'Updated', `${type} updated successfully`);
-                } else if (updateItem.rejected.match(resultAction)) {
-                    throw new Error(resultAction.payload || 'Failed to update item');
-                }
-            } else {
-                const resultAction = await dispatch(addItem({ type, ...serializableData }));
-
-                if (addItem.fulfilled.match(resultAction)) {
-                    showToast('success', 'Added', `${type} added successfully`);
-                } else if (addItem.rejected.match(resultAction)) {
-                    throw new Error(resultAction.payload || 'Failed to add item');
-                }
+            });
+    
+            if (formType === 'add') {
+                await dispatch(addItem({ itemData: processedData, fileFields })).unwrap();
+                showToast('success', 'Success', 'Item added successfully');
+            } else if (formType === 'edit' && itemId) {
+                await dispatch(updateItem({ id: itemId, itemData: processedData, fileFields })).unwrap();
+                showToast('success', 'Success', 'Item updated successfully');
+                setEditingItem(null);
             }
-
-            setFormKey(prevKey => prevKey + 1);
-        } catch (err) {
-            showToast('error', 'Error', `Failed to ${editing.type ? 'update' : 'add'} ${type}: ${err.message}`);
-        } finally {
-            setIsSubmitting(false);
+            dispatch(fetchItems());
+        } catch (error) {
+            console.error("Error submitting form:", error);
+            showToast('error', 'Error', error.message);
         }
     };
 
-    const handleDelete = useCallback((type, title) => {
-        confirmDialog({
-            message: `Are you sure you want to delete this ${type}?`,
-            header: 'Confirm Delete',
-            icon: 'pi pi-exclamation-triangle',
-            accept: async () => {
-                try {
-                    await dispatch(deleteItem({ type, title: sanitizeTitle(title) })).unwrap();
-                    showToast('success', 'Deleted', `${type} deleted successfully`);
-                } catch (err) {
-                    showToast('error', 'Error', `Failed to delete ${type}: ${err.message}`);
-                }
-            }
-        });
-    }, [dispatch, showToast]);
+    const handleDelete = async (id) => {
+        setItemToDelete(id);
+        setShowDeleteDialog(true);
+    };
 
-    const handleEdit = useCallback((type, item) => {
-        setEditing({ type, item });
-    }, []);
+    const confirmDelete = async () => {
+        try {
+            const fileFields = formConfig[0].fields
+                .filter(field => field.type === 'file')
+                .map(field => field.name);
+            await dispatch(deleteItem({ id: itemToDelete, fileFields })).unwrap();
+            showToast('success', 'Success', 'Item deleted successfully');
+            dispatch(fetchItems());
+        } catch (error) {
+            console.error("Error deleting item:", error);
+            showToast('error', 'Error', error.message);
+        }
+        setShowDeleteDialog(false);
+        setItemToDelete(null);
+    };
 
-    const renderItems = (items, type) => (
-        <div className='dynamic-form mb-3'>
-            {Object.keys(items).length > 0 ? (
-                Object.entries(items).map(([title, item]) => (
-                    <CourseItem
-                        key={title}
-                        title={title}
-                        item={item}
-                        type={type}
-                        onEdit={() => handleEdit(type, item)}
-                        onDelete={() => handleDelete(type, title)}
-                        onFileView={openFileModal}
-                    />
-                ))
-            ) : (
-                <div>No data</div>
-            )}
-        </div>
-    );
-
-    const renderSection = (title, type, items) => (
-        <div className='section-container'>
-            <h4 className='section-title text-center'>{editing.type === type ? `Update ${title}` : title}</h4>
-            <DynamicForm2
-                key={`${type}-${formKey}`}
-                formConfig={formConfigs[type]}
-                className='dynamic-form'
-                onSubmit={(formData) => handleSubmit(formData, type)}
-                initialValues={editing.type === type ? editing.item : {}}
-                buttonName={editing.type === type ? 'Update' : 'Save'}
-                isSubmitting={isSubmitting}
-            />
-            <div>
-                {status === 'loading' && <p className="text-center">Loading...</p>}
-                {status === 'failed' && <p className="text-center text-danger">Error: {error}</p>}
-                {status === 'succeeded' && renderItems(items, type)}
-            </div>
-        </div>
-    );
+    const showToast = (severity, summary, detail) => {
+        toast.current.show({ severity, summary, detail, life: 3000 });
+    };
 
     return (
-        <Container>
+        <div className='container'>
             <Toast ref={toast} />
-            <ConfirmDialog />
-            <Row>
-                {renderSection('Introduction to Poetry', 'intro', intro)}
-                {renderSection('Types of Poems', 'types', types)}
-            </Row>
-            <Modal show={showFileModal} onHide={() => setShowFileModal(false)} size="lg">
-                <Modal.Header closeButton>
-                    <Modal.Title>File Viewer</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <iframe
-                        src={currentFileUrl}
-                        style={{ width: '100%', height: '600px' }}
-                        title="File Viewer"
-                    />
-                </Modal.Body>
-            </Modal>
-        </Container>
+            {loading && <Loader loadingMessage="Loading courses" />}
+
+            <CourseForm
+                formConfig={formConfig}
+                className='dynamic-form'
+                onSubmit={handleFormSubmit}
+                editingItem={editingItem}
+                title={editingItem ? "Edit course" : "Add course"}
+                requiredFields={['titleOfPoem']}
+                buttonLabel={editingItem ? 'Update' : 'Add'}
+                maxFileSize={15000000} // 5MB max file size
+            />
+
+            {CourseData.length > 0 && (
+                <div>
+                    {CourseData.map((item) => (
+                        <div key={item.id} className="card mb-3">
+                            <div className="card-body">
+                                <h3 className="card-title">{item.titleOfPoem}</h3>
+                                {formConfig[0].fields.map((field) => (
+                                    field.type !== 'file' && (
+                                        <p key={field.name} className="card-text">
+                                            <strong>{field.label}:</strong> {item[field.name]}
+                                        </p>
+                                    )
+                                ))}
+                                {formConfig[0].fields.map((field) => (
+                                    field.type === 'file' && item[field.name] && (
+                                        <p key={field.name}>
+                                            <strong>{field.label}:</strong>{' '}
+                                            <a href={item[field.name]} target="_blank" rel="noopener noreferrer">View File</a>
+                                        </p>
+                                    )
+                                ))}
+                                <div className="mt-3">
+                                    <Button variant="primary" onClick={() => setEditingItem(item)} className="me-2">Edit</Button>
+                                    <Button variant="danger" onClick={() => handleDelete(item.id)}>Delete</Button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            <Dialog
+                header="Confirm Delete"
+                visible={showDeleteDialog}
+                onHide={() => setShowDeleteDialog(false)}
+                footer={(
+                    <div>
+                        <Button variant="secondary" onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
+                        <Button variant="danger" onClick={confirmDelete}>Delete</Button>
+                    </div>
+                )}
+            >
+                <p>Are you sure you want to delete this item?</p>
+            </Dialog>
+        </div>
     );
 };
 

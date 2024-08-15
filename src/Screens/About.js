@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button } from 'react-bootstrap';
 import Loader from '../Components/Loader';
@@ -7,7 +7,6 @@ import { fetchItems, addItem, updateItem, deleteItem, clearError } from '../redu
 import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
 import { FaEdit, FaTrash } from 'react-icons/fa';
-import { MdCancel } from "react-icons/md";
 
 const About = () => {
     const dispatch = useDispatch();
@@ -21,16 +20,9 @@ const About = () => {
 
     const isFormDisabled = !isEditMode && (itemType === 'aboutMe' ? aboutMeData.length > 0 : aboutUsData.length > 0);
 
-    const fetchData = useCallback(() => {
-        dispatch(fetchItems()).catch((error) => {
-            console.error('Error fetching items:', error);
-            showToast('error', 'Error', 'Failed to fetch items');
-        });
-    }, [dispatch]);
-
     useEffect(() => {
-        fetchData();
-    }, []);
+        fetchItems();
+    });
 
     useEffect(() => {
         if (error) {
@@ -38,7 +30,7 @@ const About = () => {
             showToast('error', 'Error', error);
             setTimeout(() => dispatch(clearError()), 5000);
         }
-    }, [error]);
+    });
 
     const formConfig = {
         aboutMe: [
@@ -61,7 +53,7 @@ const About = () => {
                 setEditingItem(null);
                 setIsEditMode(false);
             }
-            fetchData();
+            fetchItems();
         } catch (error) {
             console.error("Error submitting form:", error);
             showToast('error', 'Error', error.message);
@@ -77,7 +69,7 @@ const About = () => {
         try {
             await dispatch(deleteItem({ id: itemToDelete, type: itemType })).unwrap();
             showToast('success', 'Success', 'Item deleted successfully');
-            fetchData();
+            fetchItems();
         } catch (error) {
             console.error("Error deleting item:", error);
             showToast('error', 'Error', error.message);
@@ -135,7 +127,7 @@ const About = () => {
                 )}
 
                 {loading && <Loader loadingMessage="Loading about data." />}
-                {!loading && items.length === 0 && <p>No items found.</p>}
+                {!loading && items.length === 0 && <p>No data found.</p>}
                 {!loading && items.length > 0 && (
                     <ul>
                         {items.map(item => (
