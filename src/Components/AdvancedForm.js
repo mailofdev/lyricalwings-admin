@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Form, Button, Row, Alert } from 'react-bootstrap';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { FileUpload } from 'primereact/fileupload';
 import JoditEditor from 'jodit-react';
 
-const AdvancedForm = ({ formConfig, onSubmit, className = '', title = '', requiredFields = [], buttonLabel = 'Submit', editingItem = null }) => {
+const AdvancedForm = ({ formConfig, onSubmit, className = '', title = '', requiredFields = [], buttonLabel = 'Submit', editingItem = null, maxFileSize }) => {
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
+  const fileUploadRefs = useRef({});
 
   useEffect(() => {
     if (editingItem) {
@@ -76,6 +77,13 @@ const AdvancedForm = ({ formConfig, onSubmit, className = '', title = '', requir
       await onSubmit(formData, editingItem ? 'edit' : 'add', editingItem?.id);
       setFormData({});
       setErrors({});
+      
+      // Clear file inputs
+      Object.keys(fileUploadRefs.current).forEach(refName => {
+        if (fileUploadRefs.current[refName]) {
+          fileUploadRefs.current[refName].clear();
+        }
+      });
     } catch (error) {
       console.error('Error submitting form:', error);
       setErrors({ submit: error.message });
@@ -130,9 +138,10 @@ const AdvancedForm = ({ formConfig, onSubmit, className = '', title = '', requir
                 )}
                 {subField.type === 'file' && (
                   <FileUpload
+                    ref={(el) => (fileUploadRefs.current[subField.name] = el)}
                     name={subField.name}
                     accept="image/*,application/pdf"
-                    maxFileSize={5000000}
+                    maxFileSize={maxFileSize}
                     onSelect={(e) => handleFileUpload(e, subField.name)}
                     className={errors[subField.name] ? 'is-invalid' : ''}
                   />

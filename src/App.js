@@ -13,6 +13,7 @@ import StoryAndNovel from './Screens/StoryAndNovel';
 import ItemList from './Screens/ItemList';
 import ItemDetails from './Screens/ItemDetails';
 import PrivateRoute from './Components/PrivateRoute'; // Import the PrivateRoute component
+import Books from './Screens/Books';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           {/* Private Routes */}
           <Route path="/Dashboard/*" element={<PrivateRoute element={Dashboard} />} />
           <Route path="/PoemForm" element={<PrivateRoute element={PoemForm} />} />
+          <Route path="/Books" element={<PrivateRoute element={Books} />} />
           <Route path="/About" element={<PrivateRoute element={About} />} />
           <Route path="/Courses" element={<PrivateRoute element={Courses} />} />
           <Route path="/User" element={<PrivateRoute element={User} />} />

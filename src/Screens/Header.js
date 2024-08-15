@@ -121,8 +121,13 @@ const Header = ({ theme }) => {
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
+              <Nav.Link as={NavLink} to="/Books" className="nav-link-custom">
+                <FaBook /> Books
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
               <Nav.Link as={NavLink} to="/About" className="nav-link-custom">
-                <FaInfoCircle /> About 
+                <FaInfoCircle /> About
               </Nav.Link>
             </Nav.Item>
             <NavDropdown title={<span>Other</span>} id="about-dropdown" className="nav-link-custom">
