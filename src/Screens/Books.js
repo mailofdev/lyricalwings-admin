@@ -35,21 +35,17 @@ const Books = () => {
                 { type: 'input', name: 'title', label: 'Enter name of book' },
                 { type: 'textarea', name: 'content', label: 'Book description' },
                 { type: 'input', name: 'link', label: 'Book link' },
-                // { type: 'file', name: 'bookFile', label: 'Cover Image (PNG, JPG, or PDF)' }
             ]
         }
     ];
 
     const handleFormSubmit = async (data, formType, itemId = null) => {
         try {
-            console.log('Submitting form:', data, formType, itemId);
             if (formType === 'add') {
-                const result = await dispatch(addItem(data)).unwrap();
-                console.log('Item added successfully:', result);
+                await dispatch(addItem(data)).unwrap();
                 showToast('success', 'Success', 'Item added successfully');
             } else if (formType === 'edit' && itemId) {
-                const result = await dispatch(updateItem({ id: itemId, itemData: data })).unwrap();
-                console.log('Item updated successfully:', result);
+                await dispatch(updateItem({ id: itemId, itemData: data })).unwrap();
                 showToast('success', 'Success', 'Item updated successfully');
                 setEditingItem(null);
             }
@@ -68,7 +64,6 @@ const Books = () => {
     const confirmDelete = async () => {
         try {
             await dispatch(deleteItem(itemToDelete)).unwrap();
-            console.log('Item deleted successfully');
             showToast('success', 'Success', 'Item deleted successfully');
             fetchItems();
         } catch (error) {

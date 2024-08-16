@@ -14,6 +14,7 @@ import ItemList from './Screens/ItemList';
 import ItemDetails from './Screens/ItemDetails';
 import PrivateRoute from './Components/PrivateRoute'; // Import the PrivateRoute component
 import Books from './Screens/Books';
+import StoryAndNovelItemList from './Screens/StoryAndNovelItemList';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
           <Route path="/User" element={<PrivateRoute element={User} />} />
           <Route path="/StoryAndNovel" element={<PrivateRoute element={StoryAndNovel} />} />
           <Route path="/ItemList/:type" element={<PrivateRoute element={ItemList} />} />
+          <Route path="/StoryAndNovelItemList/:type" element={<PrivateRoute element={StoryAndNovelItemList} />} />
           <Route path="/item/:id" element={<PrivateRoute element={ItemDetails} />} />
         </Routes>
       </div>

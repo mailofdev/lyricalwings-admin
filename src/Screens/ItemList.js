@@ -83,17 +83,17 @@ const ItemList = () => {
             <Col md={4} sm={6} xs={12} key={item.id} className="mb-4">
               <Card className="shadow-sm h-100" style={{ background: item.cardColor }} onClick={() => handleEdit(item)}>
                 <Card.Body>
-                  <Card.Title className="h5 ellipsis" style={{ color: item.fontColor }}>
+                  <Card.Title className="h5 text-truncate" style={{ color: item.fontColor }}>
                     {item.title}
                   </Card.Title>
-                  <Card.Subtitle className="mb-2 text-muted ellipsis" style={{ color: item.fontColor }}>
+                  <Card.Subtitle className="mb-2 text-muted text-truncate" style={{ color: item.fontColor }}>
                     {item.isShowDangerouslySetInnerHTML ? (
                       <div dangerouslySetInnerHTML={{ __html: item.subTitle }}></div>
                     ) : (
                       <div>{item.subTitle}</div>
                     )}
                   </Card.Subtitle>
-                  <Card.Text style={{ color: item.fontColor }} className="ellipsis">
+                  <Card.Text style={{ color: item.fontColor }} className="text-truncate">
                     <div dangerouslySetInnerHTML={{ __html: item.content }}></div>
                   </Card.Text>
                   <div className="text-muted small mt-2">

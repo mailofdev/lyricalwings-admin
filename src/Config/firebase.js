@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, get, child, remove, update, push, equalTo, orderByChild } from "firebase/database";
+import { getDatabase, ref, set, get, child, remove, update, push, equalTo, orderByChild, } from "firebase/database";
 import { getStorage, uploadBytes, getDownloadURL } from "firebase/storage";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 

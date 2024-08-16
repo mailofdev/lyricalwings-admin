@@ -1,45 +1,28 @@
-import React, { useEffect, } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchStoryAndNovel, postStoryAndNovel } from '../redux/contentSlice';
-import { useNavigate } from 'react-router-dom';
 import Loader from '../Components/Loader';
+import AdvancedForm from '../Components/AdvancedForm';
+import {fetchStoryAndNovels, addStoryAndNovels, updateStoryAndNovels, clearError } from '../redux/storyAndNovelSlice';
+import { Toast } from 'primereact/toast';
 import ResponsiveCard from '../Components/ResponsiveCard';
 import { FaBook, FaBookOpen, FaScroll } from 'react-icons/fa';
-import DynamicForm from '../Components/DynamicForm';
+import { useNavigate } from 'react-router-dom';
 
 const StoryAndNovel = () => {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
-  const storyAndNovel = useSelector((state) => state.content.storyAndNovel || []);
-  const loading = useSelector((state) => state.content.loading);
-  const { storyLength, novelLength, } = useSelector((state) => state.dashboard);
-
+  const navigate = useNavigate();
+  const { storyAndNovelData, loading, error } = useSelector((state) => state.storyAndNovels);
+  const [editingItem, setEditingItem] = useState(null);
+  const toast = useRef(null);
 
   useEffect(() => {
-    fetchStoryAndNovel();
-  }, []);
-
-
-  const handleFormSubmit = async (data) => {
-    try {
-      const storyAndNovelData = {
-        title: data.get('title'),
-        content: data.get('content'),
-        type: data.get('type'),
-      };
-      await dispatch(postStoryAndNovel(storyAndNovelData));
-
-      navigate(`/ItemList/${storyAndNovelData.type}`, { state: { storyAndNovel: [...storyAndNovel, storyAndNovelData] } });
-    } catch (error) {
-      console.error('Error posting story/novel:', error);
-      alert(error.message);
+    dispatch(fetchStoryAndNovels());
+    if (error) {
+      console.error('Redux error:', error);
+      showToast('error', 'Error', error);
+      setTimeout(() => dispatch(clearError()), 5000);
     }
-  };
-
-  const handleClick = (type) => {
-    const filteredStoryAndNovel = storyAndNovel.filter((item) => item.type === type);
-    navigate(`/ItemList/${type}`, { state: { storyAndNovel: filteredStoryAndNovel } });
-  };
+  }, [error, dispatch]);
 
   const formConfig = [
     {
@@ -51,7 +34,7 @@ const StoryAndNovel = () => {
         },
         {
           type: 'editor',
-          name: 'content',
+          name: 'htmlContent',
           label: 'Content',
           config: {
             readonly: false,
@@ -70,7 +53,7 @@ const StoryAndNovel = () => {
         {
           type: 'dropdown',
           name: 'type',
-          label: 'Select type',
+          label: 'Select Type',
           options: [
             { label: 'Story', value: 'story' },
             { label: 'Novel', value: 'novel' }
@@ -80,37 +63,67 @@ const StoryAndNovel = () => {
     }
   ];
 
+  const handleFormSubmit = (data, formType) => {
+    if (formType === 'add') {
+      dispatch(addStoryAndNovels(data))
+        .unwrap()
+        .then(() => showToast('success', 'Success', 'Item added successfully'))
+        .catch((error) => showToast('error', 'Error', error.message));
+    } else if (formType === 'edit' && editingItem) {
+      dispatch(updateStoryAndNovels({ id: editingItem.id, itemData: data }))
+        .unwrap()
+        .then(() => {
+          showToast('success', 'Success', 'Item updated successfully');
+          setEditingItem(null);
+        })
+        .catch((error) => showToast('error', 'Error', error.message));
+    }
+  };
 
+  const showToast = (severity, summary, detail) => {
+    toast.current.show({ severity, summary, detail, life: 3000 });
+  };
+
+  const handleClick = (type) => {
+    navigate(`/StoryAndNovelItemList/${type}`);
+  };
+
+  const storyCount = (storyAndNovelData || []).filter(item => item.type === 'story').length;
+  const novelCount = (storyAndNovelData || []).filter(item => item.type === 'novel').length;
+  const totalCount = storyCount + novelCount;
 
   return (
-    <div className="container gap-4 d-flex flex-column">
+    <div className='container'>
+      <Toast ref={toast} />
+      {loading && <Loader loadingMessage="Loading stories and novels" />}
 
-      {loading ? <Loader loadingMessage="Loadding poem datta.." /> : (
-        <DynamicForm
-          formConfig={formConfig}
-          onSubmit={handleFormSubmit}
-          className="dynamic-form"
-          title="Write story/novel"
-          requiredFields={['title', 'content', 'type']} />
-      )}
-
+      <AdvancedForm
+        formConfig={formConfig}
+        className='dynamic-form'
+        onSubmit={(data) => handleFormSubmit(data, editingItem ? 'edit' : 'add')}
+        editingItem={editingItem}
+        title={editingItem ? "Edit Story or Novel" : "Add Story or Novel"}
+        buttonLabel={editingItem ? 'Update' : 'Add'}
+        requiredFields={['title', 'htmlContent', 'type']}
+      />
 
       <div className="d-flex justify-content-center gap-2 flex-wrap">
         <ResponsiveCard xs={12} sm={12} md={3} lg={4} icon={FaBookOpen} iconSize={50}
           customshadow="shadow-lg" bgGradient="bg-gradient-primary" textColor="text-light" title="All"
-          count={(novelLength || 0) + (storyLength || 0)} onClick={() => handleClick('showAllStoryAndNovel')}
+          count={totalCount} onClick={() => handleClick('showAllStoryAndNovel')}
         />
 
         <ResponsiveCard xs={12} sm={12} md={3} lg={4} icon={FaScroll} iconSize={50}
           customshadow="shadow-lg" bgGradient="bg-gradient-primary" textColor="text-light" title="Story"
-          count={storyLength || 0} onClick={() => handleClick('story')}
+          count={storyCount} onClick={() => handleClick('story')}
         />
 
         <ResponsiveCard xs={12} sm={12} md={3} lg={4} icon={FaBook} iconSize={50}
           customshadow="shadow-lg" bgGradient="bg-gradient-primary" textColor="text-light" title="Novel"
-          count={novelLength || 0} onClick={() => handleClick('novel')}
+          count={novelCount} onClick={() => handleClick('novel')}
         />
       </div>
+
     </div>
   );
 };

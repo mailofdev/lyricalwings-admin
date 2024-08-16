@@ -5,6 +5,7 @@ import userAuthReducer from '../redux/userAuthSlice';
 import dashboardReducer from '../redux/dashboardSlice';
 import courseReducer from '../redux/courseSlice';
 import booksReducer from '../redux/booksSlice';
+import storyAndNovelReducer from '../redux/storyAndNovelSlice';
 
 const store = configureStore({
   reducer: {
@@ -14,7 +15,7 @@ const store = configureStore({
     dashboard: dashboardReducer,
     courses: courseReducer,
     books: booksReducer,
-
+    storyAndNovels: storyAndNovelReducer
   },
 });
 
