@@ -24,7 +24,7 @@ const StoryAndNovelItemList = () => {
       const items = type === 'showAllStoryAndNovel'
         ? storyAndNovelData
         : storyAndNovelData.filter((item) => item.type === type);
-      setFilteredItems(items);
+      setFilteredItems(items.reverse());
     }
   }, [storyAndNovelData, type]);
 
@@ -33,9 +33,9 @@ const StoryAndNovelItemList = () => {
       ? (type === 'showAllStoryAndNovel'
         ? storyAndNovelData
         : storyAndNovelData.filter((item) => item.type === type))
-          .filter((item) =>
-            item.title.toLowerCase().includes(query.toLowerCase())
-          )
+        .filter((item) =>
+          item.title.toLowerCase().includes(query.toLowerCase())
+        )
       : (type === 'showAllStoryAndNovel'
         ? storyAndNovelData
         : storyAndNovelData.filter((item) => item.type === type));
