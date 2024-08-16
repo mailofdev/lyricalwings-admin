@@ -30,7 +30,7 @@ const CustomPaginator = ({ first, rows, totalRecords, onPageChange, rowsPerPageO
     'RowsPerPageDropdown': (options) => (
       <Dropdown 
         value={options.value} 
-        options={rowsPerPageOptions.map(option => ({ label: `${option} per page`, value: option }))} 
+        options={rowsPerPageOptions.map(option => ({ label: `${option} per page`, value: option })) || ''} 
         onChange={(e) => options.onChange(e.value)}
         className="p-paginator-rpp-options"
       />

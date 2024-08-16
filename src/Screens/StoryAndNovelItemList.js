@@ -1,65 +1,63 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import {
+  //  useDispatch
+   useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Card, Container, Row, Col } from 'react-bootstrap';
 // import { fetchStoryAndNovels } from '../redux/storyAndNovelSlice';
 import Loader from '../Components/Loader';
 import Search from '../Components/Search';
-import CustomPaginator from '../Components/CustomPaginator';
+import { Paginator } from 'primereact/paginator';
 
 const customTitles = {
   story: 'Stories Collection',
   novel: 'Novels Collection',
-  default: 'All Collection',
+  showAllStoryAndNovel: 'All Collection',
 };
 
 const StoryAndNovelItemList = () => {
-//   const { type } = useParams();
-//   const dispatch = useDispatch();
-//   const { storyAndNovels, loading } = useSelector((state) => state.storyAndNovels);
-//   const [fullItems, setFullItems] = useState([]);
-//   const [filteredItems, setFilteredItems] = useState([]);
-//   const [first, setFirst] = useState(0);
-//   const [rows, setRows] = useState(12);
+  const { type } = useParams();
+  const { storyAndNovelData, loading } = useSelector((state) => state.storyAndNovels);
+  console.log("storyAndNovelData: " + JSON.stringify(storyAndNovelData));
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [first, setFirst] = useState(0);
+  const [rows, setRows] = useState(12);
 
-//   useEffect(() => {
-//     dispatch(fetchStoryAndNovels())
-//       .unwrap()
-//       .then((fetchedItems) => {
-//         const items = type === 'story'
-//           ? fetchedItems.filter((item) => item.type === 'story')
-//           : type === 'novel'
-//             ? fetchedItems.filter((item) => item.type === 'novel')
-//             : fetchedItems;
 
-//         setFullItems(items);
-//         setFilteredItems(items);
-//       });
-//   }, [dispatch, type]);
+  useEffect(() => {
+    if (storyAndNovelData) {
+      const items = type === 'showAllStoryAndNovel'
+        ? storyAndNovelData
+        : storyAndNovelData.filter((item) => item.type === type);
+      setFilteredItems(items);
+    }
+  }, [storyAndNovelData, type]);
 
-//   const handleSearch = (query) => {
-//     const results = query
-//       ? fullItems.filter((item) =>
-//         item.title.toLowerCase().includes(query.toLowerCase())
-//       )
-//       : fullItems;
 
-//     setFilteredItems(results);
-//     setFirst(0);
-//   };
 
-//   const paginatedItems = filteredItems.slice(first, first + rows);
+  const handleSearch = (query) => {
+    const results = query
+      ? filteredItems.filter((item) =>
+        item.title.toLowerCase().includes(query.toLowerCase())
+      )
+      : filteredItems;
 
-//   const onPageChange = (event) => {
-//     setFirst(event.first);
-//     setRows(event.rows);
-//   };
+    setFilteredItems(results);
+    setFirst(0);
+  };
 
-//   const getTitle = () => customTitles[type] || customTitles.default;
+  const paginatedItems = filteredItems.slice(first, first + rows);
+
+  const onPageChange = (event) => {
+    setFirst(event.first);
+    setRows(event.rows);
+  };
+
+  const getTitle = () => customTitles[type] || 'Collection';
 
   return (
-    <Container className="d-flex flex-column min-vh-100">
-      {/* {loading && <Loader loadingMessage="Loading items" />}
+    <Container className="d-flex flex-column my-5">
+      {loading && <Loader loadingMessage="Loading items" />}
       {!loading && (
         <>
           <h2 className="text-center mb-4">
@@ -78,17 +76,16 @@ const StoryAndNovelItemList = () => {
               </Col>
             ))}
           </Row>
-          <div className="d-flex justify-content-center py-2">
-            <CustomPaginator
+          <div className="d-flex justify-content-center fixed-bottom py-2">
+            <Paginator
               first={first}
               rows={rows}
               totalRecords={filteredItems.length}
               onPageChange={onPageChange}
-              rowsPerPageOptions={[12, 18, 21]}
             />
           </div>
         </>
-      )} */}
+      )}
     </Container>
   );
 };

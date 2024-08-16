@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../Components/Loader';
 import AdvancedForm from '../Components/AdvancedForm';
-import {fetchStoryAndNovels, addStoryAndNovels, updateStoryAndNovels, clearError } from '../redux/storyAndNovelSlice';
+import { fetchStoryAndNovels, addStoryAndNovels, updateStoryAndNovels, clearError } from '../redux/storyAndNovelSlice';
 import { Toast } from 'primereact/toast';
 import ResponsiveCard from '../Components/ResponsiveCard';
 import { FaBook, FaBookOpen, FaScroll } from 'react-icons/fa';
@@ -12,17 +12,19 @@ const StoryAndNovel = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { storyAndNovelData, loading, error } = useSelector((state) => state.storyAndNovels);
+  
   const [editingItem, setEditingItem] = useState(null);
   const toast = useRef(null);
 
   useEffect(() => {
-    dispatch(fetchStoryAndNovels());
+    dispatch(fetchStoryAndNovels()); // Ensure this action is correctly dispatched
+
     if (error) {
       console.error('Redux error:', error);
       showToast('error', 'Error', error);
       setTimeout(() => dispatch(clearError()), 5000);
     }
-  }, [error, dispatch]);
+  }, [dispatch, error]); // Added dispatch and error to the dependency array
 
   const formConfig = [
     {
@@ -67,7 +69,10 @@ const StoryAndNovel = () => {
     if (formType === 'add') {
       dispatch(addStoryAndNovels(data))
         .unwrap()
-        .then(() => showToast('success', 'Success', 'Item added successfully'))
+        .then(() => {
+          showToast('success', 'Success', 'Item added successfully');
+          dispatch(fetchStoryAndNovels()); // Fetch data again after adding
+        })
         .catch((error) => showToast('error', 'Error', error.message));
     } else if (formType === 'edit' && editingItem) {
       dispatch(updateStoryAndNovels({ id: editingItem.id, itemData: data }))
@@ -75,6 +80,7 @@ const StoryAndNovel = () => {
         .then(() => {
           showToast('success', 'Success', 'Item updated successfully');
           setEditingItem(null);
+          dispatch(fetchStoryAndNovels()); // Fetch data again after updating
         })
         .catch((error) => showToast('error', 'Error', error.message));
     }
