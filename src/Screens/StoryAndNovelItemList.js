@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import {
-  //  useDispatch
-   useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Card, Container, Row, Col } from 'react-bootstrap';
-// import { fetchStoryAndNovels } from '../redux/storyAndNovelSlice';
 import Loader from '../Components/Loader';
 import Search from '../Components/Search';
 import { Paginator } from 'primereact/paginator';
@@ -18,11 +15,9 @@ const customTitles = {
 const StoryAndNovelItemList = () => {
   const { type } = useParams();
   const { storyAndNovelData, loading } = useSelector((state) => state.storyAndNovels);
-  console.log("storyAndNovelData: " + JSON.stringify(storyAndNovelData));
   const [filteredItems, setFilteredItems] = useState([]);
   const [first, setFirst] = useState(0);
   const [rows, setRows] = useState(12);
-
 
   useEffect(() => {
     if (storyAndNovelData) {
@@ -33,14 +28,17 @@ const StoryAndNovelItemList = () => {
     }
   }, [storyAndNovelData, type]);
 
-
-
   const handleSearch = (query) => {
     const results = query
-      ? filteredItems.filter((item) =>
-        item.title.toLowerCase().includes(query.toLowerCase())
-      )
-      : filteredItems;
+      ? (type === 'showAllStoryAndNovel'
+        ? storyAndNovelData
+        : storyAndNovelData.filter((item) => item.type === type))
+          .filter((item) =>
+            item.title.toLowerCase().includes(query.toLowerCase())
+          )
+      : (type === 'showAllStoryAndNovel'
+        ? storyAndNovelData
+        : storyAndNovelData.filter((item) => item.type === type));
 
     setFilteredItems(results);
     setFirst(0);
