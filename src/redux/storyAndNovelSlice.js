@@ -1,17 +1,62 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { get, ref, push, set, update, remove } from 'firebase/database';
+import { get, ref, push, set, update, remove, query, orderByChild, equalTo,  limitToFirst } from 'firebase/database';
 import { db } from '../Config/firebase';
 
-export const fetchStoryAndNovels = createAsyncThunk(
-  'storyAndNovels/fetchStoryAndNovels',
+export const fetchStoryAndNovelsCounts = createAsyncThunk(
+  'storyAndNovels/fetchStoryAndNovelsCounts',
   async (_, { rejectWithValue }) => {
     try {
       const itemsRef = ref(db, 'storyAndNovelData');
       const snapshot = await get(itemsRef);
+      
       if (snapshot.exists()) {
-        return Object.entries(snapshot.val()).map(([id, data]) => ({ id, ...data }));
+        const data = snapshot.val();
+        const totalCount = Object.keys(data).length;
+        const storyCount = Object.values(data).filter(item => item.type === 'story').length;
+        const novelCount = Object.values(data).filter(item => item.type === 'novel').length;
+        
+        return { totalCount, storyCount, novelCount };
       }
-      return [];
+      
+      return { totalCount: 0, storyCount: 0, novelCount: 0 };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const fetchStoryAndNovels = createAsyncThunk(
+  'storyAndNovels/fetchStoryAndNovels',
+  async ({ page, pageSize, type, searchQuery }, { rejectWithValue }) => {
+    try {
+      const itemsRef = ref(db, 'storyAndNovelData');
+      let dbQuery;
+
+      if (type && type !== 'showAllStoryAndNovel') {
+        dbQuery = query(
+          itemsRef,
+          orderByChild('type'),
+          equalTo(type)
+        );
+      } else {
+        dbQuery = itemsRef;
+      }
+
+      const snapshot = await get(dbQuery);
+      if (snapshot.exists()) {
+        let data = Object.entries(snapshot.val()).map(([id, data]) => ({ id, ...data }));
+        let reverseData = data.slice().reverse();
+        // Apply search filter
+        if (searchQuery) {
+          reverseData = reverseData.filter(item => item.title.toLowerCase().includes(searchQuery.toLowerCase()));
+        }
+
+        const totalCount = reverseData.length;
+        const paginatedData = reverseData.slice((page - 1) * pageSize, page * pageSize);
+
+        return { reverseData: paginatedData, totalCount };
+      }
+      return { reverseData: [], totalCount: 0 };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -62,6 +107,9 @@ const storyAndNovelSlice = createSlice({
   name: 'storyAndNovels',
   initialState: {
     storyAndNovelData: [],
+    totalCount: 0,
+    storyCount: 0,
+    novelCount: 0,
     loading: false,
     error: null,
   },
@@ -72,18 +120,33 @@ const storyAndNovelSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchStoryAndNovels.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchStoryAndNovels.fulfilled, (state, action) => {
-        state.loading = false;
-        state.storyAndNovelData = action.payload;
-      })
-      .addCase(fetchStoryAndNovels.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
+    .addCase(fetchStoryAndNovelsCounts.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(fetchStoryAndNovelsCounts.fulfilled, (state, action) => {
+      state.loading = false;
+      state.totalCount = action.payload.totalCount;
+      state.storyCount = action.payload.storyCount;
+      state.novelCount = action.payload.novelCount;
+    })
+    .addCase(fetchStoryAndNovelsCounts.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    })
+    .addCase(fetchStoryAndNovels.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(fetchStoryAndNovels.fulfilled, (state, action) => {
+      state.loading = false;
+      state.storyAndNovelData = action.payload.reverseData;
+      state.totalCount = action.payload.totalCount;
+    })
+    .addCase(fetchStoryAndNovels.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    })
       .addCase(addStoryAndNovels.pending, (state) => {
         state.loading = true;
         state.error = null;

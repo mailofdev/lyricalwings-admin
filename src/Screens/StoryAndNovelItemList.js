@@ -1,54 +1,42 @@
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Card, Container, Row, Col } from 'react-bootstrap';
 import Loader from '../Components/Loader';
 import Search from '../Components/Search';
 import { Paginator } from 'primereact/paginator';
+import { fetchStoryAndNovels } from '../redux/storyAndNovelSlice';
 
 const customTitles = {
-  story: 'Stories Collection',
-  novel: 'Novels Collection',
-  showAllStoryAndNovel: 'All Collection',
+  story: 'Stories',
+  novel: 'Novels',
+  showAllStoryAndNovel: 'All',
 };
 
 const StoryAndNovelItemList = () => {
   const { type } = useParams();
-  const { storyAndNovelData, loading } = useSelector((state) => state.storyAndNovels);
-  const [filteredItems, setFilteredItems] = useState([]);
-  const [first, setFirst] = useState(0);
-  const [rows, setRows] = useState(12);
+  const dispatch = useDispatch();
+  const { storyAndNovelData, loading, totalCount } = useSelector((state) => state.storyAndNovels);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+
+  const fetchData = useCallback(() => {
+    dispatch(fetchStoryAndNovels({ page: currentPage, pageSize, type, searchQuery }));
+  }, [dispatch, currentPage, pageSize, type, searchQuery]);
 
   useEffect(() => {
-    if (storyAndNovelData) {
-      const items = type === 'showAllStoryAndNovel'
-        ? storyAndNovelData
-        : storyAndNovelData.filter((item) => item.type === type);
-      setFilteredItems(items.reverse());
-    }
-  }, [storyAndNovelData, type]);
+    fetchData();
+  }, [fetchData]);
 
   const handleSearch = (query) => {
-    const results = query
-      ? (type === 'showAllStoryAndNovel'
-        ? storyAndNovelData
-        : storyAndNovelData.filter((item) => item.type === type))
-        .filter((item) =>
-          item.title.toLowerCase().includes(query.toLowerCase())
-        )
-      : (type === 'showAllStoryAndNovel'
-        ? storyAndNovelData
-        : storyAndNovelData.filter((item) => item.type === type));
-
-    setFilteredItems(results);
-    setFirst(0);
+    setSearchQuery(query);
+    setCurrentPage(1);
   };
 
-  const paginatedItems = filteredItems.slice(first, first + rows);
-
   const onPageChange = (event) => {
-    setFirst(event.first);
-    setRows(event.rows);
+    setCurrentPage(event.page + 1);
+    setPageSize(event.rows);
   };
 
   const getTitle = () => customTitles[type] || 'Collection';
@@ -59,16 +47,16 @@ const StoryAndNovelItemList = () => {
       {!loading && (
         <>
           <h2 className="text-center mb-4">
-            {getTitle()} ({filteredItems.length})
+            {getTitle()} ({totalCount})
           </h2>
           <Search onSearch={handleSearch} />
           <Row className="mb-4">
-            {paginatedItems.map((item) => (
-              <Col key={item.id} xs={12} sm={6} md={4} lg={4} xl={4}>
+            {storyAndNovelData.map((item) => (
+              <Col key={item.id} xs={12} sm={12} md={6} lg={6} xl={4} xxl={4}>
                 <Card className="mb-4">
                   <Card.Body>
                     <Card.Title className="text-truncate">{item.title}</Card.Title>
-                    <Card.Text className="text-truncate">{item.htmlContent.substring(0, 100)}...</Card.Text>
+                    <Card.Text className="text-truncate">{item.htmlContent}...</Card.Text>
                   </Card.Body>
                 </Card>
               </Col>
@@ -76,10 +64,11 @@ const StoryAndNovelItemList = () => {
           </Row>
           <div className="d-flex justify-content-center fixed-bottom py-2">
             <Paginator
-              first={first}
-              rows={rows}
-              totalRecords={filteredItems.length}
+              first={(currentPage - 1) * pageSize}
+              rows={pageSize}
+              totalRecords={totalCount}
               onPageChange={onPageChange}
+              template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
             />
           </div>
         </>

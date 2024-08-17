@@ -383,6 +383,7 @@ ul {
 
 .p-paginator {
   gap: 16px;
+  background: unset !important;
 }
 
 .p-link {

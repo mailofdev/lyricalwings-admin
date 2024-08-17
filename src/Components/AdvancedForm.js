@@ -5,10 +5,20 @@ import { Dropdown } from 'primereact/dropdown';
 import { FileUpload } from 'primereact/fileupload';
 import JoditEditor from 'jodit-react';
 
-const AdvancedForm = ({ formConfig, onSubmit, className = '', title = '', requiredFields = [], buttonLabel = 'Submit', editingItem = null, maxFileSize }) => {
+const AdvancedForm = ({
+  formConfig,
+  onSubmit,
+  className = '',
+  title = '',
+  requiredFields = [],
+  buttonLabel = 'Submit',
+  editingItem = null,
+  maxFileSize
+}) => {
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
   const fileUploadRefs = useRef({});
+  const editorRefs = useRef({});
 
   useEffect(() => {
     if (editingItem) {
@@ -16,7 +26,7 @@ const AdvancedForm = ({ formConfig, onSubmit, className = '', title = '', requir
     } else {
       const initialFormData = formConfig.reduce((acc, fieldConfig) => {
         fieldConfig.fields.forEach(field => {
-          acc[field.name] = '';
+          acc[field.name] = field.type === 'editor' ? '' : '';
         });
         return acc;
       }, {});
@@ -24,37 +34,27 @@ const AdvancedForm = ({ formConfig, onSubmit, className = '', title = '', requir
     }
   }, [formConfig, editingItem]);
 
-  const handleEditorChange = (content, name) => {
-    setFormData(prevData => ({ ...prevData, [name]: content }));
-    validateField(name, content);
-  };
-
-  const handleDropdownChange = (e, name) => {
-    setFormData(prevData => ({ ...prevData, [name]: e.value }));
-    validateField(name, e.value);
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const handleChange = (name, value, type = 'input') => {
     setFormData(prevData => ({ ...prevData, [name]: value }));
-    validateField(name, value);
+    validateField(name, value, type);
   };
 
-  const handleFileUpload = (e, name) => {
-    const file = e.files[0];
-    setFormData(prevData => ({ ...prevData, [name]: file }));
-    validateField(name, file);
+  const handleEditorChange = (name, value) => {
+    setFormData(prevData => ({ ...prevData, [name]: value }));
+    validateField(name, value, 'editor');
   };
 
-  const validateField = (name, value) => {
-    if (requiredFields.includes(name) && !value) {
-      setErrors(prevErrors => ({ ...prevErrors, [name]: 'This field is required' }));
-    } else {
-      setErrors(prevErrors => {
-        const newErrors = { ...prevErrors };
-        delete newErrors[name];
-        return newErrors;
-      });
+  const validateField = (name, value, type) => {
+    if (requiredFields.includes(name)) {
+      if ((type === 'editor' && (!value || !value.trim())) || (!value && type !== 'editor')) {
+        setErrors(prevErrors => ({ ...prevErrors, [name]: 'This field is required' }));
+      } else {
+        setErrors(prevErrors => {
+          const newErrors = { ...prevErrors };
+          delete newErrors[name];
+          return newErrors;
+        });
+      }
     }
   };
 
@@ -63,7 +63,8 @@ const AdvancedForm = ({ formConfig, onSubmit, className = '', title = '', requir
 
     const newErrors = {};
     requiredFields.forEach(field => {
-      if (!formData[field]) {
+      const value = formData[field];
+      if (!value || (typeof value === 'string' && !value.trim())) {
         newErrors[field] = 'This field is required';
       }
     });
@@ -75,13 +76,28 @@ const AdvancedForm = ({ formConfig, onSubmit, className = '', title = '', requir
 
     try {
       await onSubmit(formData, editingItem ? 'edit' : 'add', editingItem?.id);
-      setFormData({});
+
+      // Clear form data and errors
+      const clearedFormData = Object.keys(formData).reduce((acc, key) => {
+        acc[key] = '';
+        return acc;
+      }, {});
+      setFormData(clearedFormData);
       setErrors({});
-      
+
       // Clear file inputs
-      Object.keys(fileUploadRefs.current).forEach(refName => {
-        if (fileUploadRefs.current[refName]) {
-          fileUploadRefs.current[refName].clear();
+      Object.values(fileUploadRefs.current).forEach(ref => {
+        if (ref && ref.clear) {
+          ref.clear();
+        }
+      });
+
+      // Clear Jodit Editor contents
+      Object.entries(editorRefs.current).forEach(([name, ref]) => {
+        if (ref && ref.current) {
+          ref.current.value = '';
+          ref.clear();
+          handleEditorChange(name, '');
         }
       });
     } catch (error) {
@@ -90,63 +106,82 @@ const AdvancedForm = ({ formConfig, onSubmit, className = '', title = '', requir
     }
   };
 
+  const renderField = (field, index) => {
+    switch (field.type) {
+      case 'input':
+        return (
+          <InputText
+            name={field.name}
+            value={formData[field.name] || ''}
+            onChange={(e) => handleChange(field.name, e.target.value)}
+            className={`w-100 ${errors[field.name] ? 'is-invalid' : ''}`}
+          />
+        );
+      
+      case 'dropdown':
+        return (
+          <Dropdown
+            name={field.name}
+            value={formData[field.name] || ''}
+            options={field.options}
+            onChange={(e) => handleChange(field.name, e.value)}
+            optionLabel="label"
+            placeholder="Select an option"
+            className={`w-100 ${errors[field.name] ? 'is-invalid' : ''}`}
+          />
+        );
+      
+      case 'textarea':
+        return (
+          <Form.Control
+            as="textarea"
+            name={field.name}
+            rows={field.rows || 3}
+            value={formData[field.name] || ''}
+            onChange={(e) => handleChange(field.name, e.target.value)}
+            className={errors[field.name] ? 'is-invalid' : ''}
+          />
+        );
+      
+      case 'editor':
+        return (
+          <JoditEditor
+            ref={(el) => (editorRefs.current[field.name] = el)}
+            value={formData[field.name] || ''}
+            config={field.config}
+            onChange={(content) => handleEditorChange(field.name, content)}
+          />
+        );
+      
+      case 'file':
+        return (
+          <FileUpload
+            ref={(el) => (fileUploadRefs.current[field.name] = el)}
+            name={field.name}
+            accept="image/*,application/pdf"
+            maxFileSize={maxFileSize}
+            onSelect={(e) => handleChange(field.name, e.files[0])}
+            className={errors[field.name] ? 'is-invalid' : ''}
+          />
+        );
+      
+      default:
+        return null;
+    }
+  };
+
   return (
     <Form onSubmit={handleSubmit} className={className}>
       {title && <h2 className='text-center'>{title}</h2>}
       {errors.submit && <Alert variant="danger">{errors.submit}</Alert>}
-      {formConfig.map((field, fieldIndex) => (
-        <React.Fragment key={fieldIndex}>
-          {Array.isArray(field.fields) && field.fields.map((subField, index) => (
+      {formConfig.map((section, sectionIndex) => (
+        <React.Fragment key={sectionIndex}>
+          {Array.isArray(section.fields) && section.fields.map((field, index) => (
             <Row key={index}>
-              <Form.Group controlId={`${subField.name}-${index}`} className="mb-3">
-                <Form.Label>{subField.label}</Form.Label>
-                {subField.type === 'input' && (
-                  <InputText
-                    name={subField.name}
-                    value={formData[subField.name] || ''}
-                    onChange={handleChange}
-                    className={`w-100 ${errors[subField.name] ? 'is-invalid' : ''}`}
-                  />
-                )}
-                {subField.type === 'dropdown' && (
-                  <Dropdown
-                    name={subField.name}
-                    value={formData[subField.name] || ''}
-                    options={subField.options}
-                    onChange={(e) => handleDropdownChange(e, subField.name)}
-                    optionLabel="label"
-                    placeholder="Select an option"
-                    className={`w-100 ${errors[subField.name] ? 'is-invalid' : ''}`}
-                  />
-                )}
-                {subField.type === 'textarea' && (
-                  <Form.Control
-                    as="textarea"
-                    name={subField.name}
-                    rows={subField.rows || 3}
-                    value={formData[subField.name] || ''}
-                    onChange={handleChange}
-                    className={errors[subField.name] ? 'is-invalid' : ''}
-                  />
-                )}
-                {subField.type === 'editor' && (
-                  <JoditEditor
-                    value={formData[subField.name] || ''}
-                    config={subField.config}
-                    onChange={(content) => handleEditorChange(content, subField.name)}
-                  />
-                )}
-                {subField.type === 'file' && (
-                  <FileUpload
-                    ref={(el) => (fileUploadRefs.current[subField.name] = el)}
-                    name={subField.name}
-                    accept="image/*,application/pdf"
-                    maxFileSize={maxFileSize}
-                    onSelect={(e) => handleFileUpload(e, subField.name)}
-                    className={errors[subField.name] ? 'is-invalid' : ''}
-                  />
-                )}
-                {errors[subField.name] && <Form.Text className="text-danger">{errors[subField.name]}</Form.Text>}
+              <Form.Group controlId={`${field.name}-${index}`} className="mb-3">
+                <Form.Label>{field.label}</Form.Label>
+                {renderField(field, index)}
+                {errors[field.name] && <Form.Text className="text-danger">{errors[field.name]}</Form.Text>}
               </Form.Group>
             </Row>
           ))}
