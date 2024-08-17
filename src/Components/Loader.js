@@ -40,7 +40,7 @@ const Loader = ({ loadingMessage }) => {
             className="typing-text"
             style={typingProps}
           >
-            {loadingMessage}
+      <p>{loadingMessage || "Loading..."}</p>
           </animated.div>
         </div>
       </div>

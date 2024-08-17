@@ -16,7 +16,7 @@ const customTitles = {
 const StoryAndNovelItemList = () => {
   const { type } = useParams();
   const dispatch = useDispatch();
-  const { storyAndNovelData, loading, totalCount } = useSelector((state) => state.storyAndNovels);
+  const { storyAndNovelData, loadingMessage, totalCount } = useSelector((state) => state.storyAndNovels);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
@@ -43,8 +43,8 @@ const StoryAndNovelItemList = () => {
 
   return (
     <Container className="d-flex flex-column my-5">
-      {loading && <Loader loadingMessage="Loading items" />}
-      {!loading && (
+      {loadingMessage && <Loader loadingMessage={loadingMessage} />}
+      {!loadingMessage && (
         <>
           <h2 className="text-center mb-4">
             {getTitle()} ({totalCount})

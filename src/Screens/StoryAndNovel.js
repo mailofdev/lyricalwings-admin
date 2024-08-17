@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 const StoryAndNovel = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { totalCount, storyCount, novelCount, loading, error } = useSelector((state) => state.storyAndNovels);
+  const { totalCount, storyCount, novelCount, loadingMessage, error } = useSelector((state) => state.storyAndNovels);
   const [editingItem, setEditingItem] = useState(null);
   const toast = useRef(null);
 
@@ -96,8 +96,7 @@ const StoryAndNovel = () => {
   return (
     <div className='container'>
       <Toast ref={toast} />
-      {loading && <Loader loadingMessage="Loading stories and novels" />}
-
+      {loadingMessage && <Loader loadingMessage={loadingMessage} />}
       <AdvancedForm
         formConfig={formConfig}
         className='dynamic-form'
