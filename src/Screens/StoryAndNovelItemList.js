@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { Card, Container, Row, Col } from 'react-bootstrap';
+import { Card, Container, Row, Col, Button } from 'react-bootstrap';  // Import Button
 import Loader from '../Components/Loader';
 import Search from '../Components/Search';
 import { Paginator } from 'primereact/paginator';
-import { fetchStoryAndNovels } from '../redux/storyAndNovelSlice';
+import { fetchStoryAndNovels, deleteAllStoryAndNovels } from '../redux/storyAndNovelSlice';  // Import deleteAllStoryAndNovels
 
 const customTitles = {
   story: 'Stories',
@@ -38,6 +38,12 @@ const StoryAndNovelItemList = () => {
     setPageSize(event.rows);
   };
 
+  const handleDeleteAll = () => {
+    if (window.confirm('Are you sure you want to delete all stories and novels? This action cannot be undone.')) {
+      dispatch(deleteAllStoryAndNovels());
+    }
+  };
+
   const getTitle = () => customTitles[type] || 'Collection';
 
   // Apply search filter to the fetched data
@@ -55,6 +61,9 @@ const StoryAndNovelItemList = () => {
             {getTitle()} ({totalCount})
           </h2>
           <Search onSearch={handleSearch} />
+          <Button variant="danger" className="mb-4" onClick={handleDeleteAll}>
+            Delete All
+          </Button>
           <Row className="mb-4">
             {filteredData.map((item) => (
               <Col key={item.id} xs={12} sm={12} md={6} lg={6} xl={4} xxl={4}>
@@ -67,7 +76,7 @@ const StoryAndNovelItemList = () => {
               </Col>
             ))}
           </Row>
-          <div className="d-flex justify-content-center fixed-bottom py-2">
+          <div className="d-flex justify-content-center py-2">
             <Paginator
               first={(currentPage - 1) * pageSize}
               rows={pageSize}

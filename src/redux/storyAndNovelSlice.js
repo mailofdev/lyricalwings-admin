@@ -99,6 +99,20 @@ export const deleteStoryAndNovels = createAsyncThunk(
   }
 );
 
+export const deleteAllStoryAndNovels = createAsyncThunk(
+  'storyAndNovels/deleteAllStoryAndNovels',
+  async (_, { rejectWithValue }) => {
+    try {
+      const itemsRef = ref(db, 'storyAndNovelData');
+      await remove(itemsRef);
+      return true;  // Return true to indicate success
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+
 const storyAndNovelSlice = createSlice({
   name: 'storyAndNovels',
   initialState: {
@@ -194,6 +208,22 @@ const storyAndNovelSlice = createSlice({
       state.storyAndNovelData = state.storyAndNovelData.filter(item => item.id !== action.payload);
     })
     .addCase(deleteStoryAndNovels.rejected, (state, action) => {
+      state.loading = false;
+      state.loadingMessage = '';
+      state.error = action.payload;
+    })
+    .addCase(deleteAllStoryAndNovels.pending, (state) => {
+      state.loading = true;
+      state.loadingMessage = "Deleting all stories and novels...";
+      state.error = null;
+    })
+    .addCase(deleteAllStoryAndNovels.fulfilled, (state) => {
+      state.loading = false;
+      state.loadingMessage = '';
+      state.storyAndNovelData = [];  // Clear all data in the state
+      state.totalCount = 0;
+    })
+    .addCase(deleteAllStoryAndNovels.rejected, (state, action) => {
       state.loading = false;
       state.loadingMessage = '';
       state.error = action.payload;
