@@ -19,11 +19,11 @@ const StoryAndNovelItemList = () => {
   const { storyAndNovelData, loadingMessage, totalCount } = useSelector((state) => state.storyAndNovels);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
+  const [pageSize, setPageSize] = useState(24);
 
   const fetchData = useCallback(() => {
-    dispatch(fetchStoryAndNovels({ page: currentPage, pageSize, type, searchQuery }));
-  }, [dispatch, currentPage, pageSize, type, searchQuery]);
+    dispatch(fetchStoryAndNovels({ page: currentPage, pageSize, type }));
+  }, [dispatch, currentPage, pageSize, type]);
 
   useEffect(() => {
     fetchData();
@@ -31,7 +31,6 @@ const StoryAndNovelItemList = () => {
 
   const handleSearch = (query) => {
     setSearchQuery(query);
-    setCurrentPage(1);
   };
 
   const onPageChange = (event) => {
@@ -40,6 +39,12 @@ const StoryAndNovelItemList = () => {
   };
 
   const getTitle = () => customTitles[type] || 'Collection';
+
+  // Apply search filter to the fetched data
+  const filteredData = storyAndNovelData.filter(item =>
+    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.htmlContent.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <Container className="d-flex flex-column my-5">
@@ -51,12 +56,12 @@ const StoryAndNovelItemList = () => {
           </h2>
           <Search onSearch={handleSearch} />
           <Row className="mb-4">
-            {storyAndNovelData.map((item) => (
+            {filteredData.map((item) => (
               <Col key={item.id} xs={12} sm={12} md={6} lg={6} xl={4} xxl={4}>
                 <Card className="mb-4">
                   <Card.Body>
                     <Card.Title className="text-truncate">{item.title}</Card.Title>
-                    <Card.Text className="text-truncate">{item.htmlContent}...</Card.Text>
+                    <Card.Text className="text-truncate">{item.htmlContent}</Card.Text>
                   </Card.Body>
                 </Card>
               </Col>

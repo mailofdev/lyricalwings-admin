@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { get, ref, push, set, update, remove, query, orderByChild, equalTo,  limitToFirst } from 'firebase/database';
+import { get, ref, push, set, update, remove, query, orderByChild, equalTo } from 'firebase/database';
 import { db } from '../Config/firebase';
 
 export const fetchStoryAndNovelsCounts = createAsyncThunk(
@@ -27,7 +27,7 @@ export const fetchStoryAndNovelsCounts = createAsyncThunk(
 
 export const fetchStoryAndNovels = createAsyncThunk(
   'storyAndNovels/fetchStoryAndNovels',
-  async ({ page, pageSize, type, searchQuery }, { rejectWithValue }) => {
+  async ({ page, pageSize, type }, { rejectWithValue }) => {
     try {
       const itemsRef = ref(db, 'storyAndNovelData');
       let dbQuery;
@@ -46,10 +46,6 @@ export const fetchStoryAndNovels = createAsyncThunk(
       if (snapshot.exists()) {
         let data = Object.entries(snapshot.val()).map(([id, data]) => ({ id, ...data }));
         let reverseData = data.slice().reverse();
-        // Apply search filter
-        if (searchQuery) {
-          reverseData = reverseData.filter(item => item.title.toLowerCase().includes(searchQuery.toLowerCase()));
-        }
 
         const totalCount = reverseData.length;
         const paginatedData = reverseData.slice((page - 1) * pageSize, page * pageSize);

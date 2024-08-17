@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Form, InputGroup, Button } from 'react-bootstrap';
-import { MdOutlineCancel } from 'react-icons/md';
+import { Form, InputGroup} from 'react-bootstrap';
 
 const Search = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -25,9 +24,6 @@ const Search = ({ onSearch }) => {
           value={searchQuery}
           onChange={handleSearchChange}
         />
-        <Button variant="outline-danger" onClick={handleClear}>
-        <MdOutlineCancel/>
-        </Button>
       </InputGroup>
     </div>
   );
