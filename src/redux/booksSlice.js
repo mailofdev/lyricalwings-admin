@@ -27,12 +27,12 @@ export const addItem = createAsyncThunk(
       const itemsRef = ref(db, 'BookData');
       const newItemRef = push(itemsRef);
       
-      if (itemData.bookFile) {
-        const fileRef = storageRef(storage, `bookData/${newItemRef.key}_${itemData.bookFile.name}`);
-        await uploadBytes(fileRef, itemData.bookFile);
+      if (itemData.bookCover) {
+        const fileRef = storageRef(storage, `bookCovers/${newItemRef.key}_${itemData.bookCover.name}`);
+        await uploadBytes(fileRef, itemData.bookCover);
         const downloadURL = await getDownloadURL(fileRef);
-        itemData.bookFileUrl = downloadURL;
-        delete itemData.bookFile;
+        itemData.bookCoverUrl = downloadURL;
+        delete itemData.bookCover;
       }
 
       await update(newItemRef, itemData);
@@ -51,28 +51,31 @@ export const updateItem = createAsyncThunk(
       const snapshot = await get(itemRef);
       const currentItem = snapshot.val();
 
-      if (itemData.bookFile) {
-        if (currentItem.bookFileUrl) {
-          // await deleteObject(refFromURL(currentItem.bookFileUrl));
-          await deleteObject(storage.refFromURL(currentItem.bookFileUrl));
+      let updatedItemData = { ...itemData };
+
+      if (itemData.bookCover) {
+        if (currentItem.bookCoverUrl) {
+          const oldFileRef = storageRef(storage, currentItem.bookCoverUrl);
+          await deleteObject(oldFileRef);
         }
 
-        const fileRef = storageRef(storage, `bookData/${id}_${itemData.bookFile.name}`);
-        await uploadBytes(fileRef, itemData.bookFile);
+        const fileRef = storageRef(storage, `bookCovers/${id}_${itemData.bookCover.name}`);
+        await uploadBytes(fileRef, itemData.bookCover);
         const downloadURL = await getDownloadURL(fileRef);
-        itemData.bookFileUrl = downloadURL;
-        delete itemData.bookFile;
-      } else if (itemData.bookFileUrl === null) {
-        if (currentItem.bookFileUrl) {
-          await deleteObject(storage.refFromURL(currentItem.bookFileUrl));
+        updatedItemData.bookCoverUrl = downloadURL;
+        delete updatedItemData.bookCover;
+      } else if (itemData.bookCoverUrl === null) {
+        if (currentItem.bookCoverUrl) {
+          const oldFileRef = storageRef(storage, currentItem.bookCoverUrl);
+          await deleteObject(oldFileRef);
         }
-        delete itemData.bookFileUrl;
+        delete updatedItemData.bookCoverUrl;
       } else {
-        itemData.bookFileUrl = currentItem.bookFileUrl;
+        updatedItemData.bookCoverUrl = currentItem.bookCoverUrl;
       }
 
-      await update(itemRef, itemData);
-      return { id, ...itemData };
+      await update(itemRef, updatedItemData);
+      return { id, ...updatedItemData };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -87,8 +90,9 @@ export const deleteItem = createAsyncThunk(
       const snapshot = await get(itemRef);
       const currentItem = snapshot.val();
 
-      if (currentItem && currentItem.bookFileUrl) {
-        await deleteObject(storage.refFromURL(currentItem.bookFileUrl));
+      if (currentItem && currentItem.bookCoverUrl) {
+        const fileRef = storageRef(storage, currentItem.bookCoverUrl);
+        await deleteObject(fileRef);
       }
       await remove(itemRef);
       return id;
@@ -97,6 +101,8 @@ export const deleteItem = createAsyncThunk(
     }
   }
 );
+
+
 
 const booksSlice = createSlice({
   name: 'books',

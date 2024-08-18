@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button } from 'react-bootstrap';
+import { Container, Row, Col, Button } from 'react-bootstrap';
 import Loader from '../Components/Loader';
 import AdvancedForm from '../Components/AdvancedForm';
+import BookCard from '../Components/BookCard';
 import { fetchItems, addItem, updateItem, deleteItem, clearError } from '../redux/booksSlice';
 import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
@@ -15,10 +16,9 @@ const Books = () => {
     const [itemToDelete, setItemToDelete] = useState(null);
     const toast = useRef(null);
 
-
     useEffect(() => {
-        fetchItems();
-    });
+        dispatch(fetchItems());
+    }, [dispatch]);
 
     useEffect(() => {
         if (error) {
@@ -26,15 +26,17 @@ const Books = () => {
             showToast('error', 'Error', error);
             setTimeout(() => dispatch(clearError()), 5000);
         }
-    });
-
+    }, [error, dispatch]);
 
     const formConfig = [
         {
             fields: [
                 { type: 'input', name: 'title', label: 'Enter name of book' },
+                { type: 'input', name: 'subTitle', label: 'Book subtitle' },
                 { type: 'textarea', name: 'content', label: 'Book description' },
+                { type: 'input', name: 'authorName', label: 'Author name' },
                 { type: 'input', name: 'link', label: 'Book link' },
+                { type: 'file', name: 'bookCover', label: 'Upload book cover image' },
             ]
         }
     ];
@@ -49,7 +51,7 @@ const Books = () => {
                 showToast('success', 'Success', 'Item updated successfully');
                 setEditingItem(null);
             }
-            fetchItems();
+            dispatch(fetchItems());
         } catch (error) {
             console.error("Error submitting form:", error);
             showToast('error', 'Error', error.message);
@@ -65,7 +67,7 @@ const Books = () => {
         try {
             await dispatch(deleteItem(itemToDelete)).unwrap();
             showToast('success', 'Success', 'Item deleted successfully');
-            fetchItems();
+            dispatch(fetchItems());
         } catch (error) {
             console.error("Error deleting item:", error);
             showToast('error', 'Error', error.message);
@@ -78,56 +80,42 @@ const Books = () => {
         toast.current.show({ severity, summary, detail, life: 3000 });
     };
 
+    const handleCancelEdit = () => {
+        setEditingItem(null);
+    };
+
     return (
-        <div className='container'>
+        <Container>
             <Toast ref={toast} />
             {loading && <Loader loadingMessage="Loading books" />}
 
-            <AdvancedForm
-                formConfig={formConfig}
-                className='dynamic-form'
-                onSubmit={handleFormSubmit}
-                editingItem={editingItem}
-                title={editingItem ? "Edit book" : "Add book"}
-                requiredFields={['title', 'content', 'link']}
-                buttonLabel={editingItem ? 'Update' : 'Add'}
-            />
+            <Row className="mb-4">
+                <Col>
+                    <AdvancedForm
+                        formConfig={formConfig}
+                        className='dynamic-form'
+                        onSubmit={handleFormSubmit}
+                        editingItem={editingItem}
+                        title={editingItem ? "Edit book" : "Add book"}
+                        requiredFields={['title', 'content', 'link']}
+                        buttonLabel={editingItem ? 'Update' : 'Add'}
+                        fileType="image/*"
+                        onCancel={handleCancelEdit}
+                    />
+                </Col>
+            </Row>
 
-
-            {BookData.length > 0 && (
-                <div>
-                    {BookData.map((item) => (
-                        <div key={item.id} className="card mb-3">
-                            <div className="card-body">
-                                <h3 className="card-title">{item.title}</h3>
-                                <p className="card-text">{item.content}</p>
-                                {item.link && (
-                                    <a href={item.link} className="card-link" target="_blank" rel="noopener noreferrer">Book Link</a>
-                                )}
-                                {item.bookFileUrl && (
-                                    <div className="mt-2">
-                                        {item.bookFileUrl.toLowerCase().endsWith('.pdf') ? (
-                                            <a href={item.bookFileUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-secondary">
-                                                View PDF Cover
-                                            </a>
-                                        ) : (
-                                            <a href={item.bookFileUrl} target="_blank" rel="noopener noreferrer">
-                                                <img src={item.bookFileUrl} alt="Book cover" style={{ maxWidth: '100px', maxHeight: '100px' }} className="img-thumbnail" />
-                                            </a>
-                                        )}
-                                    </div>
-                                )}
-                                <div className="mt-3">
-                                    <Button variant="primary" onClick={() => {
-                                        setEditingItem(item);
-                                    }} className="me-2">Edit</Button>
-                                    <Button variant="danger" onClick={() => handleDelete(item.id)}>Delete</Button>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+            <Row>
+                {BookData.map((book) => (
+                    <Col key={book.id} md={4} className="mb-3">
+                        <BookCard
+                            book={book}
+                            onEdit={setEditingItem}
+                            onDelete={handleDelete}
+                        />
+                    </Col>
+                ))}
+            </Row>
 
             <Dialog
                 header="Confirm Delete"
@@ -142,7 +130,7 @@ const Books = () => {
             >
                 <p>Are you sure you want to delete this item?</p>
             </Dialog>
-        </div>
+        </Container>
     );
 };
 

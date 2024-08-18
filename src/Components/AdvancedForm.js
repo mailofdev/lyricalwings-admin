@@ -13,7 +13,9 @@ const AdvancedForm = ({
   requiredFields = [],
   buttonLabel = 'Submit',
   editingItem = null,
-  maxFileSize
+  maxFileSize,
+  fileType = 'image/*,application/pdf',
+  onCancel,
 }) => {
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
@@ -96,7 +98,6 @@ const AdvancedForm = ({
       Object.entries(editorRefs.current).forEach(([name, ref]) => {
         if (ref && ref.current) {
           ref.current.value = '';
-          ref.clear();
           handleEditorChange(name, '');
         }
       });
@@ -158,7 +159,7 @@ const AdvancedForm = ({
           <FileUpload
             ref={(el) => (fileUploadRefs.current[field.name] = el)}
             name={field.name}
-            accept="image/*,application/pdf"
+            accept={fileType}
             maxFileSize={maxFileSize}
             onSelect={(e) => handleChange(field.name, e.files[0])}
             className={errors[field.name] ? 'is-invalid' : ''}
@@ -188,9 +189,14 @@ const AdvancedForm = ({
         </React.Fragment>
       ))}
       <div className='text-center'>
-        <Button type="submit" variant="primary">
+        <Button type="submit" variant="primary" className="me-2">
           {buttonLabel}
         </Button>
+        {editingItem && (
+          <Button type="button" variant="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+        )}
       </div>
     </Form>
   );
