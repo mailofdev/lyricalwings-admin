@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button } from 'react-bootstrap';
 import Loader from '../Components/Loader';
-import AdvancedForm from '../Components/AdvancedForm';
+import DynamicForm from '../Components/DynamicForm';
 import { fetchItems, addItem, updateItem, deleteItem, clearError } from '../redux/aboutSlice';
 import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
@@ -110,7 +110,7 @@ const About = () => {
                 </div>
 
                 <div className={isFormDisabled ? 'disabled-div' : ''}>
-                    <AdvancedForm
+                    <DynamicForm
                         className='dynamic-form'
                         onSubmit={handleFormSubmit}
                         formConfig={formConfig[itemType]}

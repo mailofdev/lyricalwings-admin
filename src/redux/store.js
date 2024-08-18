@@ -1,11 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
-import aboutReducer from '../redux/aboutSlice';
-import contentReducer from '../redux/contentSlice';
-import userAuthReducer from '../redux/userAuthSlice';
-import dashboardReducer from '../redux/dashboardSlice';
-import courseReducer from '../redux/courseSlice';
-import booksReducer from '../redux/booksSlice';
-import storyAndNovelReducer from '../redux/storyAndNovelSlice';
+import aboutReducer from './aboutSlice';
+import contentReducer from './contentSlice';
+import userAuthReducer from './userAuthSlice';
+import dashboardReducer from './dashboardSlice';
+import courseReducer from './courseSlice';
+import booksReducer from './booksSlice';
+import storyAndNovelReducer from './storyAndNovelSlice';
+import poemReducer from './poemSlice';
 
 const store = configureStore({
   reducer: {
@@ -15,7 +16,8 @@ const store = configureStore({
     dashboard: dashboardReducer,
     courses: courseReducer,
     books: booksReducer,
-    storyAndNovels: storyAndNovelReducer
+    storyAndNovels: storyAndNovelReducer,
+    poem: poemReducer
   },
 });
 

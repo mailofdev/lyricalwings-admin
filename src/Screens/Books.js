@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import Loader from '../Components/Loader';
-import AdvancedForm from '../Components/AdvancedForm';
+import DynamicForm from '../Components/DynamicForm';
 import BookCard from '../Components/BookCard';
 import { fetchItems, addItem, updateItem, deleteItem, clearError } from '../redux/booksSlice';
 import { Toast } from 'primereact/toast';
@@ -91,7 +91,7 @@ const Books = () => {
 
             <Row className="mb-4">
                 <Col>
-                    <AdvancedForm
+                    <DynamicForm
                         formConfig={formConfig}
                         className='dynamic-form'
                         onSubmit={handleFormSubmit}

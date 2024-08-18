@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import PoemForm from "./Screens/PoemForm";
 import Dashboard from "./Screens/Dashboard";
 import Header from './Screens/Header';
 import AuthModal from './Components/AuthModal';
@@ -15,6 +14,7 @@ import ItemDetails from './Screens/ItemDetails';
 import PrivateRoute from './Components/PrivateRoute'; // Import the PrivateRoute component
 import Books from './Screens/Books';
 import StoryAndNovelItemList from './Screens/StoryAndNovelItemList';
+import Poems from './Screens/Poems';
 
 function App() {
   return (
@@ -28,7 +28,7 @@ function App() {
 
           {/* Private Routes */}
           <Route path="/Dashboard/*" element={<PrivateRoute element={Dashboard} />} />
-          <Route path="/PoemForm" element={<PrivateRoute element={PoemForm} />} />
+          <Route path="/Poems" element={<PrivateRoute element={Poems} />} />
           <Route path="/Books" element={<PrivateRoute element={Books} />} />
           <Route path="/About" element={<PrivateRoute element={About} />} />
           <Route path="/Courses" element={<PrivateRoute element={Courses} />} />

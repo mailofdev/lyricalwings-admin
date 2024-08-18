@@ -4,6 +4,7 @@ import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import { FaUserCircle, FaHome, FaPenFancy, FaBook, FaChalkboardTeacher, FaInfoCircle } from 'react-icons/fa';
 import { useSelector, useDispatch } from 'react-redux';
 import { signoutUser } from '../redux/userAuthSlice';
+import { FaSignOutAlt } from 'react-icons/fa';
 
 const Header = ({ theme }) => {
   const [open, setOpen] = useState(false);
@@ -106,13 +107,13 @@ const Header = ({ theme }) => {
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link as={NavLink}  to="/PoemForm" className="nav-link-custom">
+              <Nav.Link as={NavLink} to="/Poems" className="nav-link-custom">
                 <FaPenFancy /> Poem
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
               <Nav.Link as={NavLink} to="/StoryAndNovel" className="nav-link-custom">
-                <FaBook /> Story and novels
+                <FaBook /> Narratives
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
@@ -120,31 +121,20 @@ const Header = ({ theme }) => {
                 <FaChalkboardTeacher /> Courses
               </Nav.Link>
             </Nav.Item>
-            <Nav.Item>
-              <Nav.Link as={NavLink} to="/Books" className="nav-link-custom">
-                <FaBook /> Books
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link as={NavLink} to="/About" className="nav-link-custom">
-                <FaInfoCircle /> About
-              </Nav.Link>
-            </Nav.Item>
-            <NavDropdown title={<span>Other</span>} id="about-dropdown" className="nav-link-custom">
-              <NavDropdown.Item as={NavLink} to="/About">
-                Terms and Conditions
-              </NavDropdown.Item>
-            </NavDropdown>
+
+            {/* <NavDropdown title={<span>Add more</span>} id="about-dropdown" className="nav-link-custom">
+            </NavDropdown> */}
             <NavDropdown
               title={<span><FaUserCircle size={30} /> {user ? user.displayName : 'anonymous'}</span>}
               id="basic-nav-dropdown"
               align="end"
               className='me-2'
             >
-              {!user && <NavDropdown.Item as={NavLink} to="/Login">Login</NavDropdown.Item>}
               {user && (
                 <>
-                  <NavDropdown.Item onClick={handleSignout}>Sign Out</NavDropdown.Item>
+                  <NavDropdown.Item as={NavLink} to="/Books"><FaBook /> Books</NavDropdown.Item>
+                  <NavDropdown.Item as={NavLink} to="/About"><FaInfoCircle /> About</NavDropdown.Item>
+                  <NavDropdown.Item onClick={handleSignout}><FaSignOutAlt/> Sign Out</NavDropdown.Item>
                 </>
               )}
             </NavDropdown>

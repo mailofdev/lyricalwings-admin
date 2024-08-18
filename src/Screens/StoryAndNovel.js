@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../Components/Loader';
-import AdvancedForm from '../Components/AdvancedForm';
+import DynamicForm from '../Components/DynamicForm';
 import { fetchStoryAndNovelsCounts, addStoryAndNovels, updateStoryAndNovels, clearError } from '../redux/storyAndNovelSlice';
 import { Toast } from 'primereact/toast';
 import ResponsiveCard from '../Components/ResponsiveCard';
@@ -122,7 +122,7 @@ const StoryAndNovel = () => {
     <div className='container'>
       <Toast ref={toast} />
       {loadingMessage && <Loader loadingMessage={loadingMessage} />}
-      <AdvancedForm
+      <DynamicForm
         formConfig={formConfig}
         className='dynamic-form'
         onSubmit={(data) => handleFormSubmit(data, editingItem ? 'edit' : 'add')}
