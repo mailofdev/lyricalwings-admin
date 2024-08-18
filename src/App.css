@@ -1,3 +1,23 @@
+/* books */
+
+.book-row {
+  overflow-x: auto;
+  /* white-space: nowrap; */
+  padding: 20px 0;
+}
+
+.book-scroll {
+  display: flex;
+  gap: 15px;
+}
+
+.book-col {
+  flex: 0 0 auto;
+  width: 600px;
+}
+
+
+/* books */
 .btn {
   border: 1px solid transparent;
   transition: background-color 0.3s, color 0.3s, border-color 0.3s;

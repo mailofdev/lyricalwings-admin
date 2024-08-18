@@ -104,19 +104,21 @@ const Books = () => {
                     />
                 </Col>
             </Row>
-
-            <Row>
-                {BookData.map((book) => (
-                    <Col key={book.id} md={4} className="mb-3">
-                        <BookCard
-                            book={book}
-                            onEdit={setEditingItem}
-                            onDelete={handleDelete}
-                        />
-                    </Col>
-                ))}
+<div className='d-flex justify-content-center text-center'>
+            <Row className="book-row ">
+                <div className="book-scroll">
+                    {BookData.map((book) => (
+                        <div key={book.id} className="book-col">
+                            <BookCard
+                                book={book}
+                                onEdit={setEditingItem}
+                                onDelete={handleDelete}
+                            />
+                        </div>
+                    ))}
+                </div>
             </Row>
-
+            </div>
             <Dialog
                 header="Confirm Delete"
                 visible={showDeleteDialog}
