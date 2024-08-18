@@ -1,18 +1,13 @@
 import React, { useState } from 'react';
-import { Form, InputGroup} from 'react-bootstrap';
+import { Form, InputGroup, Button } from 'react-bootstrap';
+import { CiSearch } from "react-icons/ci";
 
 const Search = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearchChange = (event) => {
-    const query = event.target.value;
-    setSearchQuery(query);
-    onSearch(query);
-  };
-
-  const handleClear = () => {
-    setSearchQuery('');
-    onSearch('');
+    setSearchQuery(event.target.value);
+    onSearch(event.target.value);  
   };
 
   return (
