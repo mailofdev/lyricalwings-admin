@@ -8,20 +8,20 @@ export const fetchDashboardData = createAsyncThunk('dashboard/fetchData', async 
     const usersRef = ref(db, 'users');
     const poemsRef = ref(db, 'AllPoems');
     const aboutRef = ref(db, 'About');
-    const storyAndNovelsRef = ref(db, 'storyAndNovels');
+    const NarrativessRef = ref(db, 'Narrativess');
     
     const fetchData = (ref) => new Promise((resolve, reject) => {
       onValue(ref, snapshot => resolve(snapshot.val()), reject);
     });
 
-    const [users, dashboardPoems, about, storyAndNovels] = await Promise.all([
+    const [users, dashboardPoems, about, Narrativess] = await Promise.all([
       fetchData(usersRef),
       fetchData(poemsRef),
       fetchData(aboutRef),
-      fetchData(storyAndNovelsRef)
+      fetchData(NarrativessRef)
     ]);
 
-    return { users, dashboardPoems, about, storyAndNovels };
+    return { users, dashboardPoems, about, Narrativess };
   } catch (error) {
     return rejectWithValue(error.message);
   }
@@ -45,7 +45,7 @@ const dashboardSlice = createSlice({
         state.status = 'loading';
       })
       .addCase(fetchDashboardData.fulfilled, (state, action) => {
-        const { users, dashboardPoems, about, storyAndNovels } = action.payload;
+        const { users, dashboardPoems, about, Narrativess } = action.payload;
         
         // Process users data
         state.users = users ? Object.entries(users).map(([key, value]) => ({ id: key, ...value })) : [];
@@ -75,8 +75,8 @@ const dashboardSlice = createSlice({
         // Process story and novels data
         let storyLength = 0;
         let novelLength = 0;
-        if (storyAndNovels) {
-          Object.values(storyAndNovels).forEach(item => {
+        if (Narrativess) {
+          Object.values(Narrativess).forEach(item => {
             if (item.type === 'stories') {
               storyLength++;
             } else if (item.type === 'novel') {

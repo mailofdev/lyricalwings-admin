@@ -2,23 +2,23 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../Components/Loader';
 import DynamicForm from '../Components/DynamicForm';
-import { fetchStoryAndNovelsCounts, addStoryAndNovels, updateStoryAndNovels, clearError } from '../redux/storyAndNovelSlice';
+import { fetchNarrativessCounts, addNarrativess, updateNarrativess, clearError } from '../redux/NarrativesSlice';
 import { Toast } from 'primereact/toast';
 import ResponsiveCard from '../Components/ResponsiveCard';
 import { FaBook, FaBookOpen, FaScroll } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { faker } from '@faker-js/faker';
 
-const StoryAndNovel = () => {
+const Narratives = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { totalCount, storyCount, novelCount, loadingMessage, error } = useSelector((state) => state.storyAndNovels);
+  const { totalCount, typeCounts, loadingMessage, error } = useSelector((state) => state.Narrativess);
   const [editingItem, setEditingItem] = useState(null);
   const [count, setCount] = useState(''); // State to manage count input
   const toast = useRef(null);
 
   useEffect(() => {
-    dispatch(fetchStoryAndNovelsCounts());
+    dispatch(fetchNarrativessCounts());
     if (error) {
       console.error('Redux error:', error);
       showToast('error', 'Error', error);
@@ -67,20 +67,20 @@ const StoryAndNovel = () => {
 
   const handleFormSubmit = (data, formType) => {
     if (formType === 'add') {
-      dispatch(addStoryAndNovels(data))
+      dispatch(addNarrativess(data))
         .unwrap()
         .then(() => {
           showToast('success', 'Success', 'Item added successfully');
-          dispatch(fetchStoryAndNovelsCounts()); // Fetch data again after adding
+          dispatch(fetchNarrativessCounts()); // Fetch data again after adding
         })
         .catch((error) => showToast('error', 'Error', error.message));
     } else if (formType === 'edit' && editingItem) {
-      dispatch(updateStoryAndNovels({ id: editingItem.id, itemData: data }))
+      dispatch(updateNarrativess({ id: editingItem.id, itemData: data }))
         .unwrap()
         .then(() => {
           showToast('success', 'Success', 'Item updated successfully');
           setEditingItem(null);
-          dispatch(fetchStoryAndNovelsCounts()); // Fetch data again after updating
+          dispatch(fetchNarrativessCounts()); // Fetch data again after updating
         })
         .catch((error) => showToast('error', 'Error', error.message));
     }
@@ -100,13 +100,13 @@ const StoryAndNovel = () => {
         htmlContent: faker.lorem.paragraphs(), 
         type: i % 2 === 0 ? 'story' : 'novel' 
       };
-      dispatch(addStoryAndNovels(newItem))
+      dispatch(addNarrativess(newItem))
         .unwrap()
         .catch((error) => showToast('error', 'Error', error.message));
     }
 
     showToast('success', 'Success', `Created ${numberOfItems} items successfully`);
-    dispatch(fetchStoryAndNovelsCounts()); // Fetch data again after adding
+    dispatch(fetchNarrativessCounts()); // Fetch data again after adding
     setCount(''); // Clear the input field
   };
 
@@ -115,8 +115,8 @@ const StoryAndNovel = () => {
   };
 
   const handleClick = (type) => {
-    navigate(`/StoryAndNovelItemList/${type}`);
-  };
+    navigate(`/ItemList/${type}`);
+};
 
   return (
     <div className='container'>
@@ -135,17 +135,17 @@ const StoryAndNovel = () => {
       <div className="d-flex justify-content-center gap-2 flex-wrap">
         <ResponsiveCard xs={12} sm={12} md={3} lg={4} icon={FaBookOpen} iconSize={50}
           customshadow="shadow-lg" bgGradient="bg-gradient-primary" textColor="text-light" title="All"
-          count={totalCount} onClick={() => handleClick('showAllStoryAndNovel')}
+          count={totalCount} onClick={() => handleClick('showAllNarratives')}
         />
 
         <ResponsiveCard xs={12} sm={12} md={3} lg={4} icon={FaScroll} iconSize={50}
           customshadow="shadow-lg" bgGradient="bg-gradient-primary" textColor="text-light" title="Story"
-          count={storyCount} onClick={() => handleClick('story')}
+          count={typeCounts.story} onClick={() => handleClick('story')}
         />
 
         <ResponsiveCard xs={12} sm={12} md={3} lg={4} icon={FaBook} iconSize={50}
           customshadow="shadow-lg" bgGradient="bg-gradient-primary" textColor="text-light" title="Novel"
-          count={novelCount} onClick={() => handleClick('novel')}
+          count={typeCounts.novel} onClick={() => handleClick('novel')}
         />
       </div>
 
@@ -171,4 +171,4 @@ const StoryAndNovel = () => {
   );
 };
 
-export default StoryAndNovel;
+export default Narratives;

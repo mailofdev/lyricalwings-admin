@@ -13,13 +13,8 @@ const Poems = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const {
-        totalPoems,
-        totalHappiness,
-        totalSadness,
-        totalAnger,
-        totalFear,
-        totalDisgust,
-        totalSurprise,
+        totalCount,
+        typeCounts,
         loadingMessage,
         error
     } = useSelector((state) => state.poem);
@@ -153,7 +148,6 @@ const Poems = () => {
         setCount('');
     };
     
-
     const showToast = (severity, summary, detail) => {
         toast.current.show({ severity, summary, detail, life: 3000 });
     };
@@ -179,7 +173,7 @@ const Poems = () => {
 
             <div className="d-flex justify-content-center gap-2 flex-wrap">
 
-                <ResponsiveCard
+                 <ResponsiveCard
                     xs={12}
                     sm={12}
                     md={3}
@@ -190,7 +184,7 @@ const Poems = () => {
                     bgGradient="bg-gradient-primary"
                     textColor="text-light"
                     title="All"
-                    count={totalPoems}
+                    count={totalCount}
                     onClick={() => handleClick('showAllPoems')}
                 />
 
@@ -205,9 +199,10 @@ const Poems = () => {
                     bgGradient="bg-gradient-primary"
                     textColor="text-light"
                     title="Happiness"
-                    count={totalHappiness}
+                    count={typeCounts.happiness}
                     onClick={() => handleClick('happiness')}
                 />
+
                 <ResponsiveCard
                     xs={12}
                     sm={12}
@@ -219,9 +214,10 @@ const Poems = () => {
                     bgGradient="bg-gradient-primary"
                     textColor="text-light"
                     title="Sadness"
-                    count={totalSadness}
+                    count={typeCounts.sadness}
                     onClick={() => handleClick('sadness')}
                 />
+
                 <ResponsiveCard
                     xs={12}
                     sm={12}
@@ -233,9 +229,10 @@ const Poems = () => {
                     bgGradient="bg-gradient-primary"
                     textColor="text-light"
                     title="Anger"
-                    count={totalAnger}
+                    count={typeCounts.anger}
                     onClick={() => handleClick('anger')}
                 />
+
                 <ResponsiveCard
                     xs={12}
                     sm={12}
@@ -247,9 +244,10 @@ const Poems = () => {
                     bgGradient="bg-gradient-primary"
                     textColor="text-light"
                     title="Fear"
-                    count={totalFear}
+                    count={typeCounts.fear}
                     onClick={() => handleClick('fear')}
                 />
+
                 <ResponsiveCard
                     xs={12}
                     sm={12}
@@ -261,9 +259,10 @@ const Poems = () => {
                     bgGradient="bg-gradient-primary"
                     textColor="text-light"
                     title="Disgust"
-                    count={totalDisgust}
+                    count={typeCounts.disgust}
                     onClick={() => handleClick('disgust')}
                 />
+
                 <ResponsiveCard
                     xs={12}
                     sm={12}
@@ -275,9 +274,9 @@ const Poems = () => {
                     bgGradient="bg-gradient-primary"
                     textColor="text-light"
                     title="Surprise"
-                    count={totalSurprise}
+                    count={typeCounts.surprise}
                     onClick={() => handleClick('surprise')}
-                />
+                /> 
             </div>
 
             <div className="mt-4">

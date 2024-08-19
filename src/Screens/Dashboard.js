@@ -28,8 +28,8 @@ const Dashboard = () => {
 
   const handleEmotionClick = (type) => {
     switch (type) {
-      case 'storyAndNovel':
-        navigate('/storyAndNovel');
+      case 'Narratives':
+        navigate('/Narratives');
         break;
       case 'AdminAndUser':
         navigate('/User');
@@ -75,12 +75,12 @@ const Dashboard = () => {
 
         <ResponsiveCard xs={12} sm={6} md={4} lg={6} icon={MdAutoStories} iconSize={50}
           customshadow="shadow-lg" bgGradient="bg-gradient-primary" textColor="text-light" title="Stories"
-          count={storyLength} onClick={() => handleEmotionClick('storyAndNovel')}
+          count={storyLength} onClick={() => handleEmotionClick('Narratives')}
         />
 
         <ResponsiveCard xs={12} sm={6} md={4} lg={6} icon={IoBookSharp} iconSize={50}
           customshadow="shadow-lg" bgGradient="bg-gradient-primary" textColor="text-light" title="Novels"
-          count={novelLength} onClick={() => handleEmotionClick('storyAndNovel')}
+          count={novelLength} onClick={() => handleEmotionClick('Narratives')}
         />
 
         <ResponsiveCard xs={12} sm={6} md={4} lg={6} icon={TiSortAlphabetically} iconSize={50}

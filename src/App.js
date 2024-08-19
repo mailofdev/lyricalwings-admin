@@ -8,12 +8,11 @@ import AuthModal from './Components/AuthModal';
 import About from './Screens/About';
 import Courses from './Screens/Courses';
 import User from './Screens/User';
-import StoryAndNovel from './Screens/StoryAndNovel';
-import ItemList from './Screens/ItemList';
-import ItemDetails from './Screens/ItemDetails';
+import Narratives from './Screens/Narratives';
+import ItemList from './Components/ItemList';
 import PrivateRoute from './Components/PrivateRoute'; // Import the PrivateRoute component
 import Books from './Screens/Books';
-import StoryAndNovelItemList from './Screens/StoryAndNovelItemList';
+// import NarrativesItemList from './Screens/NarrativesItemList';
 import Poems from './Screens/Poems';
 
 function App() {
@@ -33,10 +32,9 @@ function App() {
           <Route path="/About" element={<PrivateRoute element={About} />} />
           <Route path="/Courses" element={<PrivateRoute element={Courses} />} />
           <Route path="/User" element={<PrivateRoute element={User} />} />
-          <Route path="/StoryAndNovel" element={<PrivateRoute element={StoryAndNovel} />} />
+          <Route path="/Narratives" element={<PrivateRoute element={Narratives} />} />
           <Route path="/ItemList/:type" element={<PrivateRoute element={ItemList} />} />
-          <Route path="/StoryAndNovelItemList/:type" element={<PrivateRoute element={StoryAndNovelItemList} />} />
-          <Route path="/item/:id" element={<PrivateRoute element={ItemDetails} />} />
+          {/* <Route path="/NarrativesItemList/:type" element={<PrivateRoute element={NarrativesItemList} />} /> */}
         </Routes>
       </div>
     </div>
