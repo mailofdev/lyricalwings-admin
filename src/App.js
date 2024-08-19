@@ -8,12 +8,9 @@ import AuthModal from './Components/AuthModal';
 import About from './Screens/About';
 import Courses from './Screens/Courses';
 import User from './Screens/User';
-import Narratives from './Screens/Narratives';
 import ItemList from './Components/ItemList';
 import PrivateRoute from './Components/PrivateRoute'; // Import the PrivateRoute component
 import Books from './Screens/Books';
-// import NarrativesItemList from './Screens/NarrativesItemList';
-import Poems from './Screens/Poems';
 
 function App() {
   return (
@@ -27,14 +24,11 @@ function App() {
 
           {/* Private Routes */}
           <Route path="/Dashboard/*" element={<PrivateRoute element={Dashboard} />} />
-          <Route path="/Poems" element={<PrivateRoute element={Poems} />} />
           <Route path="/Books" element={<PrivateRoute element={Books} />} />
           <Route path="/About" element={<PrivateRoute element={About} />} />
           <Route path="/Courses" element={<PrivateRoute element={Courses} />} />
           <Route path="/User" element={<PrivateRoute element={User} />} />
-          <Route path="/Narratives" element={<PrivateRoute element={Narratives} />} />
           <Route path="/ItemList/:type" element={<PrivateRoute element={ItemList} />} />
-          {/* <Route path="/NarrativesItemList/:type" element={<PrivateRoute element={NarrativesItemList} />} /> */}
         </Routes>
       </div>
     </div>

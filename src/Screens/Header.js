@@ -107,23 +107,10 @@ const Header = ({ theme }) => {
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link as={NavLink} to="/Poems" className="nav-link-custom">
-                <FaPenFancy /> Poem
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link as={NavLink} to="/Narratives" className="nav-link-custom">
-                <FaBook /> Narratives
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
               <Nav.Link as={NavLink} to="/Courses" className="nav-link-custom">
                 <FaChalkboardTeacher /> Courses
               </Nav.Link>
             </Nav.Item>
-
-            {/* <NavDropdown title={<span>Add more</span>} id="about-dropdown" className="nav-link-custom">
-            </NavDropdown> */}
             <NavDropdown
               title={<span><FaUserCircle size={30} /> {user ? user.displayName : 'anonymous'}</span>}
               id="basic-nav-dropdown"
