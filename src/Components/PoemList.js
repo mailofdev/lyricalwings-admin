@@ -2,8 +2,8 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { Card, Container, Row, Col, Button, Alert } from 'react-bootstrap';
-import Loader from '../Components/Loader';
-import Search from '../Components/Search';
+import Loader from './Loader';
+import Search from './Search';
 import { Paginator } from 'primereact/paginator';
 import { fetchPoems, deleteAllPoems, deletePoem } from '../redux/poemSlice';
 import DOMPurify from 'dompurify';
@@ -20,7 +20,7 @@ const customTitles = {
   showAllPoems: 'All Poems',
 };
 
-const ItemList = () => {
+const PoemList = () => {
   const { type } = useParams();
   const dispatch = useDispatch();
   const { poemsList, loadingMessage, totalPoems, error } = useSelector((state) => state.poem);
@@ -151,4 +151,4 @@ const ItemList = () => {
   );
 };
 
-export default ItemList;
+export default PoemList;

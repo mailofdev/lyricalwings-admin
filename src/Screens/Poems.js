@@ -115,21 +115,21 @@ const Poems = () => {
         const numberOfItems = parseInt(count, 10);
         const types = ['happiness', 'sadness', 'anger', 'fear', 'disgust', 'surprise'];
         const numberOfTypes = types.length;
-    
+
         if (isNaN(numberOfItems) || numberOfItems <= 0) {
             showToast('error', 'Error', 'Please enter a valid number greater than 0');
             return;
         }
-    
+
         const itemsPerType = Math.floor(numberOfItems / numberOfTypes);
         const leftoverItems = numberOfItems % numberOfTypes;
-    
+
         const createItem = (type) => ({
             title: faker.lorem.sentence(),
             htmlContent: faker.lorem.paragraphs(),
             type: type
         });
-    
+
         const createAndDispatchItems = (type, count) => {
             Array.from({ length: count }).forEach(() => {
                 dispatch(addPoem(createItem(type)))
@@ -137,14 +137,14 @@ const Poems = () => {
                     .catch((error) => showToast('error', 'Error', error.message));
             });
         };
-    
+
         types.forEach(type => createAndDispatchItems(type, itemsPerType));
-    
+
         Array.from({ length: leftoverItems }).forEach(() => {
             const randomType = types[Math.floor(Math.random() * numberOfTypes)];
             createAndDispatchItems(randomType, 1);
         });
-    
+
         showToast('success', 'Success', `Created ${numberOfItems} items successfully`);
         dispatch(fetchPoemCounts());
         setCount('');
@@ -155,7 +155,7 @@ const Poems = () => {
     };
 
     const handleClick = (type) => {
-        navigate(`/ItemList/${type}`);
+        navigate(`/PoemList/${type}`);
     };
 
     const poemTypes = [
