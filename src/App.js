@@ -8,10 +8,12 @@ import AuthModal from './Components/AuthModal';
 import About from './Screens/About';
 import Courses from './Screens/Courses';
 import User from './Screens/User';
-import ItemList from './Components/ItemList';
+import PoemList from './Components/PoemList';
 import PrivateRoute from './Components/PrivateRoute'; // Import the PrivateRoute component
 import Books from './Screens/Books';
 import Poems from './Screens/Poems';
+import Narrative from './Screens/Narrative';
+import NarrativeList from './Components/NarrativeList';
 
 function App() {
   return (
@@ -29,8 +31,10 @@ function App() {
           <Route path="/About" element={<PrivateRoute element={About} />} />
           <Route path="/Courses" element={<PrivateRoute element={Courses} />} />
           <Route path="/User" element={<PrivateRoute element={User} />} />
-          <Route path="/ItemList/:type" element={<PrivateRoute element={ItemList} />} />
           <Route path="/Poems" element={<PrivateRoute element={Poems} />} />
+          <Route path="/PoemList/:type" element={<PrivateRoute element={PoemList} />} />       
+          <Route path="/Narrative" element={<PrivateRoute element={Narrative} />} />
+          <Route path="/NarrativeList/:type" element={<PrivateRoute element={NarrativeList} />} />       
         </Routes>
       </div>
     </div>
