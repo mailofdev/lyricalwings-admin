@@ -30,34 +30,42 @@ export const fetchPoemCounts = createAsyncThunk(
 );
 
 export const fetchPoems = createAsyncThunk(
-  'poems/fetchPoems',
-  async ({ page, pageSize, filterType }, { rejectWithValue }) => {
-    try {
-      const poemsRef = ref(db, 'PoemData');
-      let queryRef;
-
-      if (filterType && filterType !== 'all') {
-        queryRef = query(poemsRef, orderByChild('type'), equalTo(filterType));
-      } else {
-        queryRef = poemsRef;
+    'poems/fetchPoems',
+    async ({ page, pageSize, filterType, searchQuery }, { rejectWithValue }) => {
+      try {
+        const poemsRef = ref(db, 'PoemData');
+        let queryRef;
+  
+        if (filterType && filterType !== 'all') {
+          queryRef = query(poemsRef, orderByChild('type'), equalTo(filterType));
+        } else {
+          queryRef = poemsRef;
+        }
+  
+        const snapshot = await get(queryRef);
+        if (snapshot.exists()) {
+          let poemsArray = Object.entries(snapshot.val()).map(([id, data]) => ({ id, ...data }));
+          let reversedPoems = poemsArray.slice().reverse();
+  
+          // Apply search filter if searchQuery is provided
+          if (searchQuery) {
+            reversedPoems = reversedPoems.filter(poem =>
+              poem.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              poem.htmlContent.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+          }
+  
+          const totalPoems = reversedPoems.length;
+          const paginatedPoems = reversedPoems.slice((page - 1) * pageSize, page * pageSize);
+  
+          return { poems: paginatedPoems, totalPoems };
+        }
+        return { poems: [], totalPoems: 0 };
+      } catch (error) {
+        return rejectWithValue(error.message);
       }
-
-      const snapshot = await get(queryRef);
-      if (snapshot.exists()) {
-        let poemsArray = Object.entries(snapshot.val()).map(([id, data]) => ({ id, ...data }));
-        let reversedPoems = poemsArray.slice().reverse();
-
-        const totalPoems = reversedPoems.length;
-        const paginatedPoems = reversedPoems.slice((page - 1) * pageSize, page * pageSize);
-
-        return { poems: paginatedPoems, totalPoems };
-      }
-      return { poems: [], totalPoems: 0 };
-    } catch (error) {
-      return rejectWithValue(error.message);
     }
-  }
-);
+  );
 
 export const addPoem = createAsyncThunk(
   'poems/addPoem',
@@ -130,6 +138,9 @@ const poemsSlice = createSlice({
     reducers: {
       clearError: (state) => {
         state.error = null;
+      },
+      setPoemsList: (state, action) => {
+        state.poemsList = action.payload;
       },
     },
     extraReducers: (builder) => {

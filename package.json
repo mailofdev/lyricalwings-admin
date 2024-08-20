@@ -13,6 +13,7 @@
     "@testing-library/user-event": "^13.5.0",
     "bootstrap": "^5.3.3",
     "chart.js": "^4.4.2",
+    "dompurify": "^3.1.6",
     "firebase": "^10.11.1",
     "jodit-react": "^4.1.2",
     "lodash": "^4.17.21",

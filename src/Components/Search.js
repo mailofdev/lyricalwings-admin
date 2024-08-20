@@ -1,25 +1,42 @@
 import React, { useState } from 'react';
-import { Form, InputGroup } from 'react-bootstrap';
+import { Form, InputGroup, Button } from 'react-bootstrap';
 
-const Search = ({ onSearch }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+const Search = ({ onSearch, onClear, initialSearchQuery }) => {
+  const [localSearchQuery, setLocalSearchQuery] = useState(initialSearchQuery);
 
   const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
-    onSearch(event.target.value);  
+    setLocalSearchQuery(event.target.value);
+  };
+
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    onSearch(localSearchQuery);
+  };
+
+  const handleClearSearch = () => {
+    setLocalSearchQuery('');
+    onClear();
   };
 
   return (
-    <div className="mb-4">
+    <Form onSubmit={handleSearchSubmit} className="mb-4">
       <InputGroup>
         <Form.Control
           type="text"
           placeholder="Search..."
-          value={searchQuery}
+          value={localSearchQuery}
           onChange={handleSearchChange}
         />
+        <Button type="submit" variant="primary">
+          Search
+        </Button>
+        {localSearchQuery && (
+          <Button variant="secondary" onClick={handleClearSearch}>
+            Clear
+          </Button>
+        )}
       </InputGroup>
-    </div>
+    </Form>
   );
 };
 
