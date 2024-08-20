@@ -107,6 +107,11 @@ const Header = ({ theme }) => {
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
+              <Nav.Link as={NavLink} to="/Poems" className="nav-link-custom">
+                <FaChalkboardTeacher /> Poems
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
               <Nav.Link as={NavLink} to="/Courses" className="nav-link-custom">
                 <FaChalkboardTeacher /> Courses
               </Nav.Link>

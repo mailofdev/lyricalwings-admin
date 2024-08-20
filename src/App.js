@@ -11,6 +11,7 @@ import User from './Screens/User';
 import ItemList from './Components/ItemList';
 import PrivateRoute from './Components/PrivateRoute'; // Import the PrivateRoute component
 import Books from './Screens/Books';
+import Poems from './Screens/Poems';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path="/Courses" element={<PrivateRoute element={Courses} />} />
           <Route path="/User" element={<PrivateRoute element={User} />} />
           <Route path="/ItemList/:type" element={<PrivateRoute element={ItemList} />} />
+          <Route path="/Poems" element={<PrivateRoute element={Poems} />} />
         </Routes>
       </div>
     </div>
