@@ -4,8 +4,8 @@ import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'fi
 import { db, storage } from '../Config/firebase';
 
 
-export const fetchItems = createAsyncThunk(
-  'books/fetchItems',
+export const fetchBooks = createAsyncThunk(
+  'books/fetchBooks',
   async (_, { rejectWithValue }) => {
     try {
       const itemsRef = ref(db, 'BookData');
@@ -20,8 +20,8 @@ export const fetchItems = createAsyncThunk(
   }
 );
 
-export const addItem = createAsyncThunk(
-  'books/addItem',
+export const addBooks = createAsyncThunk(
+  'books/addBooks',
   async (itemData, { rejectWithValue }) => {
     try {
       const itemsRef = ref(db, 'BookData');
@@ -43,8 +43,8 @@ export const addItem = createAsyncThunk(
   }
 );
 
-export const updateItem = createAsyncThunk(
-  'books/updateItem',
+export const updateBooks = createAsyncThunk(
+  'books/updateBooks',
   async ({ id, itemData }, { rejectWithValue }) => {
     try {
       const itemRef = ref(db, `BookData/${id}`);
@@ -82,8 +82,8 @@ export const updateItem = createAsyncThunk(
   }
 );
 
-export const deleteItem = createAsyncThunk(
-  'books/deleteItem',
+export const deleteBooks = createAsyncThunk(
+  'books/deleteBooks',
   async (id, { rejectWithValue }) => {
     try {
       const itemRef = ref(db, `BookData/${id}`);
@@ -118,54 +118,54 @@ const booksSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchItems.pending, (state) => {
+      .addCase(fetchBooks.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchItems.fulfilled, (state, action) => {
+      .addCase(fetchBooks.fulfilled, (state, action) => {
         state.loading = false;
         state.BookData = action.payload;
       })
-      .addCase(fetchItems.rejected, (state, action) => {
+      .addCase(fetchBooks.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(addItem.pending, (state) => {
+      .addCase(addBooks.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(addItem.fulfilled, (state, action) => {
+      .addCase(addBooks.fulfilled, (state, action) => {
         state.loading = false;
         state.BookData.push(action.payload);
       })
-      .addCase(addItem.rejected, (state, action) => {
+      .addCase(addBooks.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(updateItem.pending, (state) => {
+      .addCase(updateBooks.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(updateItem.fulfilled, (state, action) => {
+      .addCase(updateBooks.fulfilled, (state, action) => {
         state.loading = false;
         const index = state.BookData.findIndex(item => item.id === action.payload.id);
         if (index !== -1) {
           state.BookData[index] = action.payload;
         }
       })
-      .addCase(updateItem.rejected, (state, action) => {
+      .addCase(updateBooks.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(deleteItem.pending, (state) => {
+      .addCase(deleteBooks.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(deleteItem.fulfilled, (state, action) => {
+      .addCase(deleteBooks.fulfilled, (state, action) => {
         state.loading = false;
         state.BookData = state.BookData.filter(item => item.id !== action.payload);
       })
-      .addCase(deleteItem.rejected, (state, action) => {
+      .addCase(deleteBooks.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

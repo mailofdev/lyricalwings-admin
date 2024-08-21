@@ -18,8 +18,8 @@ const deleteFile = async (url) => {
   await deleteObject(fileRef);
 };
 
-export const fetchItems = createAsyncThunk(
-  'courses/fetchItems',
+export const fetchCourses = createAsyncThunk(
+  'courses/fetchCourses',
   async (_, { rejectWithValue }) => {
     try {
       const itemsRef = ref(db, 'CourseData');
@@ -34,8 +34,8 @@ export const fetchItems = createAsyncThunk(
   }
 );
 
-export const addItem = createAsyncThunk(
-  'courses/addItem',
+export const addCourses = createAsyncThunk(
+  'courses/addCourses',
   async ({ itemData, fileFields }, { rejectWithValue }) => {
     try {
       const itemsRef = ref(db, 'CourseData');
@@ -64,8 +64,8 @@ export const addItem = createAsyncThunk(
   }
 );
 
-export const updateItem = createAsyncThunk(
-  'courses/updateItem',
+export const updateCourses = createAsyncThunk(
+  'courses/updateCourses',
   async ({ id, itemData, fileFields }, { rejectWithValue }) => {
     try {
       const itemRef = ref(db, `CourseData/${id}`);
@@ -110,8 +110,8 @@ export const updateItem = createAsyncThunk(
   }
 );
 
-export const deleteItem = createAsyncThunk(
-  'courses/deleteItem',
+export const deleteCourses = createAsyncThunk(
+  'courses/deleteCourses',
   async ({ id, fileFields }, { rejectWithValue }) => {
     try {
       const itemRef = ref(db, `CourseData/${id}`);
@@ -147,47 +147,47 @@ const courseSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchItems.pending, (state) => {
+      .addCase(fetchCourses.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchItems.fulfilled, (state, action) => {
+      .addCase(fetchCourses.fulfilled, (state, action) => {
         state.loading = false;
         state.CourseData = action.payload;
       })
-      .addCase(fetchItems.rejected, (state, action) => {
+      .addCase(fetchCourses.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(addItem.pending, (state) => {
+      .addCase(addCourses.pending, (state) => {
         state.loading = true;
       })
-      .addCase(addItem.fulfilled, (state, action) => {
+      .addCase(addCourses.fulfilled, (state, action) => {
         state.loading = false;
         state.CourseData.push(action.payload);
       })
-      .addCase(addItem.rejected, (state, action) => {
+      .addCase(addCourses.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(updateItem.pending, (state) => {
+      .addCase(updateCourses.pending, (state) => {
         state.loading = true;
       })
-      .addCase(updateItem.fulfilled, (state, action) => {
+      .addCase(updateCourses.fulfilled, (state, action) => {
         state.loading = false;
         state.CourseData = state.CourseData.map(item => item.id === action.payload.id ? action.payload : item);
       })
-      .addCase(updateItem.rejected, (state, action) => {
+      .addCase(updateCourses.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      .addCase(deleteItem.pending, (state) => {
+      .addCase(deleteCourses.pending, (state) => {
         state.loading = true;
       })
-      .addCase(deleteItem.fulfilled, (state, action) => {
+      .addCase(deleteCourses.fulfilled, (state, action) => {
         state.loading = false;
         state.CourseData = state.CourseData.filter(item => item.id !== action.payload);
       })
-      .addCase(deleteItem.rejected, (state, action) => {
+      .addCase(deleteCourses.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

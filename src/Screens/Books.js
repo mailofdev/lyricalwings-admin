@@ -4,7 +4,7 @@ import { Container, Row, Col, Button } from 'react-bootstrap';
 import Loader from '../Components/Loader';
 import DynamicForm from '../Components/DynamicForm';
 import BookCard from '../Components/BookCard';
-import { fetchItems, addItem, updateItem, deleteItem, clearError } from '../redux/booksSlice';
+import { fetchBooks, addBooks, updateBooks, deleteBooks, clearError } from '../redux/booksSlice';
 import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
 
@@ -17,7 +17,7 @@ const Books = () => {
     const toast = useRef(null);
 
     useEffect(() => {
-        dispatch(fetchItems());
+        dispatch(fetchBooks());
     }, [dispatch]);
 
     useEffect(() => {
@@ -44,14 +44,14 @@ const Books = () => {
     const handleFormSubmit = async (data, formType, itemId = null) => {
         try {
             if (formType === 'add') {
-                await dispatch(addItem(data)).unwrap();
+                await dispatch(addBooks(data)).unwrap();
                 showToast('success', 'Success', 'Item added successfully');
             } else if (formType === 'edit' && itemId) {
-                await dispatch(updateItem({ id: itemId, itemData: data })).unwrap();
+                await dispatch(updateBooks({ id: itemId, itemData: data })).unwrap();
                 showToast('success', 'Success', 'Item updated successfully');
                 setEditingItem(null);
             }
-            dispatch(fetchItems());
+            dispatch(fetchBooks());
         } catch (error) {
             console.error("Error submitting form:", error);
             showToast('error', 'Error', error.message);
@@ -65,9 +65,9 @@ const Books = () => {
 
     const confirmDelete = async () => {
         try {
-            await dispatch(deleteItem(itemToDelete)).unwrap();
+            await dispatch(deleteBooks(itemToDelete)).unwrap();
             showToast('success', 'Success', 'Item deleted successfully');
-            dispatch(fetchItems());
+            dispatch(fetchBooks());
         } catch (error) {
             console.error("Error deleting item:", error);
             showToast('error', 'Error', error.message);

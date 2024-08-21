@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Button } from 'react-bootstrap';
 import Loader from '../Components/Loader';
 import CourseForm from '../Components/CourseForm';
-import { fetchItems, addItem, updateItem, deleteItem } from '../redux/courseSlice';
+import { fetchCourses, addCourses, updateCourses, deleteCourses } from '../redux/courseSlice';
 import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
 import { FaEdit, FaTrash } from 'react-icons/fa';
@@ -36,7 +36,7 @@ const Courses = () => {
     ];
 
     useEffect(() => {
-        dispatch(fetchItems());
+        dispatch(fetchCourses());
     }, [dispatch]);
 
     const handleFormSubmit = async (data, formType, itemId = null) => {
@@ -53,14 +53,14 @@ const Courses = () => {
             });
 
             if (formType === 'add') {
-                await dispatch(addItem({ itemData: processedData, fileFields })).unwrap();
+                await dispatch(addCourses({ itemData: processedData, fileFields })).unwrap();
                 showToast('success', 'Success', 'Item added successfully');
             } else if (formType === 'edit' && itemId) {
-                await dispatch(updateItem({ id: itemId, itemData: processedData, fileFields })).unwrap();
+                await dispatch(updateCourses({ id: itemId, itemData: processedData, fileFields })).unwrap();
                 showToast('success', 'Success', 'Item updated successfully');
                 setEditingItem(null);
             }
-            fetchItems()
+            fetchCourses()
         } catch (error) {
             console.error("Error submitting form:", error);
             showToast('error', 'Error', error.message);
@@ -77,9 +77,9 @@ const Courses = () => {
             const fileFields = formConfig[0].fields
                 .filter(field => field.type === 'file')
                 .map(field => field.name);
-            await dispatch(deleteItem({ id: itemToDelete, fileFields })).unwrap();
+            await dispatch(deleteCourses({ id: itemToDelete, fileFields })).unwrap();
             showToast('success', 'Success', 'Item deleted successfully');
-            fetchItems()
+            fetchCourses()
         } catch (error) {
             console.error("Error deleting item:", error);
             showToast('error', 'Error', error.message);
