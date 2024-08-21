@@ -7,6 +7,7 @@ import { fetchItems, addItem, updateItem, deleteItem, clearError } from '../redu
 import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
 import { FaEdit, FaTrash } from 'react-icons/fa';
+import {aboutConfig, sanitizeHTML} from '../Common/commonFunction'
 
 const About = () => {
     const dispatch = useDispatch();
@@ -21,8 +22,8 @@ const About = () => {
     const isFormDisabled = !isEditMode && (itemType === 'aboutMe' ? aboutMeData.length > 0 : aboutUsData.length > 0);
 
     useEffect(() => {
-        fetchItems();
-    });
+        dispatch(fetchItems());
+    }, [dispatch]);
 
     useEffect(() => {
         if (error) {
@@ -32,14 +33,7 @@ const About = () => {
         }
     });
 
-    const formConfig = {
-        aboutMe: [
-            { fields: [{ type: 'textarea', name: 'content', label: '' }] }
-        ],
-        aboutUs: [
-            { fields: [{ type: 'textarea', name: 'content', label: '' }] }
-        ]
-    };
+  
 
     const handleFormSubmit = async (data, formType, itemId = null) => {
         try {
@@ -113,7 +107,7 @@ const About = () => {
                     <DynamicForm
                         className='dynamic-form'
                         onSubmit={handleFormSubmit}
-                        formConfig={formConfig[itemType]}
+                        formConfig={aboutConfig[itemType]}
                         editingItem={editingItem}
                         isEditMode={isEditMode}
                     />
@@ -132,7 +126,9 @@ const About = () => {
                     <ul>
                         {items.map(item => (
                             <div key={item.id} className='dynamic-form'>
-                                <div>{item.content}</div>
+
+                                <div className="" dangerouslySetInnerHTML={sanitizeHTML(item.content)}></div>
+
                                 <div className="d-flex justify-content-center align-items-center gap-2">
                                     <Button variant="warning" onClick={() => { setEditingItem(item); setIsEditMode(true); }}> <FaEdit /> </Button>
                                     <Button variant="danger" onClick={() => handleDelete(item.id)}> <FaTrash /> </Button>
