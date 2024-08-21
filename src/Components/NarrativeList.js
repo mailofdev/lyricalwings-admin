@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Card, Container, Row, Col, Button, Alert } from 'react-bootstrap';
 import Loader from './Loader';
 import Search from './Search';
@@ -20,12 +20,14 @@ const customTitles = {
 const NarrativeList = () => {
   const { type } = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { NarrativeList, loadingMessage, totalNarrative, error } = useSelector((state) => state.Narrative);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
   const [showDeleteNarrativeConfirm, setShowDeleteNarrativeConfirm] = useState(false);
   const [narrativeToDelete, setNarrativeToDelete] = useState(null);
+  const [selectedPoem, setSelectedPoem] = useState(null);
 
   const fetchData = useCallback(() => {
     dispatch(fetchNarrative({
@@ -104,6 +106,10 @@ const NarrativeList = () => {
     return <Alert variant="danger">Error: {error}</Alert>;
   }
 
+  const handleCardClick = (item) => {
+    navigate(`/Detail/${item.id}`, { state: { item } });
+  };
+
   return (
     <Container className="d-flex flex-column my-5">
       {loadingMessage && <Loader loadingMessage={loadingMessage} />}
@@ -149,7 +155,12 @@ const NarrativeList = () => {
           <Row className="mb-4">
             {NarrativeList.map((item) => (
               <Col key={item.id}>
-                <Card className="mb-4">
+                   <Card
+                  className={`mb-4 poem-card ${selectedPoem?.id === item.id ? 'selected' : ''}`}
+                  onMouseEnter={() => setSelectedPoem(item)}
+                  onMouseLeave={() => setSelectedPoem(null)}
+                  onClick={() => handleCardClick(item)}
+                >
                   <Card.Body>
                     <Card.Title className="text-truncate">{item.title}</Card.Title>
                     <Card.Text

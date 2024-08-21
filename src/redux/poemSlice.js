@@ -30,42 +30,55 @@ export const fetchPoemCounts = createAsyncThunk(
 );
 
 export const fetchPoems = createAsyncThunk(
-    'poems/fetchPoems',
-    async ({ page, pageSize, filterType, searchQuery }, { rejectWithValue }) => {
-      try {
-        const poemsRef = ref(db, 'PoemData');
-        let queryRef;
-  
-        if (filterType && filterType !== 'all') {
-          queryRef = query(poemsRef, orderByChild('type'), equalTo(filterType));
-        } else {
-          queryRef = poemsRef;
-        }
-  
-        const snapshot = await get(queryRef);
-        if (snapshot.exists()) {
-          let poemsArray = Object.entries(snapshot.val()).map(([id, data]) => ({ id, ...data }));
-          let reversedPoems = poemsArray.slice().reverse();
-  
-          // Apply search filter if searchQuery is provided
-          if (searchQuery) {
-            reversedPoems = reversedPoems.filter(poem =>
-              poem.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              poem.htmlContent.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-          }
-  
-          const totalPoems = reversedPoems.length;
-          const paginatedPoems = reversedPoems.slice((page - 1) * pageSize, page * pageSize);
-  
-          return { poems: paginatedPoems, totalPoems };
-        }
-        return { poems: [], totalPoems: 0 };
-      } catch (error) {
-        return rejectWithValue(error.message);
+  'poems/fetchPoems',
+  async ({ page, pageSize, filterType, searchQuery }, { rejectWithValue }) => {
+    try {
+      const poemsRef = ref(db, 'PoemData');
+      let queryRef;
+
+      if (filterType && filterType !== 'all') {
+        queryRef = query(poemsRef, orderByChild('type'), equalTo(filterType));
+      } else {
+        queryRef = poemsRef;
       }
+
+      const snapshot = await get(queryRef);
+      if (snapshot.exists()) {
+        let poemsArray = Object.entries(snapshot.val()).map(([id, data]) => ({ id, ...data }));
+        let reversedPoems = poemsArray.slice().reverse();
+
+        // Apply search filter if searchQuery is provided
+        if (searchQuery) {
+          reversedPoems = reversedPoems.filter(poem =>
+            poem.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            poem.htmlContent.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+        }
+
+        const totalPoems = reversedPoems.length;
+        const paginatedPoems = reversedPoems.slice((page - 1) * pageSize, page * pageSize);
+
+        // Fetch likes and comments for each poem
+        const poemsWithLikesAndComments = await Promise.all(
+          paginatedPoems.map(async (poem) => {
+            const likesSnapshot = await get(ref(db, `PoemData/${poem.id}/likes`));
+            const commentsSnapshot = await get(ref(db, `PoemData/${poem.id}/comments`));
+            return {
+              ...poem,
+              likes: likesSnapshot.exists() ? Object.keys(likesSnapshot.val()).length : 0,
+              comments: commentsSnapshot.exists() ? Object.values(commentsSnapshot.val()) : [],
+            };
+          })
+        );
+
+        return { poems: poemsWithLikesAndComments, totalPoems };
+      }
+      return { poems: [], totalPoems: 0 };
+    } catch (error) {
+      return rejectWithValue(error.message);
     }
-  );
+  }
+);
 
 export const addPoem = createAsyncThunk(
   'poems/addPoem',
@@ -120,21 +133,49 @@ export const deleteAllPoems = createAsyncThunk(
   }
 );
 
+export const addLike = createAsyncThunk(
+  'poems/addLike',
+  async ({ poemId, userId }, { rejectWithValue }) => {
+    try {
+      const likeRef = ref(db, `PoemData/${poemId}/likes/${userId}`);
+      await set(likeRef, true);
+      return { poemId, userId };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const addComment = createAsyncThunk(
+  'poems/addComment',
+  async ({ poemId, userId, comment }, { rejectWithValue }) => {
+    try {
+      const commentRef = ref(db, `PoemData/${poemId}/comments/${userId}`);
+      await set(commentRef, comment);
+      return { poemId, userId, comment };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const poemsSlice = createSlice({
-    name: 'poems',
-    initialState: {
-      poemsList: [],
-      totalPoems: 0, 
-      totalHappiness: 0, 
-      totalSadness: 0, 
-      totalAnger: 0, 
-      totalFear: 0, 
-      totalDisgust: 0, 
-      totalSurprise: 0,
-      isLoading: false,
-      loadingMessage: '',
-      error: null,
-    },
+  name: 'poems',
+  initialState: {
+    poemsList: [],
+    totalPoems: 0,
+    totalHappiness: 0,
+    totalSadness: 0,
+    totalAnger: 0,
+    totalFear: 0,
+    totalDisgust: 0,
+    totalSurprise: 0,
+    isLoading: false,
+    loadingMessage: '',
+    error: null,
+    likesCount: {},
+    comments: {}, 
+  },
     reducers: {
       clearError: (state) => {
         state.error = null;
@@ -236,6 +277,45 @@ const poemsSlice = createSlice({
         state.totalPoems = 0;
       })
       .addCase(deleteAllPoems.rejected, (state, action) => {
+        state.isLoading = false;
+        state.loadingMessage = '';
+        state.error = action.payload;
+      })
+      .addCase(addLike.pending, (state) => {
+        state.isLoading = true;
+        state.loadingMessage = "Adding like...";
+        state.error = null;
+      })
+      .addCase(addLike.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.loadingMessage = '';
+        if (!state.likesCount[action.payload.poemId]) {
+          state.likesCount[action.payload.poemId] = 0;
+        }
+        state.likesCount[action.payload.poemId]++;
+      })
+      .addCase(addLike.rejected, (state, action) => {
+        state.isLoading = false;
+        state.loadingMessage = '';
+        state.error = action.payload;
+      })
+      .addCase(addComment.pending, (state) => {
+        state.isLoading = true;
+        state.loadingMessage = "Adding comment...";
+        state.error = null;
+      })
+      .addCase(addComment.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.loadingMessage = '';
+        if (!state.comments[action.payload.poemId]) {
+          state.comments[action.payload.poemId] = [];
+        }
+        state.comments[action.payload.poemId].push({
+          userId: action.payload.userId,
+          comment: action.payload.comment,
+        });
+      })
+      .addCase(addComment.rejected, (state, action) => {
         state.isLoading = false;
         state.loadingMessage = '';
         state.error = action.payload;

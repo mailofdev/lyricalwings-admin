@@ -127,6 +127,7 @@ const Poems = () => {
         const createItem = (type) => ({
             title: faker.lorem.sentence(),
             htmlContent: faker.lorem.paragraphs(),
+            htmlSubtitle: faker.lorem.paragraph(),
             type: type
         });
 

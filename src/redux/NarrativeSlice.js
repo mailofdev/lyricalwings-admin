@@ -54,7 +54,20 @@ export const fetchNarrative = createAsyncThunk(
           const totalNarrative = reversedNarrative.length;
           const paginatedNarrative = reversedNarrative.slice((page - 1) * pageSize, page * pageSize);
   
-          return { Narrative: paginatedNarrative, totalNarrative };
+           // Fetch likes and comments for each poem
+        const poemsWithLikesAndComments = await Promise.all(
+          paginatedNarrative.map(async (Narrative) => {
+            const likesSnapshot = await get(ref(db, `NarrativeData/${Narrative.id}/likes`));
+            const commentsSnapshot = await get(ref(db, `NarrativeData/${Narrative.id}/comments`));
+            return {
+              ...Narrative,
+              likes: likesSnapshot.exists() ? Object.keys(likesSnapshot.val()).length : 0,
+              comments: commentsSnapshot.exists() ? Object.values(commentsSnapshot.val()) : [],
+            };
+          })
+        );
+
+          return { Narrative: poemsWithLikesAndComments, totalNarrative };
         }
         return { Narrative: [], totalNarrative: 0 };
       } catch (error) {
@@ -116,6 +129,32 @@ export const deleteAllNarrative = createAsyncThunk(
   }
 );
 
+export const addLike = createAsyncThunk(
+  'Narrative/addLike',
+  async ({ NarrativeId, userId }, { rejectWithValue }) => {
+    try {
+      const likeRef = ref(db, `NarrativeData/${NarrativeId}/likes/${userId}`);
+      await set(likeRef, true);
+      return { NarrativeId, userId };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const addComment = createAsyncThunk(
+  'poems/addComment',
+  async ({ NarrativeId, userId, comment }, { rejectWithValue }) => {
+    try {
+      const commentRef = ref(db, `NarrativeData/${NarrativeId}/comments/${userId}`);
+      await set(commentRef, comment);
+      return { NarrativeId, userId, comment };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const NarrativeSlice = createSlice({
     name: 'Narrative',
     initialState: {
@@ -126,6 +165,8 @@ const NarrativeSlice = createSlice({
       isLoading: false,
       loadingMessage: '',
       error: null,
+      likesCount: {},
+      comments: {}, 
     },
     reducers: {
       clearError: (state) => {
@@ -228,6 +269,45 @@ const NarrativeSlice = createSlice({
         state.totalNarrative = 0;
       })
       .addCase(deleteAllNarrative.rejected, (state, action) => {
+        state.isLoading = false;
+        state.loadingMessage = '';
+        state.error = action.payload;
+      })
+      .addCase(addLike.pending, (state) => {
+        state.isLoading = true;
+        state.loadingMessage = "Adding like...";
+        state.error = null;
+      })
+      .addCase(addLike.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.loadingMessage = '';
+        if (!state.likesCount[action.payload.poemId]) {
+          state.likesCount[action.payload.poemId] = 0;
+        }
+        state.likesCount[action.payload.poemId]++;
+      })
+      .addCase(addLike.rejected, (state, action) => {
+        state.isLoading = false;
+        state.loadingMessage = '';
+        state.error = action.payload;
+      })
+      .addCase(addComment.pending, (state) => {
+        state.isLoading = true;
+        state.loadingMessage = "Adding comment...";
+        state.error = null;
+      })
+      .addCase(addComment.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.loadingMessage = '';
+        if (!state.comments[action.payload.poemId]) {
+          state.comments[action.payload.poemId] = [];
+        }
+        state.comments[action.payload.poemId].push({
+          userId: action.payload.userId,
+          comment: action.payload.comment,
+        });
+      })
+      .addCase(addComment.rejected, (state, action) => {
         state.isLoading = false;
         state.loadingMessage = '';
         state.error = action.payload;

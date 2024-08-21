@@ -14,6 +14,7 @@ import Books from './Screens/Books';
 import Poems from './Screens/Poems';
 import Narrative from './Screens/Narrative';
 import NarrativeList from './Components/NarrativeList';
+import Detail from './Components/Detail';
 
 function App() {
   return (
@@ -34,7 +35,8 @@ function App() {
           <Route path="/Poems" element={<PrivateRoute element={Poems} />} />
           <Route path="/PoemList/:type" element={<PrivateRoute element={PoemList} />} />       
           <Route path="/Narrative" element={<PrivateRoute element={Narrative} />} />
-          <Route path="/NarrativeList/:type" element={<PrivateRoute element={NarrativeList} />} />       
+          <Route path="/NarrativeList/:type" element={<PrivateRoute element={NarrativeList} />} />    
+          <Route path="/Detail/:id" element={<PrivateRoute element={Detail} />} />    
         </Routes>
       </div>
     </div>
