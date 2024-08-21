@@ -2,8 +2,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { get, ref, push, update, remove } from 'firebase/database';
 import { db } from '../Config/firebase';
 
-export const fetchItems = createAsyncThunk(
-  'about/fetchItems',
+export const fetchAbout = createAsyncThunk(
+  'about/fetchAbout',
   async (_, { rejectWithValue }) => {
     try {
       const aboutMeRef = ref(db, 'about/aboutMeData');
@@ -20,8 +20,8 @@ export const fetchItems = createAsyncThunk(
   }
 );
 
-export const addItem = createAsyncThunk(
-  'about/addItem',
+export const addAbout = createAsyncThunk(
+  'about/addAbout',
   async ({ type, itemData }, { rejectWithValue }) => {
     try {
       const itemsRef = ref(db, `about/${type}Data`);
@@ -34,8 +34,8 @@ export const addItem = createAsyncThunk(
   }
 );
 
-export const updateItem = createAsyncThunk(
-  'about/updateItem',
+export const updateAbout = createAsyncThunk(
+  'about/updateAbout',
   async ({ id, type, itemData }, { rejectWithValue }) => {
     try {
       const itemRef = ref(db, `about/${type}Data/${id}`);
@@ -47,8 +47,8 @@ export const updateItem = createAsyncThunk(
   }
 );
 
-export const deleteItem = createAsyncThunk(
-  'about/deleteItem',
+export const deleteAbout = createAsyncThunk(
+  'about/deleteAbout',
   async ({ id, type }, { rejectWithValue }) => {
     try {
       const itemRef = ref(db, `about/${type}Data/${id}`);
@@ -75,26 +75,26 @@ const aboutSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchItems.pending, (state) => {
+      .addCase(fetchAbout.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchItems.fulfilled, (state, action) => {
+      .addCase(fetchAbout.fulfilled, (state, action) => {
         state.aboutMeData = action.payload.aboutMeData;
         state.aboutUsData = action.payload.aboutUsData;
         state.loading = false;
       })
-      .addCase(fetchItems.rejected, (state, action) => {
+      .addCase(fetchAbout.rejected, (state, action) => {
         state.error = action.payload;
         state.loading = false;
       })
-      .addCase(addItem.fulfilled, (state, action) => {
+      .addCase(addAbout.fulfilled, (state, action) => {
         if (action.payload.type === 'aboutMe') {
           state.aboutMeData.push(action.payload);
         } else {
           state.aboutUsData.push(action.payload);
         }
       })
-      .addCase(updateItem.fulfilled, (state, action) => {
+      .addCase(updateAbout.fulfilled, (state, action) => {
         const { id, type, ...updatedData } = action.payload;
         const items = type === 'aboutMe' ? state.aboutMeData : state.aboutUsData;
         const index = items.findIndex(item => item.id === id);
@@ -102,7 +102,7 @@ const aboutSlice = createSlice({
           items[index] = { ...items[index], ...updatedData };
         }
       })
-      .addCase(deleteItem.fulfilled, (state, action) => {
+      .addCase(deleteAbout.fulfilled, (state, action) => {
         const { id, type } = action.payload;
         const items = type === 'aboutMe' ? state.aboutMeData : state.aboutUsData;
         const index = items.findIndex(item => item.id === id);

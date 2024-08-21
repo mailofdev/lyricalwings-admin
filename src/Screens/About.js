@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Button } from 'react-bootstrap';
 import Loader from '../Components/Loader';
 import DynamicForm from '../Components/DynamicForm';
-import { fetchItems, addItem, updateItem, deleteItem, clearError } from '../redux/aboutSlice';
+import { fetchAbout, addAbout, updateAbout, deleteAbout, clearError } from '../redux/aboutSlice';
 import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
 import { FaEdit, FaTrash } from 'react-icons/fa';
@@ -22,7 +22,7 @@ const About = () => {
     const isFormDisabled = !isEditMode && (itemType === 'aboutMe' ? aboutMeData.length > 0 : aboutUsData.length > 0);
 
     useEffect(() => {
-        dispatch(fetchItems());
+        dispatch(fetchAbout());
     }, [dispatch]);
 
     useEffect(() => {
@@ -38,16 +38,16 @@ const About = () => {
     const handleFormSubmit = async (data, formType, itemId = null) => {
         try {
             if (formType === 'add') {
-                await dispatch(addItem({ type: itemType, itemData: data })).unwrap();
+                await dispatch(addAbout({ type: itemType, itemData: data })).unwrap();
                 showToast('success', 'Success', 'Item added successfully');
             } else if (formType === 'edit' && itemId) {
                 const updateData = { content: data.content };
-                await dispatch(updateItem({ id: itemId, type: itemType, itemData: updateData })).unwrap();
+                await dispatch(updateAbout({ id: itemId, type: itemType, itemData: updateData })).unwrap();
                 showToast('success', 'Success', 'Item updated successfully');
                 setEditingItem(null);
                 setIsEditMode(false);
             }
-            fetchItems();
+            fetchAbout();
         } catch (error) {
             console.error("Error submitting form:", error);
             showToast('error', 'Error', error.message);
@@ -61,9 +61,9 @@ const About = () => {
 
     const confirmDelete = async () => {
         try {
-            await dispatch(deleteItem({ id: itemToDelete, type: itemType })).unwrap();
+            await dispatch(deleteAbout({ id: itemToDelete, type: itemType })).unwrap();
             showToast('success', 'Success', 'Item deleted successfully');
-            fetchItems();
+            fetchAbout();
         } catch (error) {
             console.error("Error deleting item:", error);
             showToast('error', 'Error', error.message);
