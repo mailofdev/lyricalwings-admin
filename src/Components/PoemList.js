@@ -7,6 +7,7 @@ import Search from './Search';
 import { Paginator } from 'primereact/paginator';
 import { fetchPoems, deleteAllPoems, deletePoem } from '../redux/poemSlice';
 import DOMPurify from 'dompurify';
+import ConfirmDialog from './ConfirmDialog';
 
 const POEMS_PER_PAGE = 24;
 
@@ -26,6 +27,9 @@ const PoemList = () => {
   const { poemsList, loadingMessage, totalPoems, error } = useSelector((state) => state.poem);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+  const [showDeletePoemConfirm, setShowDeletePoemConfirm] = useState(false);
+  const [poemToDelete, setPoemToDelete] = useState(null);
 
   const fetchData = useCallback(() => {
     dispatch(fetchPoems({ 
@@ -48,7 +52,6 @@ const PoemList = () => {
   const handleSearch = useCallback((query) => {
     setSearchQuery(query);
     setCurrentPage(1);
-    // Fetch data immediately when search is triggered
     dispatch(fetchPoems({ 
       page: 1, 
       pageSize: POEMS_PER_PAGE, 
@@ -60,7 +63,6 @@ const PoemList = () => {
   const handleClearSearch = useCallback(() => {
     setSearchQuery('');
     setCurrentPage(1);
-    // Fetch data immediately when search is cleared
     dispatch(fetchPoems({ 
       page: 1, 
       pageSize: POEMS_PER_PAGE, 
@@ -74,20 +76,27 @@ const PoemList = () => {
   }, []);
 
   const handleDeleteAll = useCallback(() => {
-    if (window.confirm('Are you sure you want to delete all poems? This action cannot be undone.')) {
-      dispatch(deleteAllPoems()).then(() => {
-        fetchData();
-      });
-    }
-  }, [dispatch, fetchData]);
+    setShowDeleteAllConfirm(true);
+  }, []);
+
+  const confirmDeleteAll = () => {
+    dispatch(deleteAllPoems()).then(() => {
+      fetchData();
+    });
+    setShowDeleteAllConfirm(false);
+  };
 
   const handleDeletePoem = useCallback((poemId) => {
-    if (window.confirm('Are you sure you want to delete this poem?')) {
-      dispatch(deletePoem(poemId)).then(() => {
-        fetchData();
-      });
-    }
-  }, [dispatch, fetchData]);
+    setPoemToDelete(poemId);
+    setShowDeletePoemConfirm(true);
+  }, []);
+
+  const confirmDeletePoem = () => {
+    dispatch(deletePoem(poemToDelete)).then(() => {
+      fetchData();
+    });
+    setShowDeletePoemConfirm(false);
+  };
 
   const getTitle = useMemo(() => customTitles[type] || 'Poems', [type]);
 
@@ -108,13 +117,39 @@ const PoemList = () => {
             {getTitle} ({totalPoems})
           </h2>
           <Search 
-        onSearch={handleSearch} 
-        onClear={handleClearSearch} 
-        initialSearchQuery={searchQuery} 
-      />
-                <Button variant="danger" className="mb-4" onClick={handleDeleteAll}>
+            onSearch={handleSearch} 
+            onClear={handleClearSearch} 
+            initialSearchQuery={searchQuery} 
+          />
+          <Button variant="danger" className="mb-4" onClick={handleDeleteAll}>
             Delete All
           </Button>
+          <ConfirmDialog
+            visible={showDeleteAllConfirm}
+            onHide={() => setShowDeleteAllConfirm(false)}
+            message="Are you sure you want to delete all poems? This action cannot be undone."
+            header="Confirm Delete"
+            acceptClassName="btn-danger"
+            rejectClassName="btn-secondary"
+            acceptLabel="Delete"
+            rejectLabel="Cancel"
+            accept={confirmDeleteAll}
+            reject={() => setShowDeleteAllConfirm(false)}
+          />
+
+          <ConfirmDialog
+            visible={showDeletePoemConfirm}
+            onHide={() => setShowDeletePoemConfirm(false)}
+            message="Are you sure you want to delete this poem?"
+            header="Confirm Delete"
+            acceptClassName="btn-danger"
+            rejectClassName="btn-secondary"
+            acceptLabel="Delete"
+            rejectLabel="Cancel"
+            accept={confirmDeletePoem}
+            reject={() => setShowDeletePoemConfirm(false)}
+          />
+
           <Row className="mb-4">
             {poemsList.map((item) => (
               <Col key={item.id} xs={12} sm={12} md={6} lg={6} xl={4} xxl={4}>

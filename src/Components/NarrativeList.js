@@ -7,6 +7,7 @@ import Search from './Search';
 import { Paginator } from 'primereact/paginator';
 import { fetchNarrative, deleteAllNarrative, deleteNarrative } from '../redux/NarrativeSlice';
 import DOMPurify from 'dompurify';
+import ConfirmDialog from './ConfirmDialog';
 
 const Narrative_PER_PAGE = 24;
 
@@ -22,11 +23,14 @@ const NarrativeList = () => {
   const { NarrativeList, loadingMessage, totalNarrative, error } = useSelector((state) => state.Narrative);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+  const [showDeleteNarrativeConfirm, setShowDeleteNarrativeConfirm] = useState(false);
+  const [narrativeToDelete, setNarrativeToDelete] = useState(null);
 
   const fetchData = useCallback(() => {
-    dispatch(fetchNarrative({ 
-      page: currentPage, 
-      pageSize: Narrative_PER_PAGE, 
+    dispatch(fetchNarrative({
+      page: currentPage,
+      pageSize: Narrative_PER_PAGE,
       filterType: type === 'showAllNarrative' ? 'all' : type,
       searchQuery: searchQuery
     }));
@@ -44,10 +48,9 @@ const NarrativeList = () => {
   const handleSearch = useCallback((query) => {
     setSearchQuery(query);
     setCurrentPage(1);
-    // Fetch data immediately when search is triggered
-    dispatch(fetchNarrative({ 
-      page: 1, 
-      pageSize: Narrative_PER_PAGE, 
+    dispatch(fetchNarrative({
+      page: 1,
+      pageSize: Narrative_PER_PAGE,
       filterType: type === 'showAllNarrative' ? 'all' : type,
       searchQuery: query
     }));
@@ -56,10 +59,9 @@ const NarrativeList = () => {
   const handleClearSearch = useCallback(() => {
     setSearchQuery('');
     setCurrentPage(1);
-    // Fetch data immediately when search is cleared
-    dispatch(fetchNarrative({ 
-      page: 1, 
-      pageSize: Narrative_PER_PAGE, 
+    dispatch(fetchNarrative({
+      page: 1,
+      pageSize: Narrative_PER_PAGE,
       filterType: type === 'showAllNarrative' ? 'all' : type,
       searchQuery: ''
     }));
@@ -70,20 +72,27 @@ const NarrativeList = () => {
   }, []);
 
   const handleDeleteAll = useCallback(() => {
-    if (window.confirm('Are you sure you want to delete all Narrative? This action cannot be undone.')) {
-      dispatch(deleteAllNarrative()).then(() => {
-        fetchData();
-      });
-    }
-  }, [dispatch, fetchData]);
+    setShowDeleteAllConfirm(true);
+  }, []);
+
+  const confirmDeleteAll = () => {
+    dispatch(deleteAllNarrative()).then(() => {
+      fetchData();
+    });
+    setShowDeleteAllConfirm(false);
+  };
 
   const handleDeleteNarrative = useCallback((NarrativeId) => {
-    if (window.confirm('Are you sure you want to delete this Narrative?')) {
-      dispatch(deleteNarrative(NarrativeId)).then(() => {
-        fetchData();
-      });
-    }
-  }, [dispatch, fetchData]);
+    setNarrativeToDelete(NarrativeId);
+    setShowDeleteNarrativeConfirm(true);
+  }, []);
+
+  const confirmDeleteNarrative = () => {
+    dispatch(deleteNarrative(narrativeToDelete)).then(() => {
+      fetchData();
+    });
+    setShowDeleteNarrativeConfirm(false);
+  };
 
   const getTitle = useMemo(() => customTitles[type] || 'Narrative', [type]);
 
@@ -103,32 +112,64 @@ const NarrativeList = () => {
           <h2 className="text-center mb-4">
             {getTitle} ({totalNarrative})
           </h2>
-          <Search 
-        onSearch={handleSearch} 
-        onClear={handleClearSearch} 
-        initialSearchQuery={searchQuery} 
-      />
-                <Button variant="danger" className="mb-4" onClick={handleDeleteAll}>
+          <Search
+            onSearch={handleSearch}
+            onClear={handleClearSearch}
+            initialSearchQuery={searchQuery}
+          />
+          <Button variant="danger" className="mb-4" onClick={handleDeleteAll}>
             Delete All
           </Button>
+          <ConfirmDialog
+            visible={showDeleteAllConfirm}
+            onHide={() => setShowDeleteAllConfirm(false)}
+            message="Are you sure you want to delete all Narratives? This action cannot be undone."
+            header="Confirm Delete"
+            acceptClassName="btn-danger"
+            rejectClassName="btn-secondary"
+            acceptLabel="Delete"
+            rejectLabel="Cancel"
+            accept={confirmDeleteAll}
+            reject={() => setShowDeleteAllConfirm(false)}
+          />
+
+          <ConfirmDialog
+            visible={showDeleteNarrativeConfirm}
+            onHide={() => setShowDeleteNarrativeConfirm(false)}
+            message="Are you sure you want to delete this Narrative?"
+            header="Confirm Delete"
+            acceptClassName="btn-danger"
+            rejectClassName="btn-secondary"
+            acceptLabel="Delete"
+            rejectLabel="Cancel"
+            accept={confirmDeleteNarrative}
+            reject={() => setShowDeleteNarrativeConfirm(false)}
+          />
+
           <Row className="mb-4">
             {NarrativeList.map((item) => (
-              <Col key={item.id} xs={12} sm={12} md={6} lg={6} xl={4} xxl={4}>
+              <Col key={item.id}>
                 <Card className="mb-4">
                   <Card.Body>
                     <Card.Title className="text-truncate">{item.title}</Card.Title>
-                    <Card.Text 
-                      className="text-truncate" 
+                    <Card.Text
+                      className="text-truncate"
                       dangerouslySetInnerHTML={sanitizeHTML(item.htmlContent)}
                     />
+                    <div className='d-flex gap-2 mt-2'>
+                     <Button variant="primary" size="sm" onClick={() => handleDeleteNarrative(item.id)}>
+                      Edit
+                    </Button>
                     <Button variant="danger" size="sm" onClick={() => handleDeleteNarrative(item.id)}>
                       Delete
                     </Button>
+                    </div>
                   </Card.Body>
                 </Card>
               </Col>
             ))}
           </Row>
+
           {NarrativeList.length === 0 && (
             <Alert variant="info">No Narrative found matching your search criteria.</Alert>
           )}
