@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../Components/Loader';
 import DynamicForm from '../Components/DynamicForm';
-import { fetchNarrativeCounts, addNarrative, updateNarrative } from '../redux/NarrativeSlice';
+import { fetchNarrativeCounts, addNarrative, updateNarrative, clearError } from '../redux/NarrativeSlice';
 import { Toast } from 'primereact/toast';
 import ResponsiveCard from '../Components/ResponsiveCard';
 import { FaBook, FaBookOpen, FaScroll } from 'react-icons/fa';
@@ -17,7 +17,7 @@ const Narrative = () => {
         totalStory,
         totalNovel,
         loadingMessage,
-        
+        error
     } = useSelector((state) => state.Narrative);
 
     const [editingItem, setEditingItem] = useState(null);
@@ -26,7 +26,12 @@ const Narrative = () => {
 
     useEffect(() => {
         dispatch(fetchNarrativeCounts());
-    });
+        if (error) {
+            console.error('Redux error:', error);
+            showToast('error', 'Error', error);
+            setTimeout(() => dispatch(clearError()), 5000);
+        }
+    }, [dispatch, error]);
 
     const formConfig = [
         {

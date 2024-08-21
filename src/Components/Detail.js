@@ -1,12 +1,12 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { Card, Container, Row, Col } from 'react-bootstrap';
+import { Card, Container,  } from 'react-bootstrap';
 import DOMPurify from 'dompurify';
 
 const Detail = () => {
   const { state } = useLocation();
   const { item } = state;
-  console.log(JSON.stringify(item))
+  
   const sanitizeHTML = (html) => {
     return { __html: DOMPurify.sanitize(html) };
   };

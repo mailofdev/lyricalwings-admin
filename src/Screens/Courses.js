@@ -3,14 +3,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Button } from 'react-bootstrap';
 import Loader from '../Components/Loader';
 import CourseForm from '../Components/CourseForm';
-import { fetchItems, addItem, updateItem, deleteItem, clearError } from '../redux/courseSlice';
+import { fetchItems, addItem, updateItem, deleteItem } from '../redux/courseSlice';
 import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 
 const Courses = () => {
     const dispatch = useDispatch();
-    const { CourseData, loading, error } = useSelector((state) => state.courses);
+    const { CourseData, loading } = useSelector((state) => state.courses);
     const [editingItem, setEditingItem] = useState(null);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
@@ -37,7 +37,7 @@ const Courses = () => {
 
     useEffect(() => {
         dispatch(fetchItems());
-    });
+    }, [dispatch]);
 
     const handleFormSubmit = async (data, formType, itemId = null) => {
         try {

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../Components/Loader';
 import DynamicForm from '../Components/DynamicForm';
-import { fetchPoemCounts, addPoem, updatePoem } from '../redux/poemSlice';
+import { fetchPoemCounts, addPoem, updatePoem, clearError } from '../redux/poemSlice';
 import { Toast } from 'primereact/toast';
 import ResponsiveCard from '../Components/ResponsiveCard';
 import { FaBook, FaBookOpen, FaScroll } from 'react-icons/fa';
@@ -21,7 +21,7 @@ const Poems = () => {
         totalDisgust,
         totalSurprise,
         loadingMessage,
-        
+        error
     } = useSelector((state) => state.poem);
 
     const [editingItem, setEditingItem] = useState(null);
@@ -30,8 +30,12 @@ const Poems = () => {
 
     useEffect(() => {
         dispatch(fetchPoemCounts());
-
-    });
+        if (error) {
+            console.error('Redux error:', error);
+            showToast('error', 'Error', error);
+            setTimeout(() => dispatch(clearError()), 5000);
+        }
+    }, [dispatch, error]);
 
     const formConfig = [
         {

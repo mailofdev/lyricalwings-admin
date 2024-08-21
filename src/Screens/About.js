@@ -24,7 +24,13 @@ const About = () => {
         fetchItems();
     });
 
-
+    useEffect(() => {
+        if (error) {
+            console.error('Redux error:', error);
+            showToast('error', 'Error', error);
+            setTimeout(() => dispatch(clearError()), 5000);
+        }
+    });
 
     const formConfig = {
         aboutMe: [
