@@ -17,16 +17,8 @@ const Books = () => {
     const toast = useRef(null);
 
     useEffect(() => {
-        dispatch(fetchItems());
-    }, [dispatch]);
-
-    useEffect(() => {
-        if (error) {
-            console.error('Redux error:', error);
-            showToast('error', 'Error', error);
-            setTimeout(() => dispatch(clearError()), 5000);
-        }
-    }, [error, dispatch]);
+       dispatch(fetchItems());
+    },[]);
 
     const formConfig = [
         {
@@ -44,14 +36,14 @@ const Books = () => {
     const handleFormSubmit = async (data, formType, itemId = null) => {
         try {
             if (formType === 'add') {
-                await dispatch(addItem(data)).unwrap();
+                await addItem(data).unwrap();
                 showToast('success', 'Success', 'Item added successfully');
             } else if (formType === 'edit' && itemId) {
-                await dispatch(updateItem({ id: itemId, itemData: data })).unwrap();
+                await updateItem({ id: itemId, itemData: data }).unwrap();
                 showToast('success', 'Success', 'Item updated successfully');
                 setEditingItem(null);
             }
-            dispatch(fetchItems());
+            fetchItems();
         } catch (error) {
             console.error("Error submitting form:", error);
             showToast('error', 'Error', error.message);
@@ -65,9 +57,9 @@ const Books = () => {
 
     const confirmDelete = async () => {
         try {
-            await dispatch(deleteItem(itemToDelete)).unwrap();
+            await deleteItem(itemToDelete).unwrap();
             showToast('success', 'Success', 'Item deleted successfully');
-            dispatch(fetchItems());
+            fetchItems();
         } catch (error) {
             console.error("Error deleting item:", error);
             showToast('error', 'Error', error.message);

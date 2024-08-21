@@ -37,7 +37,7 @@ const Courses = () => {
 
     useEffect(() => {
         dispatch(fetchItems());
-    }, [dispatch]);
+    });
 
     const handleFormSubmit = async (data, formType, itemId = null) => {
         try {
