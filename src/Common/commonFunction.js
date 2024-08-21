@@ -10,7 +10,7 @@ export const aboutConfig = {
             fields: [{
                 type: 'editor',
                 name: 'content',
-                label: '', 
+                label: 'content', 
                 config: {
                     readonly: false,
                     placeholder: 'Start typing...',
@@ -22,14 +22,31 @@ export const aboutConfig = {
                     askBeforePasteFromWord: false,
                     defaultActionOnPaste: "insert_only_text",
                 }
-            }]
+            },
+            {type: 'input',
+            name: 'facebook', 
+            label: 'Facebook',
+            },
+            {type: 'input',
+            name: 'instagram', 
+            label: 'Instagram',
+            },
+            {type: 'input',
+            name: 'linkedin', 
+            label: 'LinkedIn',
+            },
+            {type: 'input',
+            name: 'contactNo', 
+            label: 'Contact No.',
+            },
+        ]
         }
     ],
     aboutUs: [
         { fields: [{ 
             type: 'editor', 
             name: 'content', 
-            label: '',
+            label: 'Content',
             config: {
                 readonly: false,
                 placeholder: 'Start typing...',
@@ -41,6 +58,28 @@ export const aboutConfig = {
                 askBeforePasteFromWord: false,
                 defaultActionOnPaste: "insert_only_text",
             }
-        }] }
+        },
+
+        {type: 'input',
+        name: 'facebook', 
+        label: 'Facebook',
+        },
+        {type: 'input',
+        name: 'instagram', 
+        label: 'Instagram',
+        },
+        {type: 'input',
+        name: 'linkedin', 
+        label: 'LinkedIn',
+        },
+        {type: 'input',
+        name: 'contactNo', 
+        label: 'Contact No.',
+        },
+        {type: 'input',
+        name: 'address', 
+        label: 'Address',
+        },
+    ] }
     ]
 };
