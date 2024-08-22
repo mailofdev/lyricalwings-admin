@@ -49,7 +49,7 @@ export const loginUser = createAsyncThunk('auth/loginUser', async ({ authEmail, 
   }
 });
 
-export const signupUser = createAsyncThunk('auth/signupUser', async ({ authEmail, authPassword, authUsername, authBirthday, authCity, authGender }, { rejectWithValue }) => {
+export const signupUser = createAsyncThunk('auth/signupUser', async ({ authEmail, authPassword, authUsername, authBirthday, authCity, authGender, authCountry }, { rejectWithValue }) => {
   try {
     // Check password length
     if (authPassword.length < 6) {
@@ -69,6 +69,7 @@ export const signupUser = createAsyncThunk('auth/signupUser', async ({ authEmail
         displayName: authUsername,
         birthday: formattedBirthday,
         city: authCity,
+        country: authCountry,
         gender: authGender,
         role: 'user'
     });

@@ -137,6 +137,12 @@ export const authConfig = {
                     placeholder: 'Enter your city',
                 },
                 {
+                    type: 'input',
+                    name: 'country',
+                    label: 'Country',
+                    placeholder: 'Enter your country',
+                },
+                {
                     type: 'dropdown',
                     name: 'gender',
                     label: 'Gender',

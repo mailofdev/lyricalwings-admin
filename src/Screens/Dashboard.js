@@ -162,13 +162,10 @@ const Dashboard = () => {
 
   return (
     <Container fluid className="p-4">
+
+<WorldMap />
+
       <Row>
-      <Row className="mt-4">
-        <Col xs={12}>
-          <h4 className="text-center mb-4">User Engagement Map</h4>
-          <WorldMap />
-        </Col>
-      </Row>
         <Col md={4} className="mb-4">
           <div className="chart-container bg-light p-3 shadow-sm rounded">
             <h4 className="text-center mb-3">User Roles</h4>
