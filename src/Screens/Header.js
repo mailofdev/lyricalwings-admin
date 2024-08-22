@@ -155,7 +155,7 @@ const Header = ({ theme }) => {
 
                   <NavDropdown.Item as={NavLink} to="/Themes" className="nav-link-custom"><BiColor /> Themes</NavDropdown.Item>
                   <NavDropdown.Item as={NavLink} to="/User" className="nav-link-custom"><FaUsers /> Users</NavDropdown.Item>
-                  <NavDropdown.Item onClick={() => { closeNavbar(); handleSignout(); }}><FaSignOutAlt /> Sign Out</NavDropdown.Item>
+                  <NavDropdown.Item className="nav-link-custom" onClick={() => { closeNavbar(); handleSignout(); }}><FaSignOutAlt /> Sign Out</NavDropdown.Item>
                 </>
               )}
             </NavDropdown>

@@ -1,9 +1,11 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import Loader from '../Components/Loader';
 import ThemeForm from '../Components/ThemeForm';
-import { fetchThemes, addThemes, updateThemes, deleteThemes, fetchAppliedTheme, saveAppliedTheme, clearError } from '../redux/themeSlice';
+import { fetchThemes, addThemes, updateThemes, 
+    deleteThemes, fetchAppliedTheme, saveAppliedTheme, deleteAllAppliedTheme, deleteAllThemes,
+     clearError } from '../redux/themeSlice';
 import { Toast } from 'primereact/toast';
 import { Dialog } from 'primereact/dialog';
 import { FaCheckCircle, FaRegCircle } from 'react-icons/fa';
@@ -17,6 +19,7 @@ const Themes = () => {
     const [itemToDelete, setItemToDelete] = useState(null);
     const toast = useRef(null);
 
+    console.log("appliedTheme "+appliedTheme)
     useEffect(() => {
         dispatch(fetchThemes());
         dispatch(fetchAppliedTheme());
@@ -95,6 +98,26 @@ const Themes = () => {
         setEditingItem(item);
     };
 
+    const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+
+    const handleDeleteAll = useCallback(() => {
+        setShowDeleteAllConfirm(true);
+      }, []);
+    
+      const confirmDeleteAll = async () => {
+        try {
+          await dispatch(deleteAllThemes()).unwrap();
+          await dispatch(deleteAllAppliedTheme()).unwrap();
+          showToast('success', 'Success', 'All themes deleted successfully');
+          dispatch(fetchThemes());
+          dispatch(fetchAppliedTheme());
+        } catch (error) {
+          console.error("Error deleting all themes:", error);
+          showToast('error', 'Error', error.message);
+        }
+        setShowDeleteAllConfirm(false);
+      };
+      
     return (
         <Container>
             <Toast ref={toast} />
@@ -139,6 +162,23 @@ const Themes = () => {
                 accept={confirmDelete}
                 reject={() => setShowDeleteDialog(false)}
             />
+             <ConfirmDialog
+            visible={showDeleteAllConfirm}
+            onHide={() => setShowDeleteAllConfirm(false)}
+            message="Are you sure you want to delete all themes? This action cannot be undone."
+            header="Confirm Delete"
+            acceptClassName="btn-danger"
+            rejectClassName="btn-secondary"
+            acceptLabel="Delete"
+            rejectLabel="Cancel"
+            accept={confirmDeleteAll}
+            reject={() => setShowDeleteAllConfirm(false)}
+          />
+            <div className='text-center'>
+            <Button variant="danger" className="mb-4" onClick={handleDeleteAll}>
+            Delete All
+          </Button>
+            </div>
         </Container>
     );
 };

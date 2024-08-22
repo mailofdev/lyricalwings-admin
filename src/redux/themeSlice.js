@@ -78,6 +78,31 @@ export const deleteThemes = createAsyncThunk(
     }
   }
 );
+export const deleteAllThemes = createAsyncThunk(
+  'Themes/deleteAllThemes',
+  async (_, { rejectWithValue }) => {
+    try {
+      const itemRef = ref(db, 'ThemeData');
+      await remove(itemRef);
+      return true;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const deleteAllAppliedTheme = createAsyncThunk(
+  'Themes/deleteAllAppliedTheme',
+  async (_, { rejectWithValue }) => {
+    try {
+      const itemRef = ref(db, 'AppliedTheme');
+      await remove(itemRef);
+      return true;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 export const saveAppliedTheme = createAsyncThunk(
   'Themes/saveAppliedTheme',
@@ -123,46 +148,112 @@ const themesSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchThemes.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(fetchThemes.fulfilled, (state, action) => {
-        state.loading = false;
-        state.ThemeData = action.payload;
-      })
-      .addCase(fetchThemes.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      .addCase(addThemes.fulfilled, (state, action) => {
-        state.ThemeData.push(action.payload);
-      })
-      .addCase(updateThemes.fulfilled, (state, action) => {
-        const index = state.ThemeData.findIndex(item => item.id === action.payload.id);
-        if (index >= 0) {
-          state.ThemeData[index] = action.payload;
-        }
-      })
-      .addCase(deleteThemes.fulfilled, (state, action) => {
-        state.ThemeData = state.ThemeData.filter(item => item.id !== action.payload);
-      })
-      .addCase(saveAppliedTheme.fulfilled, (state, action) => {
-        state.appliedTheme = action.payload;
-      })
-      .addCase(applyTheme.fulfilled, (state, action) => {
-        state.appliedTheme = action.payload;
-      })
-      .addCase(applyTheme.rejected, (state, action) => {
-        state.error = action.payload;
-      })
-      .addCase(fetchAppliedTheme.fulfilled, (state, action) => {
-        state.appliedTheme = action.payload;
-      })
-      .addCase(fetchAppliedTheme.rejected, (state, action) => {
-        state.error = action.payload;
-      });
+    // Fetch all themes
+    .addCase(fetchThemes.pending, (state) => {
+      state.loading = true;
+    })
+    .addCase(fetchThemes.fulfilled, (state, action) => {
+      state.loading = false;
+      state.ThemeData = action.payload;
+    })
+    .addCase(fetchThemes.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    })
 
-  }
+    // Fetch applied theme
+    .addCase(fetchAppliedTheme.pending, (state) => {
+      state.loading = true;
+    })
+    .addCase(fetchAppliedTheme.fulfilled, (state, action) => {
+      state.loading = false;
+      state.appliedTheme = action.payload;
+    })
+    .addCase(fetchAppliedTheme.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    })
+
+    // Add a new theme
+    .addCase(addThemes.pending, (state) => {
+      state.loading = true;
+    })
+    .addCase(addThemes.fulfilled, (state, action) => {
+      state.loading = false;
+      state.ThemeData.push(action.payload);
+    })
+    .addCase(addThemes.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    })
+
+    // Update an existing theme
+    .addCase(updateThemes.pending, (state) => {
+      state.loading = true;
+    })
+    .addCase(updateThemes.fulfilled, (state, action) => {
+      state.loading = false;
+      const index = state.ThemeData.findIndex(item => item.id === action.payload.id);
+      if (index !== -1) {
+        state.ThemeData[index] = action.payload;
+      }
+    })
+    .addCase(updateThemes.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    })
+
+    // Delete a theme
+    .addCase(deleteThemes.pending, (state) => {
+      state.loading = true;
+    })
+    .addCase(deleteThemes.fulfilled, (state, action) => {
+      state.loading = false;
+      state.ThemeData = state.ThemeData.filter(item => item.id !== action.payload);
+    })
+    .addCase(deleteThemes.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    })
+
+    // Delete all themes
+    .addCase(deleteAllThemes.pending, (state) => {
+      state.loading = true;
+    })
+    .addCase(deleteAllThemes.fulfilled, (state) => {
+      state.loading = false;
+      state.ThemeData = [];
+    })
+    .addCase(deleteAllThemes.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    })
+
+    // Delete all applied themes
+    .addCase(deleteAllAppliedTheme.pending, (state) => {
+      state.loading = true;
+    })
+    .addCase(deleteAllAppliedTheme.fulfilled, (state) => {
+      state.loading = false;
+      state.appliedTheme = null;
+    })
+    .addCase(deleteAllAppliedTheme.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    })
+
+    // Apply a theme
+    .addCase(saveAppliedTheme.pending, (state) => {
+      state.loading = true;
+    })
+    .addCase(saveAppliedTheme.fulfilled, (state, action) => {
+      state.loading = false;
+      state.appliedTheme = action.payload;
+    })
+    .addCase(saveAppliedTheme.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });  }
 });
 
 export const { clearError } = themesSlice.actions;

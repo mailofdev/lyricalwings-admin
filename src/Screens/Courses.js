@@ -116,7 +116,7 @@ const Courses = () => {
                                 {formConfig[0].fields.map((field) => (
                                     field.type !== 'file' && (
                                         <div className='card p-2'>
-                                            <p key={field.name} className="">
+                                            <p key={field.name} className="form-label">
                                                <strong>{field.label}:</strong> {item[field.name]}
                                             </p>
                                         </div>
@@ -129,7 +129,7 @@ const Courses = () => {
                                         field.type === 'file' && item[field.name] && (
 
                                             <Button key={field.name} variant="outline-secondary">
-                                                <a href={item[field.name]} target="_blank" rel="noopener noreferrer" className="text-decoration-none text-primary">
+                                                <a href={item[field.name]} target="_blank" rel="noopener noreferrer" className=" form-label text-decoration-none ">
                                                     {field.name.replace(/[.#$[\]]/g, '_').replace('FileURL', '')}
                                                 </a>
                                             </Button>
