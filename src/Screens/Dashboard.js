@@ -19,6 +19,7 @@ import { fetchCourses } from '../redux/courseSlice';
 import { fetchNarrativeCounts } from '../redux/NarrativeSlice';
 import { fetchPoemCounts } from '../redux/poemSlice';
 import { fetchDashboardData } from '../redux/dashboardSlice';
+import WorldMap from '../Components/WorldMap';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -29,6 +30,7 @@ const Dashboard = () => {
   const { totalPoems, totalHappiness, totalSadness, totalAnger, totalFear, totalDisgust, totalSurprise, } = useSelector((state) => state.poem);
   const { CourseData } = useSelector((state) => state.courses);
   const { users } = useSelector((state) => state.dashboard);
+  console.log(users)
 
   useEffect(() => {
     dispatch(fetchBooks());
@@ -70,7 +72,6 @@ const Dashboard = () => {
 
   const adminCount = users.filter(user => user.role === 'admin').length;
   const userCount = users.filter(user => user.role === 'user').length;
-
   const chartOptions = {
     maintainAspectRatio: false,
     plugins: {
@@ -162,6 +163,12 @@ const Dashboard = () => {
   return (
     <Container fluid className="p-4">
       <Row>
+      <Row className="mt-4">
+        <Col xs={12}>
+          <h4 className="text-center mb-4">User Engagement Map</h4>
+          <WorldMap />
+        </Col>
+      </Row>
         <Col md={4} className="mb-4">
           <div className="chart-container bg-light p-3 shadow-sm rounded">
             <h4 className="text-center mb-3">User Roles</h4>
@@ -171,7 +178,7 @@ const Dashboard = () => {
         <Col md={4} className="mb-4">
           <div className="chart-container bg-light p-3 shadow-sm rounded">
             <h4 className="text-center mb-3">Narrative Types</h4>
-            <Chart type="bar" data={narrativeData} options={chartOptions} />
+            <Chart type="pie" data={narrativeData} options={chartOptions} />
           </div>
         </Col>
 
