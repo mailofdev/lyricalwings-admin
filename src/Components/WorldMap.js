@@ -100,7 +100,7 @@ const WorldMap = () => {
         <Container fluid className='p-4'>
             <Row>
                 <Col md={12} className="mb-4">
-                    <h2 className="text-center mb-4">User Engagement</h2>
+                    <h2 className="text-center mb-4 form-label">User Engagement</h2>
                     {loading ? (
                         <div className="text-center">
                             <Spinner animation="border" role="status">

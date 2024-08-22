@@ -7,20 +7,19 @@ import { authConfig } from '../Common/commonFunction';
 import { signupUser, fetchUsers, deleteUser } from '../redux/userAuthSlice';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { FaTrash } from 'react-icons/fa';
 import Loader from '../Components/Loader';
-import { ConfirmDialog } from 'primereact/confirmdialog'; // Import the ConfirmDialog component from PrimeReact
+import { ConfirmDialog } from 'primereact/confirmdialog';
+import { FaTrash } from 'react-icons/fa';
 
 const User = () => {
     const dispatch = useDispatch();
     const toast = useRef(null);
+    const [showForm, setShowForm] = useState(false);
+    const [userToDelete, setUserToDelete] = useState(null);
+
     const usersState = useSelector(state => state.userAuth.users);
     const { data: users = [], status: usersStatus, error: usersError } = usersState || {};
     const { status: authStatus, error: authError, loadingMessage } = useSelector(state => state.userAuth.auth);
-    const [showForm, setShowForm] = useState(false);
-    const [deletingUserId, setDeletingUserId] = useState(null);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [userToDelete, setUserToDelete] = useState(null);
 
     const adminList = users.filter(user => user.role === 'admin');
     const userList = users.filter(user => user.role === 'user');
@@ -39,6 +38,7 @@ const User = () => {
             authGender: data.gender,
             authCountry: data.country
         };
+
         dispatch(signupUser(userData))
             .unwrap()
             .then(() => {
@@ -55,24 +55,19 @@ const User = () => {
 
     const confirmDelete = (user) => {
         setUserToDelete(user);
-        setShowDeleteConfirm(true);
     };
 
     const handleDeleteUser = () => {
         if (userToDelete) {
-            setDeletingUserId(userToDelete.uid);
-            dispatch(deleteUser(userToDelete.uid))
+            const { uid, email } = userToDelete;
+            dispatch(deleteUser(uid))
                 .unwrap()
                 .then(() => {
-                    showToast('success', 'Success', `User ${userToDelete.email} deleted successfully.`);
-                    dispatch(fetchUsers()); // Refresh the user list
+                    showToast('success', 'Success', `User ${email} deleted successfully.`);
+                    dispatch(fetchUsers());
                 })
                 .catch((error) => showToast('error', 'Error', error))
-                .finally(() => {
-                    setDeletingUserId(null);
-                    setShowDeleteConfirm(false);
-                    setUserToDelete(null);
-                });
+                .finally(() => setUserToDelete(null));
         }
     };
 
@@ -85,14 +80,14 @@ const User = () => {
                 <Column field="birthday" header="Birth date" />
                 <Column field="city" header="City" />
                 <Column field="country" header="Country" />
-                {/* <Column
+                <Column
                     body={(rowData) => (
-                        <Button variant='danger' onClick={() => confirmDelete(rowData)} disabled={deletingUserId === rowData.uid}>
-                            <FaTrash /> {deletingUserId === rowData.uid ? 'Deleting...' : ''}
+                        <Button variant='danger' onClick={() => confirmDelete(rowData)}>
+                            <FaTrash /> {userToDelete?.uid === rowData.uid ? 'Deleting...' : ''}
                         </Button>
                     )}
                     header="Actions"
-                /> */}
+                />
             </DataTable>
         </div>
     );
@@ -119,13 +114,13 @@ const User = () => {
                         )}
 
                         <ConfirmDialog
-                            visible={showDeleteConfirm}
-                            onHide={() => setShowDeleteConfirm(false)}
+                            visible={!!userToDelete}
+                            onHide={() => setUserToDelete(null)}
                             message={`Are you sure you want to delete user ${userToDelete?.email}? This action cannot be undone.`}
                             header="Confirm Delete"
                             icon="pi pi-exclamation-triangle"
                             accept={handleDeleteUser}
-                            reject={() => setShowDeleteConfirm(false)}
+                            reject={() => setUserToDelete(null)}
                             acceptLabel="Delete"
                             rejectLabel="Cancel"
                         />

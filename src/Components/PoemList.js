@@ -119,7 +119,7 @@ const navigate = useNavigate();
       {loadingMessage && <Loader loadingMessage={loadingMessage} />}
       {!loadingMessage && (
         <>
-          <h2 className="text-center mb-4">
+          <h2 className="text-center mb-4 form-label">
             {getTitle} ({totalPoems})
           </h2>
           <Search 

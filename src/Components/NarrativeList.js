@@ -115,7 +115,7 @@ const NarrativeList = () => {
       {loadingMessage && <Loader loadingMessage={loadingMessage} />}
       {!loadingMessage && (
         <>
-          <h2 className="text-center mb-4">
+          <h2 className="text-center form-label mb-4">
             {getTitle} ({totalNarrative})
           </h2>
           <Search

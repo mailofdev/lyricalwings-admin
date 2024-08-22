@@ -46,12 +46,13 @@
 
 
 .navbar {
-  background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%) !important;
+  /* background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%) !important; */
+  background: var(--themeBgColor) !important;
 }
 
 .nav-link-custom {
   position: relative;
-  color: lightgray;
+  color: var(--textColor) !important;
   text-decoration: none;
 }
 
@@ -66,11 +67,14 @@
   left: 0;
   transform: scaleX(0);
   transition: transform 0.4s ease;
+  color: var(--textColor) !important;
+
 }
 
 .nav-link-custom:hover::after,
 .nav-link-custom.active::after {
   transform: scaleX(1);
+  color: var(--textColor) !important;
 }
 
 
@@ -94,7 +98,18 @@
 }
 
 .bg-gradient-primary {
-  background: linear-gradient(90deg, rgb(78, 164, 235) 0%, rgba(2, 136, 209, 1) 100%);
+  /* background: linear-gradient(90deg, rgb(78, 164, 235) 0%, rgba(2, 136, 209, 1) 100%); */
+}
+.dropdown-menu {
+  background: var(--cardColor) !important;
+
+}
+.cardColor {
+  background: var(--cardColor) !important;
+
+}
+.card{
+  background: var(--cardColor) !important;
 }
 
 /* General Gradient for All Poems */
@@ -272,7 +287,8 @@ p {
 }
 body {
   font-family: 'Poppins', sans-serif;
-  background: linear-gradient(to right, #e0f7fa, #80deea);
+  /* background: linear-gradient(to right, #e0f7fa, #80deea); */
+  background: var(--themeBgColor) !important;
   height: 100%;
 }
 
@@ -286,6 +302,7 @@ body {
 .form-label, .form-select {
   padding: 0 !important;
   margin: 0 !important;
+  color: var(--textColor) !important;
 }
 
 ul {

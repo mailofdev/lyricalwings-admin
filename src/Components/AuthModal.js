@@ -53,7 +53,7 @@ const AuthModal = ({ show, handleClose }) => {
                         <DynamicForm
                             formConfig={authConfig['SignIn']}
                             onSubmit={handleFormSubmit}
-                            buttonLabel='Sign In'
+                            buttonLabel='Sign In to lhyricalwings'
                             requiredFields={['email', 'password']}
                         />
                         <div className='text-center'> 

@@ -142,20 +142,20 @@ const Dashboard = () => {
       <WorldMap />
       <Row>
         <Col md={4} className="mb-4">
-          <div className="chart-container bg-light p-3 shadow-sm rounded">
-            <h4 className="text-center mb-3">User</h4>
+          <div className="card p-3 shadow-sm rounded">
+            <h4 className="text-center mb-3 form-label">User</h4>
             <Chart type="pie" data={userData} options={chartOptions} />
           </div>
         </Col>
         <Col md={4} className="mb-4">
-          <div className="chart-container bg-light p-3 shadow-sm rounded">
-            <h4 className="text-center mb-3">Narratives</h4>
+          <div className="card p-3 shadow-sm rounded">
+            <h4 className="text-center mb-3 form-label">Narratives</h4>
             <Chart type="pie" data={narrativeData} options={chartOptions} />
           </div>
         </Col>
         <Col md={4}>
-          <div className="chart-container bg-light p-3 shadow-sm rounded">
-            <h4 className="text-center mb-3">Poems</h4>
+          <div className="card p-3 shadow-sm rounded">
+            <h4 className="text-center mb-3 form-label">Poems</h4>
             <Chart type="doughnut" data={poemData} options={chartOptions} />
           </div>
         </Col>

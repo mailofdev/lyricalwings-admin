@@ -6,7 +6,8 @@ import dashboardReducer from './dashboardSlice';
 import courseReducer from './courseSlice';
 import booksReducer from './booksSlice';
 import poemReducer from './poemSlice';
-import NarrativeReducer from './NarrativeSlice'
+import NarrativeReducer from './NarrativeSlice';
+import themeReducer from './themeSlice';
 
 const store = configureStore({
   reducer: {
@@ -16,7 +17,9 @@ const store = configureStore({
     courses: courseReducer,
     books: booksReducer,
     poem: poemReducer,
-    Narrative: NarrativeReducer
+    Narrative: NarrativeReducer,
+    Themes: themeReducer,
+
   },
 });
 

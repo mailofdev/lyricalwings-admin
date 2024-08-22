@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
-import { FaUserCircle, FaHome, FaBook, FaSignOutAlt,  FaGraduationCap, FaUsers } from 'react-icons/fa';
+import { FaUserCircle, FaHome, FaBook, FaSignOutAlt, FaGraduationCap, FaUsers } from 'react-icons/fa';
 import { useSelector, useDispatch } from 'react-redux';
 import { signoutUser } from '../redux/userAuthSlice';
 import { TfiWrite } from "react-icons/tfi";
 import { IoBookSharp } from 'react-icons/io5';
 import { CgGirl } from "react-icons/cg";
+import { BiColor } from 'react-icons/bi';
 
 
 const Header = ({ theme }) => {
@@ -112,7 +113,7 @@ const Header = ({ theme }) => {
               </Nav.Link>
             </Nav.Item>
 
-            <NavDropdown title={<span><TfiWrite size={18} /> Add</span>} align="center">
+            <NavDropdown title={<span className="nav-link-custom"><TfiWrite size={18} /> Add</span>} align="center">
               <Nav.Item>
                 <Nav.Link as={NavLink} to="/Poems" className="nav-link-custom" onClick={closeNavbar}>
                   <IoBookSharp /> Poems
@@ -130,7 +131,7 @@ const Header = ({ theme }) => {
               </Nav.Item>
             </NavDropdown>
 
-            <NavDropdown title={<span><CgGirl size={27} /> About</span>} align="center">
+            <NavDropdown title={<span className="nav-link-custom" ><CgGirl size={27} /> About</span>} align="center">
               <Nav.Item>
                 <Nav.Link as={NavLink} to="/Books" className="nav-link-custom" onClick={closeNavbar}>
                   <IoBookSharp /> my book
@@ -144,14 +145,16 @@ const Header = ({ theme }) => {
             </NavDropdown>
 
             <NavDropdown
-              title={<span><FaUserCircle size={30} /> {user ? user.displayName : 'anonymous'}</span>}
+              title={<span className="nav-link-custom"><FaUserCircle size={30} /> {user ? user.displayName : 'anonymous'}</span>}
               id="basic-nav-dropdown"
               align="end"
-              className='me-2'>
+              className='me-2' 
+              >
               {user && (
                 <>
-                
-                <NavDropdown.Item as={NavLink} to="/User" className="nav-link-custom"><FaUsers /> Users</NavDropdown.Item>
+
+                  <NavDropdown.Item as={NavLink} to="/Themes" className="nav-link-custom"><BiColor /> Themes</NavDropdown.Item>
+                  <NavDropdown.Item as={NavLink} to="/User" className="nav-link-custom"><FaUsers /> Users</NavDropdown.Item>
                   <NavDropdown.Item onClick={() => { closeNavbar(); handleSignout(); }}><FaSignOutAlt /> Sign Out</NavDropdown.Item>
                 </>
               )}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -15,8 +15,34 @@ import Poems from './Screens/Poems';
 import Narrative from './Screens/Narrative';
 import NarrativeList from './Components/NarrativeList';
 import Detail from './Components/Detail';
+import Themes from './Components/Themes';
+import { fetchAppliedTheme } from './redux/themeSlice';
+import { useDispatch, useSelector } from 'react-redux';
 
 function App() {
+  const dispatch = useDispatch();
+  const appliedTheme = useSelector(state => state.Themes.appliedTheme);
+  const user = useSelector(state => state.userAuth.auth.user);
+
+  useEffect(() => {
+    dispatch(fetchAppliedTheme());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (appliedTheme) {
+      const theme = {
+        themeBgColor: appliedTheme?.themeBgColor || 'white',
+        buttonColor: appliedTheme?.buttonColor || 'black',
+        textColor: appliedTheme?.textColor || 'white',
+        cardColor: appliedTheme?.cardColor || 'wheat',
+      };
+
+      Object.keys(theme).forEach(key => {
+        document.documentElement.style.setProperty(`--${key}`, theme[key]);
+      });
+    }
+  }, [appliedTheme]);
+
   return (
     <div>
       <Header />
@@ -24,7 +50,6 @@ function App() {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<AuthModal show={true} handleClose={() => {}} />} />
-          <Route path="*" element={<AuthModal show={true} handleClose={() => {}} />} />
 
           {/* Private Routes */}
           <Route path="/Dashboard/*" element={<PrivateRoute element={Dashboard} />} />
@@ -37,11 +62,15 @@ function App() {
           <Route path="/Narrative" element={<PrivateRoute element={Narrative} />} />
           <Route path="/NarrativeList/:type" element={<PrivateRoute element={NarrativeList} />} />    
           <Route path="/Detail/:id" element={<PrivateRoute element={Detail} />} />    
+          <Route path="/Themes" element={<PrivateRoute element={Themes} />} />    
+
+          {/* Catch-all route for 404 */}
+          <Route path="*" element={<AuthModal show={true} handleClose={() => {}} />} />
         </Routes>
       </div>
     </div>
   );
-};
+}
 
 const Root = () => {
   return (
