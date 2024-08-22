@@ -38,7 +38,7 @@ const AuthModal = ({ show, handleClose }) => {
             <div className='modal-body-gradient rounded'>
             <Modal.Header>
                 <Modal.Title className="w-100 text-center bg-none">
-                    Sign In
+                    Sign In to Lhyricalwings
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body>
@@ -53,7 +53,7 @@ const AuthModal = ({ show, handleClose }) => {
                         <DynamicForm
                             formConfig={authConfig['SignIn']}
                             onSubmit={handleFormSubmit}
-                            buttonLabel='Sign In to lhyricalwings'
+                            buttonLabel='Sign In'
                             requiredFields={['email', 'password']}
                         />
                         <div className='text-center'> 
