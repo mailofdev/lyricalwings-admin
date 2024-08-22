@@ -26,7 +26,7 @@ const WorldMap = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        document.title = "User Engagement Map";
+        // document.title = "User Engagement Map";
 
         const fetchCityData = async () => {
             try {

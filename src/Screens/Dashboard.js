@@ -72,6 +72,9 @@ const Dashboard = () => {
   const adminCount = users.filter(user => user.role === 'admin').length;
   const userCount = users.filter(user => user.role === 'user').length;
 
+  const courseLabels = CourseData.map(course => course.titleOfType);
+  const courseCounts = CourseData.length;
+
   const chartOptions = {
     maintainAspectRatio: false,
     plugins: {
@@ -137,26 +140,49 @@ const Dashboard = () => {
     ],
   };
 
+  const CoursesData = {
+    labels: courseLabels,
+    datasets: [
+      {
+        label: 'Courses',
+        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+        data: courseLabels.map((label) => {
+          // Assuming you want to count the number of courses per label
+          return CourseData.filter(course => course.titleOfType === label).length;
+        }),
+        hoverOffset: 4
+      },
+    ],
+  };
+  
+  
+
   return (
     <Container fluid className="p-4">
       <WorldMap />
       <Row>
-        <Col md={4} className="mb-4">
+        <Col md={6} className="mb-4">
           <div className="card p-3 shadow-sm rounded">
-            <h4 className="text-center mb-3 form-label">User</h4>
+      <h4 className="text-center mb-3 form-label">User ({users.length})</h4>
             <Chart type="pie" data={userData} options={chartOptions} />
           </div>
         </Col>
-        <Col md={4} className="mb-4">
+        <Col md={6} className="mb-4">
           <div className="card p-3 shadow-sm rounded">
-            <h4 className="text-center mb-3 form-label">Narratives</h4>
+            <h4 className="text-center mb-3 form-label">Narratives ({totalNarrative})</h4>
             <Chart type="pie" data={narrativeData} options={chartOptions} />
           </div>
         </Col>
-        <Col md={4}>
+        <Col md={6}>
           <div className="card p-3 shadow-sm rounded">
-            <h4 className="text-center mb-3 form-label">Poems</h4>
+            <h4 className="text-center mb-3 form-label">Poems ({totalPoems})</h4>
             <Chart type="doughnut" data={poemData} options={chartOptions} />
+          </div>
+        </Col>
+        <Col md={6}>
+          <div className="card p-3 shadow-sm rounded">
+            <h4 className="text-center mb-3 form-label">Courses ({CourseData.length})</h4>
+            <Chart type="doughnut" data={CoursesData} options={chartOptions} />
           </div>
         </Col>
       </Row>
