@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
-import { FaUserCircle, FaHome, FaBook, FaChalkboardTeacher, FaInfoCircle, FaSignOutAlt } from 'react-icons/fa';
+import { FaUserCircle, FaHome, FaBook, FaSignOutAlt,  FaGraduationCap, FaUsers } from 'react-icons/fa';
 import { useSelector, useDispatch } from 'react-redux';
 import { signoutUser } from '../redux/userAuthSlice';
+import { TfiWrite } from "react-icons/tfi";
+import { IoBookSharp } from 'react-icons/io5';
+import { CgGirl } from "react-icons/cg";
+
 
 const Header = ({ theme }) => {
   const [open, setOpen] = useState(false);
@@ -61,7 +65,7 @@ const Header = ({ theme }) => {
       document.removeEventListener('scroll', handleActivity);
       document.removeEventListener('touchstart', handleActivity);
     };
-  });
+  }, []);
 
   const handleClickOutside = (event) => {
     if (navRef.current && !navRef.current.contains(event.target)) {
@@ -103,36 +107,52 @@ const Header = ({ theme }) => {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto d-flex gap-4">
             <Nav.Item>
-              <Nav.Link as={NavLink} exact={NavLink.toString()} to="/Dashboard" className="nav-link-custom" onClick={closeNavbar}>
+              <Nav.Link as={NavLink} to="/Dashboard" className="nav-link-custom" onClick={closeNavbar}>
                 <FaHome /> Dashboard
               </Nav.Link>
             </Nav.Item>
-            <Nav.Item>
-              <Nav.Link as={NavLink} to="/Poems" className="nav-link-custom" onClick={closeNavbar}>
-                <FaChalkboardTeacher /> Poems
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link as={NavLink} to="/Narrative" className="nav-link-custom" onClick={closeNavbar}>
-                <FaChalkboardTeacher /> Narratives
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link as={NavLink} to="/Courses" className="nav-link-custom" onClick={closeNavbar}>
-                <FaChalkboardTeacher /> Courses
-              </Nav.Link>
-            </Nav.Item>
+
+            <NavDropdown title={<span><TfiWrite size={18} /> Add</span>} align="center">
+              <Nav.Item>
+                <Nav.Link as={NavLink} to="/Poems" className="nav-link-custom" onClick={closeNavbar}>
+                  <IoBookSharp /> Poems
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link as={NavLink} to="/Narrative" className="nav-link-custom" onClick={closeNavbar}>
+                  <FaGraduationCap /> Narratives
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link as={NavLink} to="/Courses" className="nav-link-custom" onClick={closeNavbar}>
+                  <FaBook /> Courses
+                </Nav.Link>
+              </Nav.Item>
+            </NavDropdown>
+
+            <NavDropdown title={<span><CgGirl size={27} /> About</span>} align="center">
+              <Nav.Item>
+                <Nav.Link as={NavLink} to="/Books" className="nav-link-custom" onClick={closeNavbar}>
+                  <IoBookSharp /> my book
+                </Nav.Link>
+              </Nav.Item>
+              <Nav.Item>
+                <Nav.Link as={NavLink} to="/About" className="nav-link-custom" onClick={closeNavbar}>
+                  <FaGraduationCap /> About me & us
+                </Nav.Link>
+              </Nav.Item>
+            </NavDropdown>
+
             <NavDropdown
               title={<span><FaUserCircle size={30} /> {user ? user.displayName : 'anonymous'}</span>}
               id="basic-nav-dropdown"
               align="end"
-              className='me-2'
-            >
+              className='me-2'>
               {user && (
                 <>
-                  <NavDropdown.Item as={NavLink} to="/Books" onClick={closeNavbar}><FaBook /> Books</NavDropdown.Item>
-                  <NavDropdown.Item as={NavLink} to="/About" onClick={closeNavbar}><FaInfoCircle /> About</NavDropdown.Item>
-                  <NavDropdown.Item onClick={() => { closeNavbar(); handleSignout(); }}><FaSignOutAlt/> Sign Out</NavDropdown.Item>
+                
+                <NavDropdown.Item as={NavLink} to="/User" className="nav-link-custom"><FaUsers /> Users</NavDropdown.Item>
+                  <NavDropdown.Item onClick={() => { closeNavbar(); handleSignout(); }}><FaSignOutAlt /> Sign Out</NavDropdown.Item>
                 </>
               )}
             </NavDropdown>

@@ -14,7 +14,8 @@ export const fetchUsers = createAsyncThunk('usersData/fetchusersData', async (_,
     const usersRef = ref(db, 'usersData');
     const snapshot = await get(usersRef);
     if (snapshot.exists()) {
-      return Object.entries(snapshot.val()).map(([uid, userData]) => ({ uid, ...userData }));
+      return Object.entries(snapshot.val())
+        .map(([uid, userData]) => ({ uid, ...userData })).reverse();
     }
     return [];
   } catch (error) {
@@ -22,21 +23,31 @@ export const fetchUsers = createAsyncThunk('usersData/fetchusersData', async (_,
   }
 });
 
+
 export const deleteUser = createAsyncThunk('usersData/deleteUser', async (uid, { rejectWithValue }) => {
-  const auth = getAuth();
   try {
-    const user = auth.currentUser;
-    if (user) {
-      await firebaseDeleteUser(user);
-      const userRef = ref(db, `usersData/${uid}`);
-      await remove(userRef);
-      return uid;
-    } else {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    
+    if (!currentUser) {
       throw new Error('No user is currently logged in');
     }
+    
+    if (currentUser.uid === uid) {
+      throw new Error('Cannot delete the currently logged-in user');
+    }
+
+    // Delete user from Firebase Authentication
+    await auth.deleteUser(uid);
+
+    // Delete user data from Realtime Database
+    const userRef = ref(db, `usersData/${uid}`);
+    await remove(userRef);
+
+    return uid;
   } catch (error) {
     console.error('Error deleting user:', error);
-    return rejectWithValue('Failed to delete user. Please try again.');
+    return rejectWithValue(error.message || 'Failed to delete user. Please try again.');
   }
 });
 
@@ -51,13 +62,11 @@ export const loginUser = createAsyncThunk('auth/loginUser', async ({ authEmail, 
 
 export const signupUser = createAsyncThunk('auth/signupUser', async ({ authEmail, authPassword, authUsername, authBirthday, authCity, authGender, authCountry }, { rejectWithValue }) => {
   try {
-    // Check password length
     if (authPassword.length < 6) {
       throw new Error('Password should be at least 6 characters long');
     }
 
-    // Format the date
-    const formattedBirthday = new Date(authBirthday).toISOString().split('T')[0]; // This will give 'YYYY-MM-DD'
+    const formattedBirthday = new Date(authBirthday).toISOString().split('T')[0];
 
     const userCredential = await createUserWithEmailAndPassword(auth, authEmail, authPassword);
     await updateProfile(userCredential.user, { displayName: authUsername }); 
@@ -71,7 +80,7 @@ export const signupUser = createAsyncThunk('auth/signupUser', async ({ authEmail
         city: authCity,
         country: authCountry,
         gender: authGender,
-        role: 'user'
+        role: 'admin'
     });
 
     return mapFirebaseUserToPlainObject(userCredential.user);
@@ -102,7 +111,7 @@ export const googleSignIn = createAsyncThunk('auth/googleSignIn', async (_, { re
         uid: user.uid,
         email: user.email,
         displayName: user.displayName,
-        role: 'user'
+        role: 'admin'
     });
 
     return mapFirebaseUserToPlainObject(user);

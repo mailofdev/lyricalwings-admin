@@ -76,6 +76,11 @@
 
 /* < - - - - - - - - - -  //#region common */
 
+.p-datatable .p-paginator-bottom {
+  border-width: unset !important;
+  /* border-radius: 0; */
+}
+
 .modal-gradient {
   background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%) !important;
 }

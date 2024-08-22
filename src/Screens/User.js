@@ -1,139 +1,158 @@
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchUsers, deleteUser, signoutUser } from '../redux/userAuthSlice';
-import { signInWithEmailAndPassword, getAuth } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom';
-import { FaSignOutAlt, FaTrash } from 'react-icons/fa';
+import DynamicForm from '../Components/DynamicForm';
+import { Toast } from 'primereact/toast';
+import { Button, Container } from 'react-bootstrap';
+import { authConfig } from '../Common/commonFunction';
+import { signupUser, fetchUsers, deleteUser } from '../redux/userAuthSlice';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { Button } from 'primereact/button';
-import { Dialog } from 'primereact/dialog';
+import { FaTrash } from 'react-icons/fa';
+import Loader from '../Components/Loader';
+import { ConfirmDialog } from 'primereact/confirmdialog'; // Import the ConfirmDialog component from PrimeReact
 
 const User = () => {
     const dispatch = useDispatch();
+    const toast = useRef(null);
     const usersState = useSelector(state => state.userAuth.users);
-    const authState = useSelector(state => state.userAuth.auth);
-    const { data: users = [], status, error } = usersState || {}; 
-    const { user: loggedInUser } = authState || {}; 
+    const { data: users = [], status: usersStatus, error: usersError } = usersState || {};
+    const { status: authStatus, error: authError, loadingMessage } = useSelector(state => state.userAuth.auth);
+    const [showForm, setShowForm] = useState(false);
+    const [deletingUserId, setDeletingUserId] = useState(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
-    const [loginEmail, setLoginEmail] = useState('');
-    const [loginPassword, setLoginPassword] = useState('');
-    const [localError, setLocalError] = useState('');
-    const [displayDialog, setDisplayDialog] = useState(false);
-    const navigate = useNavigate();
+
+    const adminList = users.filter(user => user.role === 'admin');
+    const userList = users.filter(user => user.role === 'user');
 
     useEffect(() => {
-        if (status === 'idle') {
-            dispatch(fetchUsers());
-        }
-    }, [dispatch, status]);
+        dispatch(fetchUsers());
+    }, [dispatch]);
 
-    const handleDeleteClick = (user) => {
+    const handleFormSubmit = (data) => {
+        const userData = {
+            authEmail: data.email,
+            authPassword: data.password,
+            authUsername: data.username,
+            authBirthday: data.birthdate,
+            authCity: data.city,
+            authGender: data.gender,
+            authCountry: data.country
+        };
+        dispatch(signupUser(userData))
+            .unwrap()
+            .then(() => {
+                setShowForm(false);
+                showToast('success', 'Success', `User ${data.username} created successfully.`);
+                dispatch(fetchUsers());
+            })
+            .catch((error) => showToast('error', 'Error', error));
+    };
+
+    const showToast = (severity, summary, detail) => {
+        toast.current.show({ severity, summary, detail, life: 3000 });
+    };
+
+    const confirmDelete = (user) => {
         setUserToDelete(user);
-        setDisplayDialog(true);
+        setShowDeleteConfirm(true);
     };
 
-    const handleSignout = async () => {
-        try {
-            await dispatch(signoutUser());
-            navigate('/');
-        } catch (error) {
-            setLocalError(error.message);
+    const handleDeleteUser = () => {
+        if (userToDelete) {
+            setDeletingUserId(userToDelete.uid);
+            dispatch(deleteUser(userToDelete.uid))
+                .unwrap()
+                .then(() => {
+                    showToast('success', 'Success', `User ${userToDelete.email} deleted successfully.`);
+                    dispatch(fetchUsers()); // Refresh the user list
+                })
+                .catch((error) => showToast('error', 'Error', error))
+                .finally(() => {
+                    setDeletingUserId(null);
+                    setShowDeleteConfirm(false);
+                    setUserToDelete(null);
+                });
         }
     };
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        const auth = getAuth();
-        try {
-            await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
-            if (auth.currentUser.uid === userToDelete.uid) {
-                dispatch(deleteUser(userToDelete.uid));
-                setUserToDelete(null);
-                setDisplayDialog(false);
-            } else {
-                alert("Logged in user does not match the user to be deleted.");
-            }
-        } catch (error) {
-            setLocalError(error.message);
-        }
-    };
-
-    const renderFooter = () => (
-        <div>
-            <Button label="Cancel" icon="pi pi-times" onClick={() => setDisplayDialog(false)} className="p-button-text" />
-            <Button label="Confirm" icon="pi pi-check" onClick={handleLogin} autoFocus />
+    const renderUserTable = (userList, title) => (
+        <div className="card shadow-sm p-2">
+            <h4 className="mb-3">{title} ({userList.length})</h4>
+            <DataTable value={userList} paginator rows={5} className="p-datatable-customers">
+                <Column field="email" header="Email" />
+                <Column field="displayName" header="Username" />
+                <Column field="birthday" header="Birth date" />
+                <Column field="city" header="City" />
+                <Column field="country" header="Country" />
+                {/* <Column
+                    body={(rowData) => (
+                        <Button variant='danger' onClick={() => confirmDelete(rowData)} disabled={deletingUserId === rowData.uid}>
+                            <FaTrash /> {deletingUserId === rowData.uid ? 'Deleting...' : ''}
+                        </Button>
+                    )}
+                    header="Actions"
+                /> */}
+            </DataTable>
         </div>
     );
 
     return (
-        <div className="container mt-5">
-            <div className="text-center">
-                <Button onClick={handleSignout} className="p-button-secondary mt-3">
-                    <FaSignOutAlt /> {loggedInUser?.displayName || 'Anonymous user'}
-                </Button>
-            </div>
-            <div className="col-md-12">
-                <h2 className="mb-4">Users List</h2>
-                {status === 'loading' && <p>Loading...</p>}
-                {status === 'failed' && <p className="text-danger">Error: {error}</p>}
-                {status === 'succeeded' && (
-                    <DataTable value={users} paginator rows={10} className="p-datatable-customers">
-                        <Column field="email" header="Email" />
-                        <Column field="username" header="Username" />
-                        <Column field="role" header="Role" />
-                        <Column field="birthdate" header="Birth date" />
-                        <Column field="city" header="City" />
-                        <Column
-                            body={(rowData) => (
-                                <Button
-                                    icon={<FaTrash />}
-                                    className="p-button-danger p-button-rounded"
-                                    onClick={() => handleDeleteClick(rowData)}
-                                />
-                            )}
-                            header="Actions"
-                        />
-                    </DataTable>
-                )}
-            </div>
+        <Container>
+            <Toast ref={toast} />
+            {loadingMessage ? (
+                <Loader loadingMessage={loadingMessage} />
+            ) : (
+                <>
+                    <div className="gap-3 d-flex flex-column py-4">
+                        {usersStatus === 'loading' ? (
+                            <Loader loadingMessage="Loading users..." />
+                        ) : usersStatus === 'failed' ? (
+                            <p className="text-danger">{usersError}</p>
+                        ) : (
+                            <>
+                                <div className="gap-3 d-flex flex-column">
+                                    {renderUserTable(userList, "User list")}
+                                    {renderUserTable(adminList, "Admin list")}
+                                </div>
+                            </>
+                        )}
 
-            <Dialog
-                header="Confirm Deletion"
-                visible={displayDialog}
-                footer={renderFooter}
-                onHide={() => setDisplayDialog(false)}
-            >
-                <p>Please log in again to confirm deletion of user: {userToDelete?.email}</p>
-                <form onSubmit={handleLogin}>
-                    <div className="form-group">
-                        <label htmlFor="loginEmail">Email</label>
-                        <input
-                            id="loginEmail"
-                            type="email"
-                            className="form-control"
-                            value={loginEmail}
-                            onChange={(e) => setLoginEmail(e.target.value)}
-                            placeholder="Enter your email"
-                            required
+                        <ConfirmDialog
+                            visible={showDeleteConfirm}
+                            onHide={() => setShowDeleteConfirm(false)}
+                            message={`Are you sure you want to delete user ${userToDelete?.email}? This action cannot be undone.`}
+                            header="Confirm Delete"
+                            icon="pi pi-exclamation-triangle"
+                            accept={handleDeleteUser}
+                            reject={() => setShowDeleteConfirm(false)}
+                            acceptLabel="Delete"
+                            rejectLabel="Cancel"
                         />
+
+                        {showForm ? (
+                            <div className="gap-3 d-flex flex-column">
+                                <DynamicForm
+                                    formConfig={authConfig.SignUp}
+                                    onSubmit={handleFormSubmit}
+                                    buttonLabel="Sign Up"
+                                    className="dynamic-form"
+                                    title="Create new user"
+                                    requiredFields={['email', 'password', 'username', 'birthdate', 'city', 'country', 'gender']}
+                                    onCancel={() => setShowForm(false)}
+                                />
+                            </div>
+                        ) : (
+                            <div className="text-center">
+                                <Button onClick={() => setShowForm(true)}>Add new admin</Button>
+                            </div>
+                        )}
+
+                        {authError && <p className="text-danger">{authError}</p>}
                     </div>
-                    <div className="form-group mt-3">
-                        <label htmlFor="loginPassword">Password</label>
-                        <input
-                            id="loginPassword"
-                            type="password"
-                            className="form-control"
-                            value={loginPassword}
-                            onChange={(e) => setLoginPassword(e.target.value)}
-                            placeholder="Enter your password"
-                            required
-                        />
-                    </div>
-                </form>
-                {localError && <div className="alert alert-danger mt-3">{localError}</div>}
-            </Dialog>
-        </div>
+                </>
+            )}
+        </Container>
     );
 };
 
