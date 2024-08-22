@@ -5,7 +5,7 @@ import { getDatabase, ref, onValue } from 'firebase/database';
 export const fetchDashboardData = createAsyncThunk('dashboard/fetchData', async (_, { rejectWithValue }) => {
   try {
     const db = getDatabase();
-    const usersRef = ref(db, 'users');
+    const usersRef = ref(db, 'usersData');
     const poemsRef = ref(db, 'AllPoems');
     const aboutRef = ref(db, 'About');
     const NarrativessRef = ref(db, 'Narrativess');

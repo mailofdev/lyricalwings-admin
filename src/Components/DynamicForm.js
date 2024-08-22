@@ -4,6 +4,19 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { FileUpload } from 'primereact/fileupload';
 import JoditEditor from 'jodit-react';
+import { Calendar } from 'primereact/calendar';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
+
+const styles = `
+  .p-dropdown-panel, .p-calendar-panel {
+    z-index: 9999 !important;
+  }
+  .p-datepicker {
+    z-index: 10000 !important;
+  }
+`;
 
 const DynamicForm = ({
   formConfig,
@@ -19,6 +32,8 @@ const DynamicForm = ({
 }) => {
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState({});
+  const [activeOverlay, setActiveOverlay] = useState(null);
   const fileUploadRefs = useRef({});
   const editorRefs = useRef({});
 
@@ -40,6 +55,7 @@ const DynamicForm = ({
     setFormData(prevData => ({ ...prevData, [name]: value }));
     validateField(name, value, type);
   };
+  
 
   const handleEditorChange = (name, value) => {
     setFormData(prevData => ({ ...prevData, [name]: value }));
@@ -62,7 +78,6 @@ const DynamicForm = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const newErrors = {};
     requiredFields.forEach(field => {
       const value = formData[field];
@@ -77,9 +92,8 @@ const DynamicForm = ({
     }
 
     try {
-      await onSubmit(formData, editingItem ? 'edit' : 'add', editingItem?.id);
 
-      // Clear form data and errors
+      await onSubmit(formData, editingItem ? 'edit' : 'add', editingItem?.id);
       const clearedFormData = Object.keys(formData).reduce((acc, key) => {
         acc[key] = '';
         return acc;
@@ -87,14 +101,12 @@ const DynamicForm = ({
       setFormData(clearedFormData);
       setErrors({});
 
-      // Clear file inputs
       Object.values(fileUploadRefs.current).forEach(ref => {
         if (ref && ref.clear) {
           ref.clear();
         }
       });
 
-      // Clear Jodit Editor contents
       Object.entries(editorRefs.current).forEach(([name, ref]) => {
         if (ref && ref.current) {
           ref.current.value = '';
@@ -107,6 +119,10 @@ const DynamicForm = ({
     }
   };
 
+  const togglePasswordVisibility = (name) => {
+    setShowPassword(prev => ({ ...prev, [name]: !prev[name] }));
+  };
+
   const renderField = (field, index) => {
     switch (field.type) {
       case 'input':
@@ -116,22 +132,60 @@ const DynamicForm = ({
             value={formData[field.name] || ''}
             onChange={(e) => handleChange(field.name, e.target.value)}
             className={`w-100 ${errors[field.name] ? 'is-invalid' : ''}`}
+            placeholder={field.placeholder || ''}
           />
         );
       
-      case 'dropdown':
+      case 'password':
         return (
-          <Dropdown
+          <div className="position-relative">
+            <InputText
+              type={showPassword[field.name] ? 'text' : 'password'}
+              name={field.name}
+              value={formData[field.name] || ''}
+              onChange={(e) => handleChange(field.name, e.target.value)}
+              className={`w-100 ${errors[field.name] ? 'is-invalid' : ''}`}
+              placeholder={field.placeholder || ''}
+            />
+            <button
+              type="button"
+              className="btn position-absolute top-50 end-0 translate-middle-y"
+              onClick={() => togglePasswordVisibility(field.name)}
+            >
+              {showPassword[field.name] ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
+        );
+
+      case 'date':
+        return (
+          <Calendar
             name={field.name}
-            value={formData[field.name] || ''}
-            options={field.options}
+            value={formData[field.name] || null}
             onChange={(e) => handleChange(field.name, e.value)}
-            optionLabel="label"
-            placeholder="Select an option"
             className={`w-100 ${errors[field.name] ? 'is-invalid' : ''}`}
+            dateFormat="mm/dd/yy"
+            onShow={() => setActiveOverlay(field.name)}
+            onHide={() => setActiveOverlay(null)}
           />
         );
-      
+
+        case 'dropdown':
+          return (
+            <Dropdown
+              name={field.name}
+              value={formData[field.name] || ''}
+              options={field.options}
+              onChange={(e) => handleChange(field.name, e.value)}
+              optionLabel={field.optionLabel || "label"}
+              optionValue={field.optionValue || "value"}
+              placeholder={field.placeholder || 'Select an option'}
+              className={`w-100 ${errors[field.name] ? 'is-invalid' : ''}`}
+              onShow={() => setActiveOverlay(field.name)}
+              onHide={() => setActiveOverlay(null)}
+            />
+          );
+
       case 'textarea':
         return (
           <Form.Control
@@ -141,9 +195,10 @@ const DynamicForm = ({
             value={formData[field.name] || ''}
             onChange={(e) => handleChange(field.name, e.target.value)}
             className={errors[field.name] ? 'is-invalid' : ''}
+            placeholder={field.placeholder || ''}
           />
         );
-      
+
       case 'editor':
         return (
           <JoditEditor
@@ -153,7 +208,7 @@ const DynamicForm = ({
             onChange={(content) => handleEditorChange(field.name, content)}
           />
         );
-      
+
       case 'file':
         return (
           <FileUpload
@@ -163,6 +218,7 @@ const DynamicForm = ({
             maxFileSize={maxFileSize}
             onSelect={(e) => handleChange(field.name, e.files[0])}
             className={errors[field.name] ? 'is-invalid' : ''}
+            chooseLabel="Choose File"
           />
         );
       
@@ -172,33 +228,37 @@ const DynamicForm = ({
   };
 
   return (
-    <Form onSubmit={handleSubmit} className={className}>
-      {title && <h2 className='text-center'>{title}</h2>}
-      {errors.submit && <Alert variant="danger">{errors.submit}</Alert>}
-      {formConfig.map((section, sectionIndex) => (
-        <React.Fragment key={sectionIndex}>
-          {Array.isArray(section.fields) && section.fields.map((field, index) => (
-            <Row key={index}>
-              <Form.Group controlId={`${field.name}-${index}`} className="mb-3">
-                <Form.Label>{field.label}</Form.Label>
-                {renderField(field, index)}
-                {errors[field.name] && <Form.Text className="text-danger">{errors[field.name]}</Form.Text>}
-              </Form.Group>
-            </Row>
-          ))}
-        </React.Fragment>
-      ))}
-      <div className='text-center'>
-        <Button type="submit" variant="primary" className="me-2">
-          {buttonLabel}
-        </Button>
-        {editingItem && (
-          <Button type="button" variant="secondary" onClick={onCancel}>
-            Cancel
+    <>
+      <style>{styles}</style>
+      <Form onSubmit={handleSubmit} className={className}>
+        {title && <h2 className='text-center'>{title}</h2>}
+        {errors.submit && <Alert variant="danger">{errors.submit}</Alert>}
+        {formConfig.map((section, sectionIndex) => (
+          <React.Fragment key={sectionIndex}>
+            {Array.isArray(section.fields) && section.fields.map((field, index) => (
+              <Row key={index}>
+                <Form.Group controlId={`${field.name}-${index}`} className="mb-3">
+                  <Form.Label>{field.label}</Form.Label>
+                  {renderField(field, index)}
+                  {errors[field.name] && <Form.Text className="text-danger">{errors[field.name]}</Form.Text>}
+                </Form.Group>
+              </Row>
+            ))}
+          </React.Fragment>
+        ))}
+        <div className='text-center'>
+          <Button type="submit" variant="primary" className="me-2">
+            {buttonLabel}
           </Button>
-        )}
-      </div>
-    </Form>
+          {editingItem && (
+            <Button type="button" variant="secondary" onClick={onCancel}>
+              Cancel
+            </Button>
+          )}
+        </div>
+      </Form>
+      {activeOverlay && <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9998 }} />}
+    </>
   );
 };
 
