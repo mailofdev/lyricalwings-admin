@@ -8,7 +8,7 @@ import { TfiWrite } from "react-icons/tfi";
 import { IoBookSharp } from 'react-icons/io5';
 import { CgGirl } from "react-icons/cg";
 import { BiColor } from 'react-icons/bi';
-
+import lhyricalwings from '../Common/lhyricalwings.png';
 
 const Header = ({ theme }) => {
   const [open, setOpen] = useState(false);
@@ -102,7 +102,7 @@ const Header = ({ theme }) => {
     <Navbar ref={navRef} expand="lg" fixed="top" expanded={open} className='navbar'>
       <div className="container-fluid">
         <Navbar.Brand as={NavLink} to="/" onClick={closeNavbar}>
-          <img src="logo.png" alt="LyricalWings Logo" style={{ maxWidth: '200px' }} />
+          <img src={lhyricalwings} alt="LyricalWings Logo" style={{ maxWidth: '300px', maxHeight:'300px', height:50, width:220 }} />
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" onClick={() => setOpen(!open)} />
         <Navbar.Collapse id="basic-navbar-nav">
