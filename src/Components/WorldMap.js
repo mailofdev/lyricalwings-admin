@@ -97,7 +97,7 @@ const WorldMap = () => {
     }, [users, cityData]);
 
     return (
-        <Container fluid className='p-4'>
+        <div>
             <Row>
                 <Col md={12} className="mb-4">
                     <h2 className="text-center mb-4 form-label">User Engagement</h2>
@@ -131,7 +131,7 @@ const WorldMap = () => {
                     )}
                 </Col>
             </Row>
-        </Container>
+        </div>
     );
 };
 
