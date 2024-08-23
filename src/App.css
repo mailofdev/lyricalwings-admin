@@ -115,6 +115,10 @@ body {
   background: var(--cardColor) !important;
 
 }
+.iconColor {
+  color: var(--textColor) !important;
+
+}
 .card{
   background: var(--cardColor) !important;
 }
@@ -311,7 +315,10 @@ body {
   margin: 0 !important;
   color: var(--textColor) !important;
 }
-
+.dropdown-item.active, .dropdown-item:active{
+  background: var(--cardColor) !important;
+  color: var(--textColor) !important;
+}
 ul {
   padding-left: unset !important;
 }

@@ -38,7 +38,7 @@ const Themes = () => {
             fields: [
                 { type: 'input', name: 'themeName', label: 'Theme Name' },
                 { type: 'colorInput', name: 'themeBgColor', label: 'Theme Background color' },
-                { type: 'colorInput', name: 'buttonColor', label: 'Button color' },
+                // { type: 'colorInput', name: 'buttonColor', label: 'Button color' },
                 { type: 'colorInput', name: 'textColor', label: 'Text color' },
                 { type: 'colorInput', name: 'cardColor', label: 'Card color' },
             ]
@@ -128,7 +128,7 @@ const Themes = () => {
                 editingItem={editingItem}
                 title={editingItem ? "Edit theme" : "Add theme"}
                 buttonLabel={editingItem ? 'Update' : 'Add'}
-                requiredFields={['themeName', 'themeBgColor', 'buttonColor', 'textColor']}
+                requiredFields={['themeName', 'themeBgColor', 'textColor']}
             />
             {loading && <Loader />}
             {!loading && ThemeData.length === 0 && <p>No themes found.</p>}

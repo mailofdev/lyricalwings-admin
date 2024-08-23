@@ -5,9 +5,9 @@ import { Toast } from 'primereact/toast';
 import { useNavigate } from 'react-router-dom';
 import {  Modal, Spinner } from 'react-bootstrap';
 import { authConfig } from '../Common/commonFunction';
-
+import Loader from '../Components/Loader';
 import { loginUser } from '../redux/userAuthSlice';
-
+import Lyricalwings from '../Common/lhyricalwings.png'
 const AuthModal = ({ show, handleClose }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -34,20 +34,17 @@ const AuthModal = ({ show, handleClose }) => {
 
 
     return (
-        <Modal show={show} onHide={handleClose} centered className='modal-gradient'>
+        <Modal show={show} onHide={handleClose} centered className='modal-gradient '>
+            <div className='text-center'>
+            <img src={Lyricalwings} alt="LyricalWings Logo" 
+            style={{ maxWidth: '300px', maxHeight:'300px', height:50, width:220 }} />
+            </div>
             <div className='modal-body-gradient rounded'>
-            <Modal.Header>
-                <Modal.Title className="w-100 text-center bg-none">
-                    Sign In to Lhyricalwings
-                </Modal.Title>
-            </Modal.Header>
             <Modal.Body>
                 <Toast ref={toast} />
-                {status === 'loading' ? (
-                    <div className="text-center">
-                        <Spinner animation="border" role="status" />
-                        <p>Signing in...</p>
-                    </div>
+                {status === 'loading' ? 
+                (
+                     <Loader loadingMessage="Signing In.."/>
                 ) : (
                     <>
                         <DynamicForm

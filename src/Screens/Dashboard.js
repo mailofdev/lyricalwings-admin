@@ -207,7 +207,7 @@ const Dashboard = () => {
           customshadow="shadow-lg" bgGradient="bg-gradient-primary" textColor="text-light" title="All Narrative"
           count={totalNarrative} onClick={() => handleEmotionClick('showAllNarrative')}
         />
-         <ResponsiveCard xs={12} sm={6} md={6} lg={6} icon={TiSortAlphabetically} iconSize={50}
+         <ResponsiveCard iconColor="iconColor" xs={12} sm={6} md={6} lg={6} icon={TiSortAlphabetically} iconSize={50}
           customshadow="shadow-lg" bgGradient="bg-gradient-primary" textColor="text-light" title="All Poems"
           count={totalPoems} onClick={() => handleEmotionClick('showAllPoems')}
         />

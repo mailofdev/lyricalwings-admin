@@ -5,7 +5,7 @@ import { FaEdit, FaTrash } from 'react-icons/fa';
 
 const BookCard = ({ book, onEdit, onDelete }) => {
     return (
-        <Card className="book-card">
+        <Card className="book-card form-label">
             <Row className="book-card-body p-0 m-0">
                 <Col md={6} className="book-cover-container p-0 m-0">
                     {book.bookCoverUrl && (
@@ -15,7 +15,7 @@ const BookCard = ({ book, onEdit, onDelete }) => {
                 <Col md={6} className="book-details-container">
                     <Card.Title className="book-title">{book.title}</Card.Title>
                     <Card.Text className="book-subtitle">{book.subTitle}</Card.Text>
-                    <Card.Text className="text-muted">{book.content}</Card.Text>
+                    <Card.Text className="form-label">{book.content}</Card.Text>
                     <Card.Text className="book-author">Author: {book.authorName}</Card.Text>
                     {book.link && (
                         <div className='justify-content-center d-flex'>

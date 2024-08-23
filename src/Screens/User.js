@@ -73,7 +73,7 @@ const User = () => {
 
     const renderUserTable = (userList, title) => (
         <div className="card shadow-sm p-2">
-            <h4 className="mb-3">{title} ({userList.length})</h4>
+            <h4 className="mb-3 form-label">{title} ({userList.length})</h4>
             <DataTable value={userList} paginator rows={5} className="p-datatable-customers">
                 <Column field="email" header="Email" />
                 <Column field="displayName" header="Username" />

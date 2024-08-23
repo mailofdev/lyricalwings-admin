@@ -145,7 +145,7 @@ const Header = ({ theme }) => {
             </NavDropdown>
 
             <NavDropdown
-              title={<span className="nav-link-custom"><FaUserCircle size={30} /> {user ? user.displayName : 'anonymous'}</span>}
+              title={<span className="nav-link-custom"><FaUserCircle size={25} /> {user ? user.displayName : 'anonymous'}</span>}
               id="basic-nav-dropdown"
               align="end"
               className='me-2' 

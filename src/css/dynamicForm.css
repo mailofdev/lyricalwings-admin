@@ -2,6 +2,7 @@
 .dynamic-form {
     /* background: linear-gradient(135deg, #72eaf7 0%, #65dcee 100%) !important; */
     background: var(--cardColor) !important;
+    color: var(--textColor) !important;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -9,7 +10,7 @@
   
   /* Form Title */
   .dynamic-form h2 {
-    color: #343a40;
+
     margin-bottom: 20px;
   }
   
@@ -20,7 +21,6 @@
   
   /* Form Label */
   .dynamic-form .form-label {
-    color: #495057;
     font-weight: 600;
   }
   

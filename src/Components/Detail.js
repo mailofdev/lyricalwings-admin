@@ -14,29 +14,29 @@ const Detail = () => {
   return (
     <Container className="d-flex justify-content-center my-5">
       <Card className="w-75 d-flex gap-4 flex-column p-4">
-        <div className='text-center fs-4'>{item.type.toUpperCase()}</div>
-        <div>{item.title}</div>
+        <div className='text-center form-label fs-4'>{item.type.toUpperCase()}</div>
+        <div className='form-label'>{item.title}</div>
         <div>
-        {item.htmlSubtitle && <div className="card-text" dangerouslySetInnerHTML={sanitizeHTML(item.htmlSubtitle)}></div>}
+        {item.htmlSubtitle && <div className="card-text form-label" dangerouslySetInnerHTML={sanitizeHTML(item.htmlSubtitle)}></div>}
         </div>
         <div>
-        {item.htmlContent && <div className="card-text" dangerouslySetInnerHTML={sanitizeHTML(item.htmlContent)}></div>}
+        {item.htmlContent && <div className="card-text form-label" dangerouslySetInnerHTML={sanitizeHTML(item.htmlContent)}></div>}
         </div>
 
           <div>
-            <p>Likes: {item.likes || 0}</p>
+            <p className='form-label'>Likes: {item.likes || 0}</p>
           </div>
           <div>
-            <h5>Comments:</h5>
+            <h5 className='form-label'>Comments:</h5>
             {item.comments?.length > 0 ? (
               item.comments.map((comment, index) => (
                 <div key={index}>
-                  <p>{comment.comment}</p>
-                  <p>- {comment.userId}</p>
+                  <p className='form-label'>{comment.comment}</p>
+                  <p className='form-label'>- {comment.userId}</p>
                 </div>
               ))
             ) : (
-              <p>No comments yet.</p>
+              <p className='form-label'>No comments yet.</p>
             )}
           </div>
 

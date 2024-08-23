@@ -167,14 +167,14 @@ const navigate = useNavigate();
                   onClick={() => handleCardClick(item)}
                 >
                   <Card.Body>
-                    <Card.Title className="text-truncate">{item.title}</Card.Title>
+                    <Card.Title className="text-truncate form-label">{item.title}</Card.Title>
                     <Card.Text 
-                      className="text-truncate" 
+                      className="text-truncate form-label" 
                       dangerouslySetInnerHTML={sanitizeHTML(item.htmlContent)}
                     />
-                    <Button variant="danger" size="sm" onClick={() => handleDeletePoem(item.id)}>
+                    {/* <Button variant="danger" size="sm" onClick={() => handleDeletePoem(item.id)}>
                       Delete
-                    </Button>
+                    </Button> */}
                   </Card.Body>
                 </Card>
               </Col>
