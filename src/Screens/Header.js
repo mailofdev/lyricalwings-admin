@@ -101,7 +101,7 @@ const Header = ({ theme }) => {
   return (
     <Navbar ref={navRef} expand="lg" fixed="top" expanded={open} className='navbar'>
       <div className="container-fluid">
-        <Navbar.Brand as={NavLink} to="/" onClick={closeNavbar}>
+        <Navbar.Brand as={NavLink} to="/Dashboard" onClick={closeNavbar}>
           <img src={lhyricalwings} alt="LyricalWings Logo" style={{ maxWidth: '300px', maxHeight:'300px', height:50, width:220 }} />
         </Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" onClick={() => setOpen(!open)} />

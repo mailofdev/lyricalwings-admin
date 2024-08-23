@@ -35,7 +35,7 @@ const AuthModal = ({ show, handleClose }) => {
 
     return (
         <Modal show={show} onHide={handleClose} centered className='modal-gradient '>
-            <div className='text-center'>
+            <div className='text-center my-2'>
             <img src={Lyricalwings} alt="LyricalWings Logo" 
             style={{ maxWidth: '300px', maxHeight:'300px', height:50, width:220 }} />
             </div>
