@@ -86,8 +86,12 @@ export const addPoem = createAsyncThunk(
     try {
       const poemsRef = ref(db, 'PoemData');
       const newPoemRef = push(poemsRef);
-      await set(newPoemRef, newPoem);
-      return { id: newPoemRef.key, ...newPoem };
+      const poemWithTimestamp = {
+        ...newPoem,
+        timestamp: Date.now() // Add current client-side timestamp
+      };
+      await set(newPoemRef, poemWithTimestamp);
+      return { id: newPoemRef.key, ...poemWithTimestamp };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -99,13 +103,30 @@ export const updatePoem = createAsyncThunk(
   async ({ poemId, updatedPoem }, { rejectWithValue }) => {
     try {
       const poemRef = ref(db, `PoemData/${poemId}`);
-      await update(poemRef, updatedPoem);
-      return { id: poemId, ...updatedPoem };
+      const poemWithUpdatedTimestamp = {
+        ...updatedPoem,
+        lastUpdated: Date.now() // Add or update lastUpdated field
+      };
+      await update(poemRef, poemWithUpdatedTimestamp);
+      return { id: poemId, ...poemWithUpdatedTimestamp };
     } catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
+
+// export const updatePoem = createAsyncThunk(
+//   'poems/updatePoem',
+//   async ({ poemId, updatedPoem }, { rejectWithValue }) => {
+//     try {
+//       const poemRef = ref(db, `PoemData/${poemId}`);
+//       await update(poemRef, updatedPoem);
+//       return { id: poemId, ...updatedPoem };
+//     } catch (error) {
+//       return rejectWithValue(error.message);
+//     }
+//   }
+// );
 
 export const deletePoem = createAsyncThunk(
   'poems/deletePoem',
