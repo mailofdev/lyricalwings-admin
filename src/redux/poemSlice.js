@@ -105,7 +105,7 @@ export const updatePoem = createAsyncThunk(
       const poemRef = ref(db, `PoemData/${poemId}`);
       const poemWithUpdatedTimestamp = {
         ...updatedPoem,
-        lastUpdated: Date.now() // Add or update lastUpdated field
+        lastUpdated: Date.now() 
       };
       await update(poemRef, poemWithUpdatedTimestamp);
       return { id: poemId, ...poemWithUpdatedTimestamp };

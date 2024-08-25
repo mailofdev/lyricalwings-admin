@@ -45,7 +45,6 @@ export const addCourses = createAsyncThunk(
       // Upload files and get URLs
       for (const field of fileFields) {
         if (itemData[field]) {
-          // Check if it's a blob URL
           if (itemData[field].startsWith('blob:')) {
             const response = await fetch(itemData[field]);
             const blob = await response.blob();
@@ -55,6 +54,11 @@ export const addCourses = createAsyncThunk(
           }
         }
       }
+
+      // Add timestamps
+      const now = Date.now();
+      itemData.createdAt = now;
+      itemData.lastUpdated = now;
 
       await update(newItemRef, itemData);
       return { id, ...itemData };
@@ -76,7 +80,6 @@ export const updateCourses = createAsyncThunk(
       for (const field of fileFields) {
         if (itemData[field]) {
           if (itemData[field].startsWith('blob:')) {
-            // New file uploaded
             if (currentItem[field]) {
               await deleteFile(currentItem[field]);
             }
@@ -84,23 +87,25 @@ export const updateCourses = createAsyncThunk(
             const blob = await response.blob();
             itemData[field] = await uploadFile(blob, `CourseData/${id}_${field}`);
           } else if (itemData[field] instanceof File) {
-            // New file uploaded
             if (currentItem[field]) {
               await deleteFile(currentItem[field]);
             }
             itemData[field] = await uploadFile(itemData[field], `CourseData/${id}_${field}`);
           }
         } else if (itemData[field] === null) {
-          // File removed
           if (currentItem[field]) {
             await deleteFile(currentItem[field]);
           }
           delete itemData[field];
         } else {
-          // No change, keep existing URL
           itemData[field] = currentItem[field];
         }
       }
+
+      // Update lastUpdated timestamp
+      itemData.lastUpdated = Date.now();
+      // Preserve createdAt timestamp
+      itemData.createdAt = currentItem.createdAt;
 
       await update(itemRef, itemData);
       return { id, ...itemData };
