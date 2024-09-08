@@ -18,8 +18,6 @@ const Themes = () => {
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
     const toast = useRef(null);
-
-    console.log("appliedTheme "+appliedTheme)
     useEffect(() => {
         dispatch(fetchThemes());
         dispatch(fetchAppliedTheme());

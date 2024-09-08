@@ -1,14 +1,42 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { get, ref, push, set, update, remove, query, orderByChild, equalTo } from 'firebase/database';
+import { get, ref, push, set, update, remove, query, orderByChild, limitToLast, equalTo } from 'firebase/database';
 import { db } from '../Config/firebase';
 
+// Helper function to store the latest 3 poems by type
+const trimToLatestThreePoems = async (type) => {
+  try {
+    const latestPoemsRef = ref(db, 'LatestPoems');
+    const typeQuery = query(latestPoemsRef, orderByChild('type'), equalTo(type));
+    const snapshot = await get(typeQuery);
+
+    if (snapshot.exists()) {
+      const poemsArray = Object.entries(snapshot.val()).map(([id, data]) => ({ id, ...data }));
+      const totalPoemsOfType = poemsArray.length;
+
+      // If there are more than 3 poems of the same type, delete the oldest ones
+      if (totalPoemsOfType > 3) {
+        const poemsToRemove = poemsArray
+          .sort((a, b) => a.timestamp - b.timestamp) // Sort by timestamp (oldest first)
+          .slice(0, totalPoemsOfType - 3); // Oldest poems to remove
+
+        for (const poem of poemsToRemove) {
+          await remove(ref(db, `LatestPoems/${poem.id}`));
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error trimming poems:', error);
+  }
+};
+
+// Fetch Poem Counts by Type
 export const fetchPoemCounts = createAsyncThunk(
   'poems/fetchPoemCounts',
   async (_, { rejectWithValue }) => {
     try {
       const poemsRef = ref(db, 'PoemData');
       const snapshot = await get(poemsRef);
-      
+
       if (snapshot.exists()) {
         const poemsData = snapshot.val();
         const totalPoems = Object.keys(poemsData).length;
@@ -18,10 +46,10 @@ export const fetchPoemCounts = createAsyncThunk(
         const totalFear = Object.values(poemsData).filter(poem => poem.type === 'fear').length;
         const totalDisgust = Object.values(poemsData).filter(poem => poem.type === 'disgust').length;
         const totalSurprise = Object.values(poemsData).filter(poem => poem.type === 'surprise').length;
-        
+
         return { totalPoems, totalHappiness, totalSadness, totalAnger, totalFear, totalDisgust, totalSurprise };
       }
-      
+
       return { totalPoems: 0, totalHappiness: 0, totalSadness: 0, totalAnger: 0, totalFear: 0, totalDisgust: 0, totalSurprise: 0 };
     } catch (error) {
       return rejectWithValue(error.message);
@@ -29,6 +57,7 @@ export const fetchPoemCounts = createAsyncThunk(
   }
 );
 
+// Fetch Poems with pagination and search
 export const fetchPoems = createAsyncThunk(
   'poems/fetchPoems',
   async ({ page, pageSize, filterType, searchQuery }, { rejectWithValue }) => {
@@ -80,6 +109,7 @@ export const fetchPoems = createAsyncThunk(
   }
 );
 
+// Add Poem and ensure only the latest 3 poems of a type are stored
 export const addPoem = createAsyncThunk(
   'poems/addPoem',
   async (newPoem, { rejectWithValue }) => {
@@ -88,9 +118,19 @@ export const addPoem = createAsyncThunk(
       const newPoemRef = push(poemsRef);
       const poemWithTimestamp = {
         ...newPoem,
-        timestamp: Date.now() // Add current client-side timestamp
+        mainType: 'POEM',
+        timestamp: Date.now()
       };
       await set(newPoemRef, poemWithTimestamp);
+
+      // Add to separate collection for latest 3 poems
+      const latestPoemsRef = ref(db, 'LatestPoems');
+      const newLatestPoemRef = push(latestPoemsRef);
+      await set(newLatestPoemRef, poemWithTimestamp);
+
+      // Trim the poems of the same type to only 3
+      await trimToLatestThreePoems(newPoem.type);
+
       return { id: newPoemRef.key, ...poemWithTimestamp };
     } catch (error) {
       return rejectWithValue(error.message);
@@ -98,6 +138,7 @@ export const addPoem = createAsyncThunk(
   }
 );
 
+// Update Poem
 export const updatePoem = createAsyncThunk(
   'poems/updatePoem',
   async ({ poemId, updatedPoem }, { rejectWithValue }) => {
@@ -105,9 +146,15 @@ export const updatePoem = createAsyncThunk(
       const poemRef = ref(db, `PoemData/${poemId}`);
       const poemWithUpdatedTimestamp = {
         ...updatedPoem,
-        lastUpdated: Date.now() 
+        mainType: 'POEM',
+        lastUpdated: Date.now()
       };
       await update(poemRef, poemWithUpdatedTimestamp);
+
+      // Ensure the updated poem is stored in LatestPoems
+      await set(ref(db, `LatestPoems/${poemId}`), poemWithUpdatedTimestamp);
+      await trimToLatestThreePoems(updatedPoem.type);
+
       return { id: poemId, ...poemWithUpdatedTimestamp };
     } catch (error) {
       return rejectWithValue(error.message);
@@ -115,25 +162,17 @@ export const updatePoem = createAsyncThunk(
   }
 );
 
-// export const updatePoem = createAsyncThunk(
-//   'poems/updatePoem',
-//   async ({ poemId, updatedPoem }, { rejectWithValue }) => {
-//     try {
-//       const poemRef = ref(db, `PoemData/${poemId}`);
-//       await update(poemRef, updatedPoem);
-//       return { id: poemId, ...updatedPoem };
-//     } catch (error) {
-//       return rejectWithValue(error.message);
-//     }
-//   }
-// );
-
+// Delete Poem
 export const deletePoem = createAsyncThunk(
   'poems/deletePoem',
   async (poemId, { rejectWithValue }) => {
     try {
       const poemRef = ref(db, `PoemData/${poemId}`);
       await remove(poemRef);
+
+      // Also remove from LatestPoems
+      await remove(ref(db, `LatestPoems/${poemId}`));
+
       return poemId;
     } catch (error) {
       return rejectWithValue(error.message);
@@ -195,36 +234,33 @@ const poemsSlice = createSlice({
     loadingMessage: '',
     error: null,
     likesCount: {},
-    comments: {}, 
+    comments: {},
   },
-    reducers: {
-      clearError: (state) => {
-        state.error = null;
-      },
-      setPoemsList: (state, action) => {
-        state.poemsList = action.payload;
-      },
+  reducers: {
+    clearError: (state) => {
+      state.error = null;
     },
-    extraReducers: (builder) => {
-      builder
-        .addCase(fetchPoemCounts.pending, (state) => {
-          state.isLoading = true;
-          state.loadingMessage = "Loading poems...";
-          state.error = null;
-        })
-        .addCase(fetchPoemCounts.fulfilled, (state, action) => {
-          state.isLoading = false;
-          state.loadingMessage = '';
-          Object.assign(state, action.payload);
-        })
-        .addCase(fetchPoemCounts.rejected, (state, action) => {
-          state.isLoading = false;
-          state.loadingMessage = '';
-          state.error = action.payload;
-        })
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchPoemCounts.pending, (state) => {
+        state.isLoading = true;
+        state.loadingMessage = 'Loading poems...';
+        state.error = null;
+      })
+      .addCase(fetchPoemCounts.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.loadingMessage = '';
+        Object.assign(state, action.payload);
+      })
+      .addCase(fetchPoemCounts.rejected, (state, action) => {
+        state.isLoading = false;
+        state.loadingMessage = '';
+        state.error = action.payload;
+      })
       .addCase(fetchPoems.pending, (state) => {
         state.isLoading = true;
-        state.loadingMessage = "Loading poems...";
+        state.loadingMessage = 'Loading poems...';
         state.error = null;
       })
       .addCase(fetchPoems.fulfilled, (state, action) => {
@@ -240,13 +276,13 @@ const poemsSlice = createSlice({
       })
       .addCase(addPoem.pending, (state) => {
         state.isLoading = true;
-        state.loadingMessage = "Adding new poem...";
+        state.loadingMessage = 'Adding new poem...';
         state.error = null;
       })
       .addCase(addPoem.fulfilled, (state, action) => {
         state.isLoading = false;
         state.loadingMessage = '';
-        state.poemsList.push(action.payload);
+        state.poemsList.unshift(action.payload);
       })
       .addCase(addPoem.rejected, (state, action) => {
         state.isLoading = false;
@@ -255,15 +291,15 @@ const poemsSlice = createSlice({
       })
       .addCase(updatePoem.pending, (state) => {
         state.isLoading = true;
-        state.loadingMessage = "Updating poem...";
+        state.loadingMessage = 'Updating poem...';
         state.error = null;
       })
       .addCase(updatePoem.fulfilled, (state, action) => {
         state.isLoading = false;
         state.loadingMessage = '';
-        const index = state.poemsList.findIndex(poem => poem.id === action.payload.id);
-        if (index !== -1) {
-          state.poemsList[index] = action.payload;
+        const poemIndex = state.poemsList.findIndex(poem => poem.id === action.payload.id);
+        if (poemIndex !== -1) {
+          state.poemsList[poemIndex] = action.payload;
         }
       })
       .addCase(updatePoem.rejected, (state, action) => {
@@ -273,7 +309,7 @@ const poemsSlice = createSlice({
       })
       .addCase(deletePoem.pending, (state) => {
         state.isLoading = true;
-        state.loadingMessage = "Deleting poem...";
+        state.loadingMessage = 'Deleting poem...';
         state.error = null;
       })
       .addCase(deletePoem.fulfilled, (state, action) => {

@@ -6,7 +6,7 @@ import DOMPurify from 'dompurify';
 const Detail = () => {
   const { state } = useLocation();
   const { item } = state;
-  
+  console.log(item)
   const sanitizeHTML = (html) => {
     return { __html: DOMPurify.sanitize(html) };
   };
