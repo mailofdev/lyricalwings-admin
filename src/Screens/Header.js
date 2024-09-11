@@ -113,7 +113,21 @@ const Header = ({ theme }) => {
               </Nav.Link>
             </Nav.Item>
 
-            <NavDropdown title={<span className="nav-link-custom"><TfiWrite size={18} /> Add</span>} align="center">
+            
+
+            <Nav.Item>
+                <Nav.Link as={NavLink} to="/AddData" className="nav-link-custom" onClick={closeNavbar}>
+                  <IoBookSharp /> Write
+                </Nav.Link>
+              </Nav.Item>
+
+              <Nav.Item>
+                <Nav.Link as={NavLink} to="/Courses" className="nav-link-custom" onClick={closeNavbar}>
+                  <FaBook /> Courses
+                </Nav.Link>
+              </Nav.Item>
+              
+            {/* <NavDropdown title={<span className="nav-link-custom"><TfiWrite size={18} /> Add</span>} align="center">
               <Nav.Item>
                 <Nav.Link as={NavLink} to="/Poems" className="nav-link-custom" onClick={closeNavbar}>
                   <IoBookSharp /> Poems
@@ -129,7 +143,7 @@ const Header = ({ theme }) => {
                   <FaBook /> Courses
                 </Nav.Link>
               </Nav.Item>
-            </NavDropdown>
+            </NavDropdown> */}
 
             <NavDropdown title={<span className="nav-link-custom" ><CgGirl size={27} /> About</span>} align="center">
               <Nav.Item>

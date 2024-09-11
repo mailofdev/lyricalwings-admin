@@ -19,6 +19,7 @@ import Themes from './Components/Themes';
 import { fetchAppliedTheme } from './redux/themeSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from './Components/Loader';
+import AddData from './Screens/AddData';
 
 
 
@@ -70,6 +71,7 @@ function App() {
             <Route path="/Detail/:id" element={<PrivateRoute element={Detail} />} />    
             <Route path="/Themes" element={<PrivateRoute element={Themes} />} />    
             <Route path="*" element={<AuthModal show={true} handleClose={() => {}} />} />
+            <Route path="/AddData" element={<PrivateRoute element={AddData} />} />
           </Routes>
         )}
       </div>

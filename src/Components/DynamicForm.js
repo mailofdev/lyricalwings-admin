@@ -255,11 +255,11 @@ const DynamicForm = ({
               Cancel
             </Button>
           )}
-          {onCancel &&  (
+          {/* {onCancel &&  (
             <Button type="button" variant="secondary" onClick={onCancel}>
               Cancel
             </Button>
-          )}
+          )} */}
           
         </div>
       </Form>
