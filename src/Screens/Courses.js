@@ -22,15 +22,15 @@ const Courses = () => {
                 { type: 'input', name: 'titleOfType', label: 'Title of type' },
                 { type: 'textarea', name: 'introductionOfType', label: 'Introduction of type' },
                 { type: 'textarea', name: 'structureOfType', label: 'Structure of type' },
-                { type: 'file', name: 'structureFileURL', label: 'Upload file of structure' },
+                { type: 'fileOrVideo', name: 'structureContent', label: 'Upload file or video of structure' },
                 { type: 'textarea', name: 'literatureOfType', label: 'Literature of type' },
-                { type: 'file', name: 'literatureFileURL', label: 'Upload file of literature' },
+                { type: 'fileOrVideo', name: 'literatureContent', label: 'Upload file or video of literature' },
                 { type: 'textarea', name: 'methodologyOfType', label: 'Methodology of type' },
-                { type: 'file', name: 'methodologyFileURL', label: 'Upload file of methodology' },
-                { type: 'textarea', name: 'evalutionOfType', label: 'Evaluation of type' },
-                { type: 'file', name: 'evalutionFileURL', label: 'Upload file of evalution' },
+                { type: 'fileOrVideo', name: 'methodologyContent', label: 'Upload file or video of methodology' },
+                { type: 'textarea', name: 'evaluationOfType', label: 'Evaluation of type' },
+                { type: 'fileOrVideo', name: 'evaluationContent', label: 'Upload file or video of evaluation' },
                 { type: 'textarea', name: 'conclusionOfType', label: 'Conclusion of type' },
-                { type: 'file', name: 'conclusionFileURL', label: 'Upload file of conclusion' },
+                { type: 'fileOrVideo', name: 'conclusionContent', label: 'Upload file or video of conclusion' },
             ]
         }
     ];
@@ -42,7 +42,7 @@ const Courses = () => {
     const handleFormSubmit = async (data, formType, itemId = null) => {
         try {
             const fileFields = formConfig[0].fields
-                .filter(field => field.type === 'file')
+                .filter(field => field.type === 'fileOrVideo')
                 .map(field => field.name);
 
             const processedData = { ...data };
@@ -60,7 +60,7 @@ const Courses = () => {
                 showToast('success', 'Success', 'Item updated successfully');
                 setEditingItem(null);
             }
-            fetchCourses()
+            dispatch(fetchCourses());
         } catch (error) {
             console.error("Error submitting form:", error);
             showToast('error', 'Error', error.message);
@@ -75,11 +75,11 @@ const Courses = () => {
     const confirmDelete = async () => {
         try {
             const fileFields = formConfig[0].fields
-                .filter(field => field.type === 'file')
+                .filter(field => field.type === 'fileOrVideo')
                 .map(field => field.name);
             await dispatch(deleteCourses({ id: itemToDelete, fileFields })).unwrap();
             showToast('success', 'Success', 'Item deleted successfully');
-            fetchCourses()
+            dispatch(fetchCourses());
         } catch (error) {
             console.error("Error deleting item:", error);
             showToast('error', 'Error', error.message);
@@ -90,6 +90,30 @@ const Courses = () => {
 
     const showToast = (severity, summary, detail) => {
         toast.current.show({ severity, summary, detail, life: 3000 });
+    };
+
+    const renderContent = (item, fieldName) => {
+        const content = item[fieldName];
+        if (!content) return null;
+
+        const isVideo = content.toLowerCase().endsWith('.mp4') || content.toLowerCase().endsWith('.webm');
+
+        if (isVideo) {
+            return (
+                <video width="100%" controls>
+                    <source src={content} type={`video/${content.split('.').pop()}`} />
+                    Your browser does not support the video tag.
+                </video>
+            );
+        } else {
+            return (
+                <Button variant="outline-secondary">
+                    <a href={content} target="_blank" rel="noopener noreferrer" className="form-label text-decoration-none">
+                        View {fieldName.replace('Content', '')} File
+                    </a>
+                </Button>
+            );
+        }
     };
 
     return (
@@ -114,28 +138,16 @@ const Courses = () => {
                         <div key={item.id} className="dynamic-form card shadow-sm mb-4">
                             <div className='gap-2 d-flex flex-column'>
                                 {formConfig[0].fields.map((field) => (
-                                    field.type !== 'file' && (
-                                        <div className='card p-2'>
-                                            <p key={field.name} className="form-label">
-                                               <strong>{field.label}:</strong> {item[field.name]}
-                                            </p>
-                                        </div>
-                                    )
+                                    <div key={field.name} className='card p-2'>
+                                        <p className="form-label">
+                                            <strong>{field.label}:</strong> 
+                                            {field.type !== 'fileOrVideo' 
+                                                ? item[field.name]
+                                                : renderContent(item, field.name)
+                                            }
+                                        </p>
+                                    </div>
                                 ))}
-
-
-                                <div className='d-flex gap-1 justify-content-center flex-wrap'>
-                                    {formConfig[0].fields.map((field) => (
-                                        field.type === 'file' && item[field.name] && (
-
-                                            <Button key={field.name} variant="outline-secondary">
-                                                <a href={item[field.name]} target="_blank" rel="noopener noreferrer" className=" form-label text-decoration-none ">
-                                                    {field.name.replace(/[.#$[\]]/g, '_').replace('FileURL', '')}
-                                                </a>
-                                            </Button>
-                                        )
-                                    ))}
-                                </div>
 
                                 <div className='d-flex gap-2 justify-content-center flex-wrap'>
                                     <Button variant="primary" onClick={() => setEditingItem(item)}> <FaEdit/> </Button>

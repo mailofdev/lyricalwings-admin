@@ -102,7 +102,7 @@ export const authConfig = {
         {
             fields: [
                 {
-                    type: 'email',
+                    type: 'input',
                     name: 'email',
                     label: 'Email',
                     placeholder: 'Enter your email',

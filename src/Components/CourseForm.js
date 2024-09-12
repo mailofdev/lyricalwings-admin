@@ -3,16 +3,26 @@ import { Form, Button, Row, Alert } from 'react-bootstrap';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { FileUpload } from 'primereact/fileupload';
+import { RadioButton } from 'primereact/radiobutton';
 import JoditEditor from 'jodit-react';
 
 const CourseForm = ({ formConfig, onSubmit, className = '', title = '', requiredFields = [], buttonLabel = 'Submit', editingItem = null, maxFileSize }) => {
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
   const fileUploadRefs = useRef({});
+  const [uploadTypes, setUploadTypes] = useState({});
 
   useEffect(() => {
     if (editingItem) {
       setFormData(editingItem);
+      const initialUploadTypes = {};
+      formConfig[0].fields.forEach(field => {
+        if (field.type === 'fileOrVideo') {
+          const content = editingItem[field.name];
+          initialUploadTypes[field.name] = content && content.toLowerCase().endsWith('.mp4') ? 'video' : 'file';
+        }
+      });
+      setUploadTypes(initialUploadTypes);
     } else {
       const initialFormData = formConfig.reduce((acc, fieldConfig) => {
         fieldConfig.fields.forEach(field => {
@@ -21,6 +31,13 @@ const CourseForm = ({ formConfig, onSubmit, className = '', title = '', required
         return acc;
       }, {});
       setFormData(initialFormData);
+      const initialUploadTypes = {};
+      formConfig[0].fields.forEach(field => {
+        if (field.type === 'fileOrVideo') {
+          initialUploadTypes[field.name] = 'file';
+        }
+      });
+      setUploadTypes(initialUploadTypes);
     }
   }, [formConfig, editingItem]);
 
@@ -44,6 +61,14 @@ const CourseForm = ({ formConfig, onSubmit, className = '', title = '', required
     const file = e.files[0];
     setFormData(prevData => ({ ...prevData, [name]: file }));
     validateField(name, file);
+  };
+
+  const handleUploadTypeChange = (e, name) => {
+    setUploadTypes(prevTypes => ({ ...prevTypes, [name]: e.value }));
+    setFormData(prevData => ({ ...prevData, [name]: null }));
+    if (fileUploadRefs.current[name]) {
+      fileUploadRefs.current[name].clear();
+    }
   };
 
   const validateField = (name, value) => {
@@ -136,15 +161,37 @@ const CourseForm = ({ formConfig, onSubmit, className = '', title = '', required
                     onChange={(content) => handleEditorChange(content, subField.name)}
                   />
                 )}
-                {subField.type === 'file' && (
-                  <FileUpload
-                    ref={(el) => (fileUploadRefs.current[subField.name] = el)}
-                    name={subField.name}
-                    accept="image/*,application/pdf"
-                    maxFileSize={maxFileSize}
-                    onSelect={(e) => handleFileUpload(e, subField.name)}
-                    className={errors[subField.name] ? 'is-invalid' : ''}
-                  />
+                {subField.type === 'fileOrVideo' && (
+                  <div>
+                    <div className="my-2 gap-2 d-flex flex-row align-items-center">
+                      <RadioButton 
+                        inputId={`${subField.name}-file`}
+                        name={`${subField.name}-type`}
+                        value="file"
+                        onChange={(e) => handleUploadTypeChange(e, subField.name)}
+                        checked={uploadTypes[subField.name] === 'file'}
+                      />
+                      <label htmlFor={`${subField.name}-file`} className="ml-2">File</label>
+                      
+                      <RadioButton 
+                        inputId={`${subField.name}-video`}
+                        name={`${subField.name}-type`}
+                        value="video"
+                        onChange={(e) => handleUploadTypeChange(e, subField.name)}
+                        checked={uploadTypes[subField.name] === 'video'}
+                        className="ml-4"
+                      />
+                      <label htmlFor={`${subField.name}-video`} className="ml-2">Video</label>
+                    </div>
+                    <FileUpload
+                      ref={(el) => (fileUploadRefs.current[subField.name] = el)}
+                      name={subField.name}
+                      accept={uploadTypes[subField.name] === 'video' ? "video/*" : "image/*,application/pdf"}
+                      maxFileSize={maxFileSize}
+                      onSelect={(e) => handleFileUpload(e, subField.name)}
+                      className={errors[subField.name] ? 'is-invalid' : ''}
+                    />
+                  </div>
                 )}
                 {errors[subField.name] && <Form.Text className="text-danger">{errors[subField.name]}</Form.Text>}
               </Form.Group>
