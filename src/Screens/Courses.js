@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button } from 'react-bootstrap';
-import Loader from '../Components/Loader';
-import CourseForm from '../Components/CourseForm';
-import { fetchCourses, addCourses, updateCourses, deleteCourses } from '../redux/courseSlice';
+import { Button, Card, Row, Col, Container, Badge, Modal, Form } from 'react-bootstrap';
+import { FaEdit, FaTrash, FaPlayCircle, FaFile, FaStar, FaUsers } from 'react-icons/fa';
 import { Toast } from 'primereact/toast';
-import { Dialog } from 'primereact/dialog';
-import { FaEdit, FaTrash } from 'react-icons/fa';
+import CourseForm from '../Components/CourseForm';
+import Loader from '../Components/Loader';
+import { fetchCourses, addCourses, updateCourses, deleteCourses } from '../redux/courseSlice';
 
 const Courses = () => {
     const dispatch = useDispatch();
@@ -14,23 +13,30 @@ const Courses = () => {
     const [editingItem, setEditingItem] = useState(null);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
+    const [showForm, setShowForm] = useState(false);
+    const [searchQuery, setSearchQuery] = useState(""); // State for search query
     const toast = useRef(null);
 
     const formConfig = [
         {
             fields: [
-                { type: 'input', name: 'titleOfType', label: 'Title of type' },
-                { type: 'textarea', name: 'introductionOfType', label: 'Introduction of type' },
-                { type: 'textarea', name: 'structureOfType', label: 'Structure of type' },
-                { type: 'fileOrVideo', name: 'structureContent', label: 'Upload file or video of structure' },
-                { type: 'textarea', name: 'literatureOfType', label: 'Literature of type' },
-                { type: 'fileOrVideo', name: 'literatureContent', label: 'Upload file or video of literature' },
-                { type: 'textarea', name: 'methodologyOfType', label: 'Methodology of type' },
-                { type: 'fileOrVideo', name: 'methodologyContent', label: 'Upload file or video of methodology' },
-                { type: 'textarea', name: 'evaluationOfType', label: 'Evaluation of type' },
-                { type: 'fileOrVideo', name: 'evaluationContent', label: 'Upload file or video of evaluation' },
-                { type: 'textarea', name: 'conclusionOfType', label: 'Conclusion of type' },
-                { type: 'fileOrVideo', name: 'conclusionContent', label: 'Upload file or video of conclusion' },
+                { type: 'input', name: 'titleOfType', label: 'Course Title' },
+                { type: 'textarea', name: 'introductionOfType', label: 'Course Description' },
+                { type: 'textarea', name: 'structureOfType', label: 'Course Structure' },
+                { type: 'fileOrVideo', name: 'structureContent', label: 'Course Thumbnail' },
+                { type: 'textarea', name: 'literatureOfType', label: 'Course Materials' },
+                { type: 'fileOrVideo', name: 'literatureContent', label: 'Sample Material' },
+                { type: 'textarea', name: 'methodologyOfType', label: 'Teaching Methodology' },
+                { type: 'fileOrVideo', name: 'methodologyContent', label: 'Methodology Video' },
+                { type: 'textarea', name: 'evaluationOfType', label: 'Evaluation Criteria' },
+                { type: 'fileOrVideo', name: 'evaluationContent', label: 'Evaluation Sample' },
+                { type: 'textarea', name: 'conclusionOfType', label: 'Course Conclusion' },
+                { type: 'fileOrVideo', name: 'conclusionContent', label: 'Conclusion Video' },
+                { type: 'input', name: 'instructor', label: 'Instructor Name' },
+                { type: 'input', name: 'duration', label: 'Course Duration' },
+                { type: 'input', name: 'level', label: 'Course Level' },
+                { type: 'input', name: 'rating', label: 'Course Rating' },
+                { type: 'input', name: 'students', label: 'Number of Students' },
             ]
         }
     ];
@@ -54,12 +60,13 @@ const Courses = () => {
 
             if (formType === 'add') {
                 await dispatch(addCourses({ itemData: processedData, fileFields })).unwrap();
-                showToast('success', 'Success', 'Item added successfully');
+                showToast('success', 'Success', 'Course added successfully');
             } else if (formType === 'edit' && itemId) {
                 await dispatch(updateCourses({ id: itemId, itemData: processedData, fileFields })).unwrap();
-                showToast('success', 'Success', 'Item updated successfully');
-                setEditingItem(null);
+                showToast('success', 'Success', 'Course updated successfully');
             }
+            setEditingItem(null);
+            setShowForm(false);
             dispatch(fetchCourses());
         } catch (error) {
             console.error("Error submitting form:", error);
@@ -78,7 +85,7 @@ const Courses = () => {
                 .filter(field => field.type === 'fileOrVideo')
                 .map(field => field.name);
             await dispatch(deleteCourses({ id: itemToDelete, fileFields })).unwrap();
-            showToast('success', 'Success', 'Item deleted successfully');
+            showToast('success', 'Success', 'Course deleted successfully');
             dispatch(fetchCourses());
         } catch (error) {
             console.error("Error deleting item:", error);
@@ -92,87 +99,106 @@ const Courses = () => {
         toast.current.show({ severity, summary, detail, life: 3000 });
     };
 
-    const renderContent = (item, fieldName) => {
-        const content = item[fieldName];
-        if (!content) return null;
-
-        const isVideo = content.toLowerCase().endsWith('.mp4') || content.toLowerCase().endsWith('.webm');
-
-        if (isVideo) {
-            return (
-                <video width="100%" controls>
-                    <source src={content} type={`video/${content.split('.').pop()}`} />
-                    Your browser does not support the video tag.
-                </video>
-            );
-        } else {
-            return (
-                <Button variant="outline-secondary">
-                    <a href={content} target="_blank" rel="noopener noreferrer" className="form-label text-decoration-none">
-                        View {fieldName.replace('Content', '')} File
-                    </a>
-                </Button>
-            );
-        }
-    };
+    // Filter courses by search query
+    const filteredCourses = CourseData.filter(course =>
+        course.titleOfType.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
-        <div className='container d-flex flex-column gap-3'>
-            <Toast ref={toast} />
-            {loading && <Loader loadingMessage="Loading courses" />}
+        <Container fluid className="py-4 text-center">
+        <Toast ref={toast} />
 
-            <CourseForm
-                formConfig={formConfig}
-                className='dynamic-form'
-                onSubmit={handleFormSubmit}
-                editingItem={editingItem}
-                title={editingItem ? "Edit course" : "Add course"}
-                requiredFields={['titleOfType']}
-                buttonLabel={editingItem ? "Update course" : "Add course"}
-                maxFileSize={15000000}
-            />
+        <Row className="mb-4">
+            <Col md={10} lg={10} sm={10}>
+                <Form.Control
+                    type="text"
+                    placeholder="Search courses by title..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                />
+            </Col>
+            <Col md={2} lg={2} sm={2}>
+                <Button variant="success" onClick={() => setShowForm(true)}>
+                    Add New Course
+                </Button>
+            </Col>
+        </Row>
 
-            {CourseData.length > 0 && (
-                <div>
-                    {CourseData.map((item) => (
-                        <div key={item.id} className="dynamic-form card shadow-sm mb-4">
-                            <div className='gap-2 d-flex flex-column'>
-                                {formConfig[0].fields.map((field) => (
-                                    <div key={field.name} className='card p-2'>
-                                        <p className="form-label">
-                                            <strong>{field.label}:</strong> 
-                                            {field.type !== 'fileOrVideo' 
-                                                ? item[field.name]
-                                                : renderContent(item, field.name)
-                                            }
-                                        </p>
-                                    </div>
-                                ))}
+        {loading && <Loader loadingMessage="Loading courses..." />}
 
-                                <div className='d-flex gap-2 justify-content-center flex-wrap'>
-                                    <Button variant="primary" onClick={() => setEditingItem(item)}> <FaEdit/> </Button>
-                                    <Button variant="danger" onClick={() => handleDelete(item.id)}> <FaTrash/> </Button>
-                                </div>
+        <Row xs={1} md={2} lg={3} xl={4} className="g-4">
+            {filteredCourses.map((course) => (
+                <Col key={course.id}>
+                    <Card className="h-100 shadow-sm">
+                        <Card.Img
+                            variant="top"
+                            src={course.structureContent || "/placeholder-course-image.jpg"}
+                            style={{ height: '200px', objectFit: 'cover' }}
+                        />
+                        <Card.Body>
+                            <Card.Title className="text-primary">{course.titleOfType}</Card.Title>
+                            <Card.Text className="text-muted">
+                                {course.instructor || 'Unknown Instructor'}
+                            </Card.Text>
+                            <Card.Text>{course.introductionOfType}</Card.Text>
+                            <div className="d-flex justify-content-between">
+                                <Badge bg="warning">
+                                    <FaStar /> {course.rating || '4.5'}
+                                </Badge>
+                                <Badge bg="info">
+                                    <FaUsers /> {course.students || '1000+'}
+                                </Badge>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+                        </Card.Body>
+                        <Card.Footer className="d-flex justify-content-between">
+                            <Button variant="outline-primary" onClick={() => setEditingItem(course)}>
+                                <FaEdit /> Edit
+                            </Button>
+                            <Button variant="outline-danger" onClick={() => handleDelete(course.id)}>
+                                <FaTrash /> Delete
+                            </Button>
+                        </Card.Footer>
+                    </Card>
+                </Col>
+            ))}
+        </Row>
 
-            <Dialog
-                header="Confirm Delete"
-                visible={showDeleteDialog}
-                onHide={() => setShowDeleteDialog(false)}
-                footer={(
-                    <div>
-                        <Button variant="secondary" onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
-                        <Button variant="danger" onClick={confirmDelete}>Delete</Button>
-                    </div>
-                )}
-            >
-                <p>Are you sure you want to delete this item?</p>
-            </Dialog>
-        </div>
+        <Modal
+            show={showForm || editingItem !== null}
+            onHide={() => {
+                setShowForm(false);
+                setEditingItem(null);
+            }}
+            size="lg"
+        >
+            <Modal.Header closeButton>
+                <Modal.Title>{editingItem ? "Edit Course" : "Add New Course"}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <CourseForm
+                    formConfig={formConfig}
+                    onSubmit={handleFormSubmit}
+                    editingItem={editingItem}
+                    requiredFields={['titleOfType', 'instructor', 'level', 'duration']}
+                    buttonLabel={editingItem ? "Update Course" : "Add Course"}
+                />
+            </Modal.Body>
+        </Modal>
+
+        <Modal
+            show={showDeleteDialog}
+            onHide={() => setShowDeleteDialog(false)}
+        >
+            <Modal.Header closeButton>
+                <Modal.Title>Confirm Delete</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>Are you sure you want to delete this course?</Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
+                <Button variant="danger" onClick={confirmDelete}>Delete</Button>
+            </Modal.Footer>
+        </Modal>
+    </Container>
     );
 };
 
