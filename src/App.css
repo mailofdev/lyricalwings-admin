@@ -1,4 +1,52 @@
-.App {
+html, body {
+  height: 100%;
+}
+
+.min-vh-100 {
+  min-height: 100vh;
+}
+
+footer {
+  background-color: #333;
+  color: white;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* .App {
   text-align: center;
 }
 
@@ -35,4 +83,4 @@
   to {
     transform: rotate(360deg);
   }
-}
+} */
