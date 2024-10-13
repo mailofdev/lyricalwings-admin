@@ -4,21 +4,22 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addPoem, fetchPoems, updatePoem, deletePoem } from '../redux/poemSlice';
 import DynamicList from '../components/DynamicList';
 import ConfirmDialog from '../components/ConfirmDialog'; // Import your ConfirmDialog component
-import { Container } from 'react-bootstrap';
+import { Container, Modal } from 'react-bootstrap'; // Import Modal and Button
 import Loader from '../components/Loader';
 
 const Poems = () => {
     const dispatch = useDispatch();
     const [editingItem, setEditingItem] = useState(null);
     const [showForm, setShowForm] = useState(false);
-    // const {poems, poemLoading:loading} = useSelector((state) => state.poems.poems);
     const { poems, poemLoading: loading } = useSelector((state) => ({
         poems: state.poems.poems,
-        poemLoading: state.poems.loading, 
+        poemLoading: state.poems.loading,
     }));
     const [hasFetched, setHasFetched] = useState(false);
     const [confirmDialogVisible, setConfirmDialogVisible] = useState(false); // State for ConfirmDialog
     const [itemToDelete, setItemToDelete] = useState(null); // State to hold the item to delete
+    const [showModal, setShowModal] = useState(false); // State for modal
+    const [selectedPoem, setSelectedPoem] = useState(null); // State to hold the selected poem data
 
     useEffect(() => {
         if (!hasFetched) {
@@ -84,7 +85,6 @@ const Poems = () => {
         { header: 'Title', key: 'title' },
         { header: 'Subtitle', key: 'htmlSubtitle' },
         { header: 'Content', key: 'htmlContent' },
-        { header: 'Type', key: 'type' }
     ];
 
     const handleFormSubmit = (data, formType) => {
@@ -94,7 +94,7 @@ const Poems = () => {
         } else if (formType === 'edit' && editingItem) {
             dispatch(updatePoem({ id: editingItem.id, poemData: data }));
             setEditingItem(null);
-            setShowForm(false);
+            setShowModal(false); // Close modal after update
         }
     };
 
@@ -119,6 +119,7 @@ const Poems = () => {
     const cancelForm = () => {
         setEditingItem(null);
         setShowForm(false);
+        setShowModal(false); // Also close modal on cancel
     };
 
     const handleAddNew = () => {
@@ -128,25 +129,7 @@ const Poems = () => {
 
     return (
         <Container>
-            {loading ? (
-                <Loader loadingMessage="Fetching poems..." /> // Show Loader while fetching
-            ) : (
-            <div className='my-2'>
-                <DynamicList
-                    data={poems}
-                    customHeadersAndKeys={customHeadersAndKeys}
-                    onAddNew={handleAddNew}
-                    onEdit={(item) => {
-                        setEditingItem(item);
-                        setShowForm(true);
-                    }}
-                    onDelete={handleDelete}
-                    noRecordMessage="No poems found."
-                    className="shadow-md bg-primary-subtle"
-                />
-            </div>
-             )}
-            {showForm && (
+             {showForm && (
                 <div className='my-2'>
                     <DynamicForm
                         className="shadow-md bg-primary-subtle"
@@ -159,6 +142,25 @@ const Poems = () => {
                     />
                 </div>
             )}
+            {loading ? (
+                <Loader loadingMessage="Fetching poems..." /> // Show Loader while fetching
+            ) : (
+                <div className='my-2'>
+                    <DynamicList
+                        data={poems}
+                        customHeadersAndKeys={customHeadersAndKeys}
+                        onAddNew={handleAddNew}
+                        onEdit={(item) => {
+                            setSelectedPoem(item); // Set the selected poem data
+                            setEditingItem(item); // Set editing item
+                            setShowModal(true); // Show the modal
+                        }}
+                        onDelete={handleDelete}
+                        noRecordMessage="No poems found."
+                        className="shadow-md bg-primary-subtle"
+                    />
+                </div>
+            )}
             <ConfirmDialog
                 visible={confirmDialogVisible}
                 onHide={cancelDelete}
@@ -167,6 +169,20 @@ const Poems = () => {
                 accept={confirmDelete}
                 reject={cancelDelete}
             />
+
+            <Modal size='lg' show={showModal} onHide={() => setShowModal(false)}>
+                    <DynamicForm
+                        className="shadow-md bg-primary-subtle"
+                        formConfig={formConfig}
+                        onSubmit={handleFormSubmit}
+                        editingItem={selectedPoem} 
+                        title="Edit Poem"
+                        formType="edit" 
+                        buttonLabel="Update"
+                        cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
+                    />
+
+            </Modal>
         </Container>
     );
 };

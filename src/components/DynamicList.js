@@ -81,23 +81,23 @@ const DynamicList = React.memo(({
           <Col key={index}>
             <Card className="h-100 shadow-sm">
               <Card.Header className="bg-primary bg-opacity-10">
-                <Card.Title className="text-primary">
-                  {customHeadersAndKeys[0]?.header}:
+                <Card.Title className="text-primary text-truncate">
+                  {/* {customHeadersAndKeys[0]?.header}: */}
                   {item[customHeadersAndKeys[0]?.key]?.toString() || '-'}
                 </Card.Title>
               </Card.Header>
               <Card.Body>
-  {customHeadersAndKeys.slice(1).map(({ header, key }, idx) => (
-    <div key={idx} className="mb-1">
-      <strong>{header}:</strong> 
-      {key === 'htmlContent' ? (
-        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item[key]) }} />
-      ) : (
-        item[key]?.toString() || '-'
-      )}
-    </div>
-  ))}
-</Card.Body>
+                {customHeadersAndKeys.slice(1).map(({ header, key }, idx) => (
+                  <div key={idx} className="mb-1">
+                    {/* <strong>{header}:</strong> */}
+                    {key === 'htmlContent' ? (
+                      <div className='text-truncate' dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item[key]) }} />
+                    ) : (
+                      item[key]?.toString() || '-'
+                    )}
+                  </div>
+                ))}
+              </Card.Body>
 
               <Card.Footer className="bg-light d-flex justify-content-between">
                 <Button variant="outline-primary" size="sm" onClick={() => onEdit(item)}>

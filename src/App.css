@@ -1,3 +1,19 @@
+.text-truncate {
+  display: -webkit-box; /* Use flexbox layout */
+  -webkit-box-orient: vertical; /* Set the orientation to vertical */
+  -webkit-line-clamp: 3; /* Limit to 3 lines */
+  overflow: hidden; /* Hide overflow */
+  text-overflow: ellipsis; /* Add ellipsis (...) at the end */
+  max-height: calc(3 * 1.2em); /* Adjust based on line height (1.2em is just an example) */
+  line-height: 1.2em; /* Set line height */
+}
+.p-dropdown-panel, .p-calendar-panel {
+  z-index: 9999 !important;
+}
+.p-datepicker {
+  z-index: 10000 !important;
+}
+
 html, body {
   height: 100%;
 }

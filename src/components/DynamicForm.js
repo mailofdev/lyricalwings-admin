@@ -8,7 +8,9 @@ import { InputNumber } from 'primereact/inputnumber';
 import { Chips } from 'primereact/chips';
 import JoditEditor from 'jodit-react';
 import { Password } from 'primereact/password';
+const styles = `
 
+`;
 const DynamicForm = React.memo(({ formConfig,
   onSubmit,
   className = '',
@@ -465,6 +467,8 @@ const DynamicForm = React.memo(({ formConfig,
   };
 
   return (
+    <>
+    <style>{styles}</style>
     <Form onSubmit={handleSubmit} className={`${className} p-4 rounded shadow-sm`}>
       {title && <h2 className="text-center mb-4">{title}</h2>}
       {errors.submit && <Alert variant="danger">{errors.submit}</Alert>}
@@ -496,6 +500,7 @@ const DynamicForm = React.memo(({ formConfig,
         </Button>
       </div>
     </Form>
+    </>
   );
 });
 
