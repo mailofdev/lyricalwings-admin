@@ -58,7 +58,6 @@ export const loginUser = createAsyncThunk(
       const user = {
         uid: userCredential.user.uid,
         email: userCredential.user.email,
-        role: userData.role,
         username: userData.username,
       };
 
@@ -72,15 +71,15 @@ export const loginUser = createAsyncThunk(
 
 export const addNewUser = createAsyncThunk(
   'auth/addNewUser',
-  async ({ email, password, username, role }, { rejectWithValue }) => {
+  async ({ email, password, username,  }, { rejectWithValue }) => {
     try {
       const auth = getAuth();
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
       const userRef = ref(db, `users/${userCredential.user.uid}`);
-      await set(userRef, { email, username, role });
+      await set(userRef, { email, username,  });
 
-      return { uid: userCredential.user.uid, email, username, role };
+      return { uid: userCredential.user.uid, email, username,  };
     } catch (error) {
       return rejectWithValue(handleFirebaseError(error));
     }
@@ -89,7 +88,7 @@ export const addNewUser = createAsyncThunk(
 
 export const updateUserInfo = createAsyncThunk(
   'auth/updateUserInfo',
-  async ({ uid, username, email, role }, { rejectWithValue }) => {
+  async ({ uid, username, email }, { rejectWithValue }) => {
     try {
       const auth = getAuth();
       const user = auth.currentUser;
@@ -104,9 +103,9 @@ export const updateUserInfo = createAsyncThunk(
       }
 
       const userRef = ref(db, `users/${uid}`);
-      await update(userRef, { username, role });
+      await update(userRef, { username });
 
-      return { uid, username, email, role };
+      return { uid, username, email };
     } catch (error) {
       return rejectWithValue(handleFirebaseError(error));
     }

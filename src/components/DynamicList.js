@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Table } from 'react-bootstrap';
-import { Pagination } from 'react-bootstrap';
-import { Form, Button, InputGroup } from 'react-bootstrap';
-import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
+import { Pagination, Form, Button, InputGroup, Card, Row, Col, Container } from 'react-bootstrap';
+import { FaEdit, FaPlus, FaTrash, FaSearch } from 'react-icons/fa';
+import DOMPurify from 'dompurify'; // Import DOMPurify for sanitizing HTML
 
-const DynamicList = ({ data, itemsPerPage = 10, onEdit, onDelete, onAddNew }) => {
+const DynamicList = React.memo(({
+  data,
+  itemsPerPage = 12,
+  onEdit,
+  onDelete,
+  onAddNew,
+  noRecordMessage,
+  className = '',
+  customHeadersAndKeys = []
+}) => {
   const [list, setList] = useState([]);
   const [filteredList, setFilteredList] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -41,7 +49,7 @@ const DynamicList = ({ data, itemsPerPage = 10, onEdit, onDelete, onAddNew }) =>
       );
     }
     return (
-      <Pagination>
+      <Pagination className="justify-content-center mt-4">
         <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
         {pageNumbers}
         <Pagination.Next onClick={() => paginate(currentPage + 1)} disabled={currentPage === Math.ceil(filteredList.length / itemsPerPage)} />
@@ -50,81 +58,69 @@ const DynamicList = ({ data, itemsPerPage = 10, onEdit, onDelete, onAddNew }) =>
   };
 
   return (
-    <div className="container mt-4">
-      <div className="row mb-3">
-        <div className="col-md-2 mb-2">
-          <Button variant="primary" onClick={onAddNew}>
-            <FaPlus /> Add New
-          </Button>
-        </div>
-        <div className="col-md-10 mb-2">
-          <InputGroup>
-            <Form.Control
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-
-          </InputGroup>
-        </div>
+    <Container fluid className={`${className} p-4 rounded shadow-sm`}>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <Button variant="primary" onClick={onAddNew} className="d-flex align-items-center">
+          <FaPlus className="me-2" /> Add New
+        </Button>
+        <InputGroup className="w-auto">
+          <InputGroup.Text>
+            <FaSearch />
+          </InputGroup.Text>
+          <Form.Control
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </InputGroup>
       </div>
 
-      <div className="table-responsive">
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              {Object.keys(list[0] || {}).map((key) => (
-                <th key={key}>{key.charAt(0).toUpperCase() + key.slice(1)}</th>
-              ))}
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.map((item, index) => (
-              <tr key={index} className={item.role === 'super' ? 'table-secondary' : ''}>
-                {Object.values(item).map((value, idx) => (
-                  <td key={idx}>{value.toString()}</td>
-                ))}
-                <td>
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
-                    className="me-2"
-                    onClick={() => onEdit(item)}
-                    disabled={item.role === 'super'}  // Disable for 'super' role
-                  >
-                    <FaEdit />
-                  </Button>
-                  <Button
-                    variant="outline-danger"
-                    size="sm"
-                    onClick={() => onDelete(item)}
-                    disabled={item.role === 'super'}  // Disable for 'super' role
-                  >
-                    <FaTrash />
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-
-        </Table>
-      </div>
-
-      {filteredList.length > itemsPerPage && (
-        <div className="d-flex justify-content-center mt-3">
-          {renderPagination()}
-        </div>
+      <Row xs={1} md={2} lg={2} xl={3} className="g-4">
+        {currentItems.map((item, index) => (
+          <Col key={index}>
+            <Card className="h-100 shadow-sm">
+              <Card.Header className="bg-primary bg-opacity-10">
+                <Card.Title className="text-primary">
+                  {customHeadersAndKeys[0]?.header}:
+                  {item[customHeadersAndKeys[0]?.key]?.toString() || '-'}
+                </Card.Title>
+              </Card.Header>
+              <Card.Body>
+  {customHeadersAndKeys.slice(1).map(({ header, key }, idx) => (
+    <div key={idx} className="mb-1">
+      <strong>{header}:</strong> 
+      {key === 'htmlContent' ? (
+        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item[key]) }} />
+      ) : (
+        item[key]?.toString() || '-'
       )}
+    </div>
+  ))}
+</Card.Body>
+
+              <Card.Footer className="bg-light d-flex justify-content-between">
+                <Button variant="outline-primary" size="sm" onClick={() => onEdit(item)}>
+                  <FaEdit className="me-1" /> Edit
+                </Button>
+                <Button variant="outline-danger" size="sm" onClick={() => onDelete(item)}>
+                  <FaTrash className="me-1" /> Delete
+                </Button>
+              </Card.Footer>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      {filteredList.length > itemsPerPage && renderPagination()}
 
       {filteredList.length === 0 && (
         <div className="text-center mt-4">
-          <p className="text-muted">No records found</p>
+          <p className="text-muted">{noRecordMessage}</p>
         </div>
       )}
-    </div>
+    </Container>
   );
-};
+});
 
 export default DynamicList;

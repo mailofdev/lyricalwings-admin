@@ -65,6 +65,9 @@ function Header() {
 
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="mx-auto">
+          <Nav.Link as={Link} to="/dashboard" onClick={() => handleNavClick('/dashboard')}>
+              Dashboard
+            </Nav.Link>
             <Nav.Link as={Link} to="/poems" onClick={() => handleNavClick('/poems')}>
               Poems
             </Nav.Link>

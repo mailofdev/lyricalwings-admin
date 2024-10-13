@@ -9,17 +9,16 @@ import { Chips } from 'primereact/chips';
 import JoditEditor from 'jodit-react';
 import { Password } from 'primereact/password';
 
-const DynamicForm = ({
-  formConfig,
+const DynamicForm = React.memo(({ formConfig,
   onSubmit,
   className = '',
   title = '',
   requiredFields = [],
   buttonLabel = 'Submit',
-  cancelConfig = { label: 'Cancel', onCancel: () => {} }, 
+  cancelConfig = { label: 'Cancel', onCancel: () => { } },
   editingItem = null,
-  maxFileSize
-}) => {
+  maxFileSize }) => {
+
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
   const fileUploadRefs = useRef({});
@@ -92,9 +91,9 @@ const DynamicForm = ({
   };
 
   const validateEmail = (email) => {
-    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    const re = /^(([^<>()[]\\.,;:\s@"]+(\.[^<>()[]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
-  };
+};
 
   const validateField = (name, value) => {
     if (requiredFields.includes(name) && (!value || (Array.isArray(value) && value.length === 0))) {
@@ -193,7 +192,7 @@ const DynamicForm = ({
       case 'headingTitle':
         return (
           <>
-           <div className='test' style={{color:'red'}}>{subField.label}</div>
+            <div className='test' style={{ color: 'red' }}>{subField.label}</div>
           </>
         );
       case 'input':
@@ -375,7 +374,7 @@ const DynamicForm = ({
         return (
           <div>
             <div className="my-2 gap-2 d-flex flex-row align-items-center">
-              <RadioButton 
+              <RadioButton
                 inputId={`${subField.name}-file`}
                 name={`${subField.name}-type`}
                 value="file"
@@ -383,8 +382,8 @@ const DynamicForm = ({
                 checked={uploadTypes[subField.name] === 'file'}
               />
               <label htmlFor={`${subField.name}-file`} className="ml-2">File</label>
-              
-              <RadioButton 
+
+              <RadioButton
                 inputId={`${subField.name}-video`}
                 name={`${subField.name}-type`}
                 value="video"
@@ -466,37 +465,38 @@ const DynamicForm = ({
   };
 
   return (
-    <Form onSubmit={handleSubmit} className={`${className} p-4 bg-light rounded shadow-sm`}>
-    {title && <h2 className="text-center mb-4">{title}</h2>}
-    {errors.submit && <Alert variant="danger">{errors.submit}</Alert>}
-    {formConfig.map((field, fieldIndex) => (
-      <React.Fragment key={fieldIndex}>
-        {Array.isArray(field.fields) && field.fields.map((subField, index) => (
-          <Form.Group as={Row} className="mb-3" key={index}>
-            <Form.Label column sm={3}>
-              {subField.label}
-            </Form.Label>
-            <Col sm={9}>
-              {renderField(subField, index)}
-              {errors[subField.name] && <Form.Text className="text-danger">{errors[subField.name]}</Form.Text>}
-            </Col>
-          </Form.Group>
-        ))}
-      </React.Fragment>
-    ))}
-    <div className="justify-content-center gap-2 d-flex">
-      <Button type="submit" className="btn-primary">
-        {buttonLabel}
-      </Button>
-      <Button
-        type="button"
-        className="btn-secondary"
-        onClick={cancelConfig.onCancel}
-      >
-        {cancelConfig.label}
-      </Button>
-    </div>
-  </Form>
-    );
-  }
-    export default DynamicForm;
+    <Form onSubmit={handleSubmit} className={`${className} p-4 rounded shadow-sm`}>
+      {title && <h2 className="text-center mb-4">{title}</h2>}
+      {errors.submit && <Alert variant="danger">{errors.submit}</Alert>}
+      {formConfig.map((field, fieldIndex) => (
+        <React.Fragment key={fieldIndex}>
+          {Array.isArray(field.fields) && field.fields.map((subField, index) => (
+            <Form.Group as={Row} className="mb-3" key={index}>
+              <Form.Label column sm={3}>
+                {subField.label}
+              </Form.Label>
+              <Col sm={9}>
+                {renderField(subField, index)}
+                {errors[subField.name] && <Form.Text className="text-danger">{errors[subField.name]}</Form.Text>}
+              </Col>
+            </Form.Group>
+          ))}
+        </React.Fragment>
+      ))}
+      <div className="justify-content-center gap-2 d-flex">
+        <Button type="submit" className="btn-primary">
+          {buttonLabel}
+        </Button>
+        <Button
+          type="button"
+          className="btn-secondary"
+          onClick={cancelConfig.onCancel}
+        >
+          {cancelConfig.label}
+        </Button>
+      </div>
+    </Form>
+  );
+});
+
+export default DynamicForm;

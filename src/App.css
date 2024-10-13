@@ -6,17 +6,9 @@ html, body {
   min-height: 100vh;
 }
 
-footer {
-  background-color: #333;
-  color: white;
+ol, ul {
+  padding-left: unset !important;
 }
-
-
-
-
-
-
-
 
 
 
