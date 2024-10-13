@@ -34,10 +34,10 @@ function Header() {
 
   const handleSignOut = () => {
     dispatch(signoutUser())
-        .unwrap()
-        .then(() => navigate('/'))
-        .catch((error) => console.error('Sign out error:', error));
-};
+      .unwrap()
+      .then(() => navigate('/'))
+      .catch((error) => console.error('Sign out error:', error));
+  };
 
   return (
     <Navbar
@@ -65,18 +65,22 @@ function Header() {
 
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="mx-auto">
-            <Nav.Link as={Link} to="/dashboard" onClick={() => handleNavClick('/dashboard')}>
-              Dashboard
+            <Nav.Link as={Link} to="/poems" onClick={() => handleNavClick('/poems')}>
+              Poems
             </Nav.Link>
-            <Nav.Link as={Link} to="/about" onClick={() => handleNavClick('/about')}>
-              About
+            <Nav.Link as={Link} to="/stories" onClick={() => handleNavClick('/stories')}>
+              Stories
             </Nav.Link>
-            <Nav.Link as={Link} to="/services" onClick={() => handleNavClick('/services')}>
-              Services
+            <Nav.Link as={Link} to="/novels" onClick={() => handleNavClick('/novels')}>
+              Novels
             </Nav.Link>
-            <Nav.Link as={Link} to="/contact" onClick={() => handleNavClick('/contact')}>
-              Contact
+            <Nav.Link as={Link} to="/books" onClick={() => handleNavClick('/books')}>
+              Books
             </Nav.Link>
+            <Nav.Link as={Link} to="/courses" onClick={() => handleNavClick('/courses')}>
+              Courses
+            </Nav.Link>
+
           </Nav>
 
           <Nav>
