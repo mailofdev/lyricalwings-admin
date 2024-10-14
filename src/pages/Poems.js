@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import DynamicForm from '../components/DynamicForm';
 import { useDispatch, useSelector } from 'react-redux';
-import { addPoem, fetchPoems, updatePoem, deletePoem } from '../redux/poemSlice';
+import { addPoem, fetchPoems, updatePoem, deletePoem, addLike, removeLike, addComment } from '../redux/poemSlice';
 import DynamicList from '../components/DynamicList';
-import ConfirmDialog from '../components/ConfirmDialog'; // Import your ConfirmDialog component
-import { Container, Modal } from 'react-bootstrap'; // Import Modal and Button
+import ConfirmDialog from '../components/ConfirmDialog';
+import { Container, Modal, Form, Button } from 'react-bootstrap';
 import Loader from '../components/Loader';
 
 const Poems = () => {
@@ -15,12 +15,15 @@ const Poems = () => {
         poems: state.poems.poems,
         poemLoading: state.poems.loading,
     }));
-    const reversedPoems = [...poems].reverse(); 
+    const reversedPoems = [...poems].reverse();
+    const auth = useSelector((state) => state.auth);
+    const user = auth.user || 'Anonymous';
     const [hasFetched, setHasFetched] = useState(false);
-    const [confirmDialogVisible, setConfirmDialogVisible] = useState(false); 
-    const [itemToDelete, setItemToDelete] = useState(null); 
-    const [showModal, setShowModal] = useState(false); 
-    const [selectedPoem, setSelectedPoem] = useState(null); 
+    const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedPoem, setSelectedPoem] = useState(null);
+    const [commentTexts, setCommentTexts] = useState({});
 
     useEffect(() => {
         if (!hasFetched) {
@@ -86,6 +89,8 @@ const Poems = () => {
         { header: 'Title', key: 'title' },
         { header: 'Subtitle', key: 'htmlSubtitle' },
         { header: 'Content', key: 'htmlContent' },
+        { header: 'Likes', key: 'likes', render: (likes) => likes ? Object.keys(likes).length : 0 },
+        { header: 'Comments', key: 'comments', render: (comments) => comments ? Object.keys(comments).length : 0 },
     ];
 
     const handleFormSubmit = (data, formType) => {
@@ -95,32 +100,32 @@ const Poems = () => {
         } else if (formType === 'edit' && editingItem) {
             dispatch(updatePoem({ id: editingItem.id, poemData: data }));
             setEditingItem(null);
-            setShowModal(false); // Close modal after update
+            setShowModal(false);
         }
     };
 
     const handleDelete = (item) => {
-        setItemToDelete(item); // Set the item to delete
-        setConfirmDialogVisible(true); // Show the ConfirmDialog
+        setItemToDelete(item);
+        setConfirmDialogVisible(true);
     };
 
     const confirmDelete = () => {
         if (itemToDelete) {
             dispatch(deletePoem(itemToDelete.id));
-            setItemToDelete(null); // Clear the item to delete
+            setItemToDelete(null);
         }
-        setConfirmDialogVisible(false); // Close the dialog
+        setConfirmDialogVisible(false);
     };
 
     const cancelDelete = () => {
-        setItemToDelete(null); // Clear the item to delete
-        setConfirmDialogVisible(false); // Close the dialog
+        setItemToDelete(null);
+        setConfirmDialogVisible(false);
     };
 
     const cancelForm = () => {
         setEditingItem(null);
         setShowForm(false);
-        setShowModal(false); // Also close modal on cancel
+        setShowModal(false);
     };
 
     const handleAddNew = () => {
@@ -128,23 +133,62 @@ const Poems = () => {
         setShowForm(true);
     };
 
+    const handleLike = (poemId) => {
+        if (user) {
+            const poem = poems.find(p => p.id === poemId);
+            if (poem && poem.likes && poem.likes[user.id]) {
+                dispatch(removeLike({ poemId, userName:user.username }));
+            } else {
+                dispatch(addLike({ poemId, userName:user.username }));
+            }
+        }
+    };
+
+    const handleCommentChange = (poemId, text) => {
+        setCommentTexts(prev => ({ ...prev, [poemId]: text }));
+    };
+
+    const handleComment = (poemId) => {
+        const commentText = commentTexts[poemId];
+        if (user && commentText && commentText.trim()) {
+            dispatch(addComment({ poemId, userName:user.username, comment: commentText }));
+            setCommentTexts(prev => ({ ...prev, [poemId]: '' }));
+        }
+    };
+
+    const renderCommentForm = (poemId) => (
+        <Form onSubmit={(e) => { e.preventDefault(); handleComment(poemId); }}>
+            <Form.Group>
+                <Form.Control
+                    type="text"
+                    placeholder="Add a comment..."
+                    value={commentTexts[poemId] || ''}
+                    onChange={(e) => handleCommentChange(poemId, e.target.value)}
+                />
+            </Form.Group>
+            <Button type="submit" variant="primary" size="sm" className="mt-2">
+                Post Comment
+            </Button>
+        </Form>
+    );
+
     return (
         <Container>
-             {showForm && (
+            {showForm && (
                 <div className='my-2'>
                     <DynamicForm
                         className="shadow-md bg-primary-subtle"
                         formConfig={formConfig}
                         onSubmit={handleFormSubmit}
                         editingItem={editingItem}
-                        title={editingItem ? 'Edit poems' : 'Add poems'}
+                        title={editingItem ? 'Edit poem' : 'Add poem'}
                         formType={editingItem ? 'edit' : 'add'}
                         cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
                     />
                 </div>
             )}
             {loading ? (
-                <Loader loadingMessage="Fetching poems..." /> // Show Loader while fetching
+                <Loader loadingMessage="Fetching poems..." />
             ) : (
                 <div className='my-2'>
                     <DynamicList
@@ -152,11 +196,13 @@ const Poems = () => {
                         customHeadersAndKeys={customHeadersAndKeys}
                         onAddNew={handleAddNew}
                         onEdit={(item) => {
-                            setSelectedPoem(item); // Set the selected poem data
-                            setEditingItem(item); // Set editing item
-                            setShowModal(true); // Show the modal
+                            setSelectedPoem(item);
+                            setEditingItem(item);
+                            setShowModal(true);
                         }}
                         onDelete={handleDelete}
+                        onLike={handleLike}
+                        renderCommentForm={renderCommentForm}
                         noRecordMessage="No poems found."
                         className="shadow-md bg-primary-subtle"
                     />
@@ -170,19 +216,17 @@ const Poems = () => {
                 accept={confirmDelete}
                 reject={cancelDelete}
             />
-
             <Modal size='lg' show={showModal} onHide={() => setShowModal(false)}>
-                    <DynamicForm
-                        className="shadow-md bg-primary-subtle"
-                        formConfig={formConfig}
-                        onSubmit={handleFormSubmit}
-                        editingItem={selectedPoem} 
-                        title="Edit Poem"
-                        formType="edit" 
-                        buttonLabel="Update"
-                        cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
-                    />
-
+                <DynamicForm
+                    className="shadow-md bg-primary-subtle"
+                    formConfig={formConfig}
+                    onSubmit={handleFormSubmit}
+                    editingItem={selectedPoem}
+                    title="Edit Poem"
+                    formType="edit"
+                    buttonLabel="Update"
+                    cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
+                />
             </Modal>
         </Container>
     );

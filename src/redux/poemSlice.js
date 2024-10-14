@@ -32,6 +32,34 @@ export const deletePoem = createAsyncThunk('poems/deletePoem', async (id) => {
     return id;
 });
 
+// New async thunk for adding a like to a poem
+export const addLike = createAsyncThunk('poems/addLike', async ({ poemId, userName }) => {
+    const likeRef = ref(db, `poems/${poemId}/likes/${userName}`);
+    await set(likeRef, true);
+    return { poemId, userName };
+});
+
+// New async thunk for removing a like from a poem
+export const removeLike = createAsyncThunk('poems/removeLike', async ({ poemId, userName }) => {
+    const likeRef = ref(db, `poems/${poemId}/likes/${userName}`);
+    await remove(likeRef);
+    return { poemId, userName };
+});
+
+// New async thunk for adding a comment to a poem
+export const addComment = createAsyncThunk('poems/addComment', async ({ poemId, userName, comment }) => {
+    const commentsRef = ref(db, `poems/${poemId}/comments`);
+    const newCommentRef = push(commentsRef);
+    const commentData = {
+        userName,
+        text: comment,
+        timestamp: Date.now()
+    };
+    await set(newCommentRef, commentData);
+    return { poemId, commentId: newCommentRef.key, ...commentData };
+});
+
+
 const poemSlice = createSlice({
     name: 'poems',
     initialState: {
@@ -64,6 +92,29 @@ const poemSlice = createSlice({
             })
             .addCase(deletePoem.fulfilled, (state, action) => {
                 state.poems = state.poems.filter(poem => poem.id !== action.payload);
+            })
+            .addCase(addLike.fulfilled, (state, action) => {
+                const { poemId, userName } = action.payload;
+                const poem = state.poems.find(p => p.id === poemId);
+                if (poem) {
+                    if (!poem.likes) poem.likes = {};
+                    poem.likes[userName] = true;
+                }
+            })
+            .addCase(removeLike.fulfilled, (state, action) => {
+                const { poemId, userName } = action.payload;
+                const poem = state.poems.find(p => p.id === poemId);
+                if (poem && poem.likes) {
+                    delete poem.likes[userName];
+                }
+            })
+            .addCase(addComment.fulfilled, (state, action) => {
+                const { poemId, commentId, ...commentData } = action.payload;
+                const poem = state.poems.find(p => p.id === poemId);
+                if (poem) {
+                    if (!poem.comments) poem.comments = {};
+                    poem.comments[commentId] = commentData;
+                }
             });
     },
 });
