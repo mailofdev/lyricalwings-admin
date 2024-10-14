@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addPoem, fetchPoems, updatePoem, deletePoem, addLike, removeLike, addComment } from '../redux/poemSlice';
 import DynamicList from '../components/DynamicList';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { Container, Modal, Form, Button } from 'react-bootstrap';
+import { Modal, Form, Button } from 'react-bootstrap';
 import Loader from '../components/Loader';
 
 const Poems = () => {
@@ -97,10 +97,8 @@ const Poems = () => {
         if (formType === 'add') {
             dispatch(addPoem(data));
             setShowForm(false);
-        } else if (formType === 'edit' && editingItem) {
-            dispatch(updatePoem({ id: editingItem.id, poemData: data }));
-            setEditingItem(null);
-            setShowModal(false);
+        } else if (formType === 'edit') {
+            dispatch(updatePoem({ id: data.id, poemData: data }));
         }
     };
 
@@ -137,9 +135,9 @@ const Poems = () => {
         if (user) {
             const poem = poems.find(p => p.id === poemId);
             if (poem && poem.likes && poem.likes[user.id]) {
-                dispatch(removeLike({ poemId, userName:user.username }));
+                dispatch(removeLike({ poemId, userName: user.username }));
             } else {
-                dispatch(addLike({ poemId, userName:user.username }));
+                dispatch(addLike({ poemId, userName: user.username }));
             }
         }
     };
@@ -151,13 +149,13 @@ const Poems = () => {
     const handleComment = (poemId) => {
         const commentText = commentTexts[poemId];
         if (user && commentText && commentText.trim()) {
-            dispatch(addComment({ poemId, userName:user.username, comment: commentText }));
+            dispatch(addComment({ poemId, userName: user.username, comment: commentText }));
             setCommentTexts(prev => ({ ...prev, [poemId]: '' }));
         }
     };
 
     const renderCommentForm = (poemId) => (
-        <Form onSubmit={(e) => { e.preventDefault(); handleComment(poemId); }}>
+        <Form className='d-flex justify-content-between' onSubmit={(e) => { e.preventDefault(); handleComment(poemId); }}>
             <Form.Group>
                 <Form.Control
                     type="text"
@@ -173,11 +171,11 @@ const Poems = () => {
     );
 
     return (
-        <Container>
+        <div>
             {showForm && (
                 <div className='my-2'>
                     <DynamicForm
-                        className="shadow-md bg-primary-subtle"
+                        className="shadow-md funky-list funky-card"
                         formConfig={formConfig}
                         onSubmit={handleFormSubmit}
                         editingItem={editingItem}
@@ -195,16 +193,13 @@ const Poems = () => {
                         data={reversedPoems}
                         customHeadersAndKeys={customHeadersAndKeys}
                         onAddNew={handleAddNew}
-                        onEdit={(item) => {
-                            setSelectedPoem(item);
-                            setEditingItem(item);
-                            setShowModal(true);
-                        }}
+                        onEdit={handleFormSubmit}
                         onDelete={handleDelete}
                         onLike={handleLike}
                         renderCommentForm={renderCommentForm}
                         noRecordMessage="No poems found."
-                        className="shadow-md bg-primary-subtle"
+                        className="shadow-md"
+                        formConfig={formConfig}  // Add this line
                     />
                 </div>
             )}
@@ -228,7 +223,7 @@ const Poems = () => {
                     cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
                 />
             </Modal>
-        </Container>
+        </div>
     );
 };
 
