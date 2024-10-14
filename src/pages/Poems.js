@@ -15,11 +15,12 @@ const Poems = () => {
         poems: state.poems.poems,
         poemLoading: state.poems.loading,
     }));
+    const reversedPoems = [...poems].reverse(); 
     const [hasFetched, setHasFetched] = useState(false);
-    const [confirmDialogVisible, setConfirmDialogVisible] = useState(false); // State for ConfirmDialog
-    const [itemToDelete, setItemToDelete] = useState(null); // State to hold the item to delete
-    const [showModal, setShowModal] = useState(false); // State for modal
-    const [selectedPoem, setSelectedPoem] = useState(null); // State to hold the selected poem data
+    const [confirmDialogVisible, setConfirmDialogVisible] = useState(false); 
+    const [itemToDelete, setItemToDelete] = useState(null); 
+    const [showModal, setShowModal] = useState(false); 
+    const [selectedPoem, setSelectedPoem] = useState(null); 
 
     useEffect(() => {
         if (!hasFetched) {
@@ -147,7 +148,7 @@ const Poems = () => {
             ) : (
                 <div className='my-2'>
                     <DynamicList
-                        data={poems}
+                        data={reversedPoems}
                         customHeadersAndKeys={customHeadersAndKeys}
                         onAddNew={handleAddNew}
                         onEdit={(item) => {

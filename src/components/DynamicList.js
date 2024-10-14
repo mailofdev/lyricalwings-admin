@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Pagination, Form, Button, InputGroup, Card, Row, Col, Container } from 'react-bootstrap';
 import { FaEdit, FaPlus, FaTrash, FaSearch } from 'react-icons/fa';
-import DOMPurify from 'dompurify'; // Import DOMPurify for sanitizing HTML
+import DOMPurify from 'dompurify';
 
 const DynamicList = React.memo(({
   data,
-  itemsPerPage = 12,
+  itemsPerPage = 9,
   onEdit,
   onDelete,
   onAddNew,
@@ -18,11 +18,13 @@ const DynamicList = React.memo(({
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // Update list when data changes
   useEffect(() => {
     setList(data);
-    setFilteredList(data);
+    setFilteredList(data); // Initialize filtered list with all data
   }, [data]);
 
+  // Filter list based on search term
   useEffect(() => {
     const results = list.filter(item =>
       Object.values(item).some(val =>
@@ -30,29 +32,45 @@ const DynamicList = React.memo(({
       )
     );
     setFilteredList(results);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page when search term changes
   }, [searchTerm, list]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredList.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = filteredList.slice(indexOfFirstItem, indexOfLastItem); // Slicing the filtered list
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = (pageNumber) => {
+    if (pageNumber > 0 && pageNumber <= Math.ceil(filteredList.length / itemsPerPage)) {
+      setCurrentPage(pageNumber);
+    }
+  };
 
   const renderPagination = () => {
+    const totalItems = filteredList.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+    if (totalPages <= 1) return null; // No pagination needed if only one page
+
     const pageNumbers = [];
-    for (let i = 1; i <= Math.ceil(filteredList.length / itemsPerPage); i++) {
+    for (let i = 1; i <= totalPages; i++) {
       pageNumbers.push(
         <Pagination.Item key={i} active={i === currentPage} onClick={() => paginate(i)}>
           {i}
         </Pagination.Item>
       );
     }
+
     return (
       <Pagination className="justify-content-center mt-4">
-        <Pagination.Prev onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} />
+        <Pagination.Prev 
+          onClick={() => paginate(currentPage - 1)} 
+          disabled={currentPage === 1}
+        />
         {pageNumbers}
-        <Pagination.Next onClick={() => paginate(currentPage + 1)} disabled={currentPage === Math.ceil(filteredList.length / itemsPerPage)} />
+        <Pagination.Next 
+          onClick={() => paginate(currentPage + 1)} 
+          disabled={currentPage === totalPages}
+        />
       </Pagination>
     );
   };
@@ -63,6 +81,7 @@ const DynamicList = React.memo(({
         <Button variant="primary" onClick={onAddNew} className="d-flex align-items-center">
           <FaPlus className="me-2" /> Add New
         </Button>
+        <h4>Total records: {data.length}</h4>
         <InputGroup className="w-auto">
           <InputGroup.Text>
             <FaSearch />
@@ -82,14 +101,12 @@ const DynamicList = React.memo(({
             <Card className="h-100 shadow-sm">
               <Card.Header className="bg-primary bg-opacity-10">
                 <Card.Title className="text-primary text-truncate">
-                  {/* {customHeadersAndKeys[0]?.header}: */}
                   {item[customHeadersAndKeys[0]?.key]?.toString() || '-'}
                 </Card.Title>
               </Card.Header>
               <Card.Body>
                 {customHeadersAndKeys.slice(1).map(({ header, key }, idx) => (
                   <div key={idx} className="mb-1">
-                    {/* <strong>{header}:</strong> */}
                     {key === 'htmlContent' ? (
                       <div className='text-truncate' dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item[key]) }} />
                     ) : (
@@ -112,7 +129,7 @@ const DynamicList = React.memo(({
         ))}
       </Row>
 
-      {filteredList.length > itemsPerPage && renderPagination()}
+      {renderPagination()}
 
       {filteredList.length === 0 && (
         <div className="text-center mt-4">
