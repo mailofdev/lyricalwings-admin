@@ -155,7 +155,7 @@ const Poems = () => {
     };
 
     const renderCommentForm = (poemId) => (
-        <Form className='d-flex justify-content-between' onSubmit={(e) => { e.preventDefault(); handleComment(poemId); }}>
+        <Form className='d-flex justify-content-between my-2 mt-4' onSubmit={(e) => { e.preventDefault(); handleComment(poemId); }}>
             <Form.Group>
                 <Form.Control
                     type="text"
@@ -164,7 +164,7 @@ const Poems = () => {
                     onChange={(e) => handleCommentChange(poemId, e.target.value)}
                 />
             </Form.Group>
-            <Button type="submit" variant="primary" size="sm" className="mt-2">
+            <Button type="submit" variant="primary" size="sm">
                 Post Comment
             </Button>
         </Form>
