@@ -1,66 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Pagination, Form, Button, InputGroup, Card, Row, Col, Container, Badge, Modal } from 'react-bootstrap';
-import { FaEdit, FaPlus, FaTrash, FaSearch, FaHeart, FaRegHeart, FaComment, FaMagic, FaEye } from 'react-icons/fa';
+import { FaEdit, FaPlus, FaTrash, FaSearch, FaHeart, FaRegHeart, FaComment, FaEye } from 'react-icons/fa';
 import DOMPurify from 'dompurify';
-import DynamicForm from './DynamicForm'; // Make sure to import DynamicForm
-
-// Custom CSS for funky design (unchanged)
-const customStyles = `
-  .funky-list {
-    background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
-    border-radius: 15px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
-  }
-  .funky-card {
-    border-radius: 15px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
-  .funky-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
-  }
-  .funky-header {
-    background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
-    color: #ffffff;
-    font-weight: bold;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-  }
-  .funky-button {
-    border-radius: 25px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: bold;
-    transition: all 0.3s ease;
-  }
-  .funky-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 7px 14px rgba(0,0,0,0.18), 0 5px 5px rgba(0,0,0,0.12);
-  }
-  .funky-input {
-    border-radius: 25px;
-    border: 2px solid #8fd3f4;
-  }
-  .funky-badge {
-    font-size: 1.2em;
-    padding: 8px 15px;
-    border-radius: 15px;
-  }
-  .funky-comment-card {
-    border-radius: 10px;
-    border-left: 5px solid #84fab0;
-  }
-  .funky-pagination .page-item .page-link {
-    border-radius: 50%;
-    margin: 0 5px;
-    color: #8fd3f4;
-    border-color: #8fd3f4;
-  }
-  .funky-pagination .page-item.active .page-link {
-    background-color: #8fd3f4;
-    border-color: #8fd3f4;
-  }
-`;
+import DynamicForm from './DynamicForm'; // Ensure this import points to the correct location
 
 const DynamicList = ({
   data,
@@ -73,30 +15,36 @@ const DynamicList = ({
   noRecordMessage,
   className = '',
   customHeadersAndKeys = [],
-  formConfig
+  formConfig,
+  actionButtons
+
 }) => {
-  const [list, setList] = useState([]);
   const [filteredList, setFilteredList] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedType, setSelectedType] = useState(null);
 
   useEffect(() => {
-    setList(data);
-    setFilteredList(data);
-  }, [data]);
+    let results = data;
 
-  useEffect(() => {
-    const results = list.filter(item =>
-      Object.values(item).some(val =>
-        val && val.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    );
+    if (searchTerm) {
+      results = results.filter(item =>
+        Object.values(item).some(val =>
+          val && val.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    }
+
+    if (selectedType) {
+      results = results.filter(item => item.type === selectedType);
+    }
+
     setFilteredList(results);
     setCurrentPage(1);
-  }, [searchTerm, list]);
+  }, [searchTerm, data, selectedType]);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -174,6 +122,35 @@ const DynamicList = ({
     handleCloseModal();
   };
 
+  const renderTypes = () => {
+    return (
+      <div className="d-flex justify-content-center flex-wrap">
+        <Button 
+          key="all"
+          className="funky-button mx-2 mb-2"
+          variant={selectedType === null ? "primary" : "outline-primary"}
+          onClick={() => handleTypeSelect(null)}
+        >
+          All Types
+        </Button>
+        {actionButtons.map((item, index) => (
+          <Button 
+            key={index} 
+            className="funky-button mx-2 mb-2"
+            variant={selectedType === item.value ? "primary" : "outline-primary"}
+            onClick={() => handleTypeSelect(item.value)}
+          >
+            {item.label}
+          </Button>
+        ))}
+      </div>
+    );
+  };
+
+  const handleTypeSelect = (value) => {
+    setSelectedType(value);
+  };
+
   const renderModalContent = () => {
     if (!selectedItem) return null;
 
@@ -229,76 +206,75 @@ const DynamicList = ({
   };
 
   return (
-    <>
-      {/* <style>{customStyles}</style> */}
-      <Container fluid className={`${className} py-4 funky-list`}>
-        <Row className="mb-4">
-          <Col md={4}>
-            <Button variant="success" onClick={onAddNew} className="d-flex align-items-center w-100 justify-content-center funky-button">
-              <FaPlus className="me-2" /> Add New
-            </Button>
+    <Container fluid className={`${className} py-4 funky-list`}>
+      <Row className="mb-4">
+        <Col md={4}>
+          <Button variant="success" onClick={onAddNew} className="d-flex align-items-center w-100 justify-content-center funky-button">
+            <FaPlus className="me-2" /> Add New
+          </Button>
+        </Col>
+        <Col md={4} className="d-flex align-items-center justify-content-center">
+          <h5 className="mb-0">Total records: <Badge bg="primary" className="funky-badge">{filteredList.length}</Badge></h5>
+        </Col>
+        <Col md={4}>
+          <InputGroup>
+            <InputGroup.Text className="bg-primary funky-input text-white">
+              <FaSearch />
+            </InputGroup.Text>
+            <Form.Control
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="funky-input"
+            />
+          </InputGroup>
+        </Col>
+      </Row>
+      <Row className='my-4'>
+        {renderTypes()}
+      </Row>
+      <Row xs={1} md={2} lg={3} className="g-4">
+        {currentItems.map((item, index) => (
+          <Col key={index}>
+            <Card className="h-100 funky-card">
+              <Card.Header className="funky-header">
+                <Card.Title className="text-truncate mb-0">
+                  {item[customHeadersAndKeys[0]?.key]?.toString() || '-'}
+                </Card.Title>
+              </Card.Header>
+              <Card.Body>
+                <div className="d-flex justify-content-between mb-2">
+                  {renderLikeButton(item)}
+                  <Button variant="outline-secondary" size="sm" className="d-flex align-items-center funky-button">
+                    <FaComment className="me-1" />
+                    <span>{item.comments ? Object.keys(item.comments).length : 0}</span>
+                  </Button>
+                </div>
+                {renderCommentForm && renderCommentForm(item.id)}
+              </Card.Body>
+              <Card.Footer className="bg-light">
+                <div className="d-flex justify-content-between">
+                  <Button variant="outline-primary" size="sm" onClick={() => handleViewMore(item)} className="funky-button">
+                    <FaEye className="me-1" /> View More
+                  </Button>
+                  <Button variant="outline-danger" size="sm" onClick={() => onDelete(item)} className="funky-button">
+                    <FaTrash className="me-1" /> Delete
+                  </Button>
+                </div>
+              </Card.Footer>
+            </Card>
           </Col>
-          <Col md={4} className="d-flex align-items-center justify-content-center">
-            <h5 className="mb-0">Total records: <Badge bg="primary" className="funky-badge">{data.length}</Badge></h5>
-          </Col>
-          <Col md={4}>
-            <InputGroup>
-              <InputGroup.Text className="bg-primary funky-input text-white">
-                <FaSearch />
-              </InputGroup.Text>
-              <Form.Control
-                type="text"
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="funky-input"
-              />
-            </InputGroup>
-          </Col>
-        </Row>
+        ))}
+      </Row>
 
-        <Row xs={1} md={2} lg={3} className="g-4">
-          {currentItems.map((item, index) => (
-            <Col key={index}>
-              <Card className="h-100 funky-card">
-                <Card.Header className="funky-header">
-                  <Card.Title className="text-truncate mb-0">
-                    {item[customHeadersAndKeys[0]?.key]?.toString() || '-'}
-                  </Card.Title>
-                </Card.Header>
-                <Card.Body>
-                  <div className="d-flex justify-content-between mb-2">
-                    {renderLikeButton(item)}
-                    <Button variant="outline-secondary" size="sm" className="d-flex align-items-center funky-button">
-                      <FaComment className="me-1" />
-                      <span>{item.comments ? Object.keys(item.comments).length : 0}</span>
-                    </Button>
-                  </div>
-                  {renderCommentForm && renderCommentForm(item.id)}
-                </Card.Body>
-                <Card.Footer className="bg-light">
-                  <div className="d-flex justify-content-between">
-                    <Button variant="outline-primary" size="sm" onClick={() => handleViewMore(item)} className="funky-button">
-                      <FaEye className="me-1" /> View More
-                    </Button>
-                    <Button variant="outline-danger" size="sm" onClick={() => onDelete(item)} className="funky-button">
-                      <FaTrash className="me-1" /> Delete
-                    </Button>
-                  </div>
-                </Card.Footer>
-              </Card>
-            </Col>
-          ))}
-        </Row>
+      {renderPagination()}
 
-        {renderPagination()}
-
-        {filteredList.length === 0 && (
-          <div className="text-center mt-4">
-            <h4 className="text-muted">{noRecordMessage}</h4>
-          </div>
-        )}
-      </Container>
+      {filteredList.length === 0 && (
+        <div className="text-center mt-4">
+          <h4 className="text-muted">{noRecordMessage}</h4>
+        </div>
+      )}
 
       <Modal show={showModal} onHide={handleCloseModal} size="xl">
         <Modal.Header closeButton>
@@ -308,7 +284,7 @@ const DynamicList = ({
           {renderModalContent()}
         </Modal.Body>
       </Modal>
-    </>
+    </Container>
   );
 };
 

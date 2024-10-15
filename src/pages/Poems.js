@@ -84,6 +84,7 @@ const Poems = () => {
             ]
         }
     ], []);
+    const poemTypes = formConfig?.[0].fields?.[3]?.options;
 
     const customHeadersAndKeys = [
         { header: 'Title', key: 'title' },
@@ -199,7 +200,8 @@ const Poems = () => {
                         renderCommentForm={renderCommentForm}
                         noRecordMessage="No poems found."
                         className="shadow-md"
-                        formConfig={formConfig}  // Add this line
+                        formConfig={formConfig}
+                        actionButtons={poemTypes}
                     />
                 </div>
             )}
