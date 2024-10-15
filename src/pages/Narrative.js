@@ -101,6 +101,7 @@ const Narrative = () => {
     };
 
     const cancelForm = () => {
+        setSelectedPoem(null);
         setEditingItem(null);
         setShowForm(false);
         setShowModal(false);

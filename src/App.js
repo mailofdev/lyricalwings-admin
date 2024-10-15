@@ -3,8 +3,6 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Dashboard from './pages/Dashboard'; 
 import Poems from './pages/Poems'; 
-import Stories from './pages/Stories'; 
-import Novels from './pages/Novels'; 
 import Books from './pages/Books'; 
 import Courses from './pages/Courses'; 
 import About from './pages/About'; 
@@ -26,8 +24,6 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/poems" element={<Poems />} />
               <Route path="/Narrative" element={<Narrative />} />
-              <Route path="/stories" element={<Stories />} />
-              <Route path="/novels" element={<Novels />} />
               <Route path="/books" element={<Books />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/about" element={<About />} />

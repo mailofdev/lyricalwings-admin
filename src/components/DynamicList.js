@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Pagination, Form, Button, InputGroup, Card, Row, Col, Container, Badge, Modal } from 'react-bootstrap';
-import { FaEdit, FaPlus, FaTrash, FaSearch, FaHeart, FaRegHeart, FaComment, FaEye } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaSearch, FaHeart, FaRegHeart, FaComment, FaEye } from 'react-icons/fa';
 import DOMPurify from 'dompurify';
-import DynamicForm from './DynamicForm'; // Ensure this import points to the correct location
+import DynamicForm from './DynamicForm';
 
 const DynamicList = ({
   data,

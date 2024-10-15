@@ -122,6 +122,7 @@ const Poems = () => {
     };
 
     const cancelForm = () => {
+        setSelectedPoem(null);
         setEditingItem(null);
         setShowForm(false);
         setShowModal(false);
