@@ -12,6 +12,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import './App.css'; 
 import Login from './pages/Login';
+import Narrative from './pages/Narrative';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
               <Route path="/" element={<Login show={true} handleClose={() => {}} />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/poems" element={<Poems />} />
+              <Route path="/Narrative" element={<Narrative />} />
               <Route path="/stories" element={<Stories />} />
               <Route path="/novels" element={<Novels />} />
               <Route path="/books" element={<Books />} />
