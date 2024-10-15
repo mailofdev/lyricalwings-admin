@@ -177,6 +177,7 @@ const DynamicList = ({
 
     return (
       <>
+      <div className='border border-black p-2 my-2 rounded bg-body-tertiary'>
         {customHeadersAndKeys.map(({ header, key }, idx) => (
           <div key={idx} className="mb-3">
             <strong>{header}: </strong>
@@ -193,6 +194,7 @@ const DynamicList = ({
             )}
           </div>
         ))}
+        </div>
         <h5>Comments:</h5>
         {selectedItem.comments && Object.values(selectedItem.comments).map((comment, index) => (
           <Card key={index} className="mb-2 funky-comment-card">

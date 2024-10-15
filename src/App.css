@@ -1,3 +1,14 @@
+.nav-link-selected {
+  font-weight: bold;
+  color: #007bff !important; 
+  border-bottom: 2px solid #007bff; 
+}
+
+.nav-link-selected:hover {
+  color: #0056b3 !important; 
+}
+
+
 .funky-list {
   background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
   border-radius: 15px;

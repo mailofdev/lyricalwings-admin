@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
 import { FaUserCircle } from 'react-icons/fa';
 import logo from '../images/logo.png';
@@ -13,6 +13,7 @@ function Header() {
   const navbarRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation(); // Get the current path
 
   const handleClickOutside = (event) => {
     if (navbarRef.current && !navbarRef.current.contains(event.target)) {
@@ -59,28 +60,50 @@ function Header() {
           />
         </Navbar.Brand>
 
-
         <Navbar.Toggle aria-controls="basic-navbar-nav" onClick={() => setExpanded(!expanded)} />
-
 
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="mx-auto">
-          <Nav.Link as={Link} to="/dashboard" onClick={() => handleNavClick('/dashboard')}>
+            <Nav.Link
+              as={Link}
+              to="/dashboard"
+              onClick={() => handleNavClick('/dashboard')}
+              className={location.pathname === '/dashboard' ? 'nav-link-selected' : ''}
+            >
               Dashboard
             </Nav.Link>
-            <Nav.Link as={Link} to="/poems" onClick={() => handleNavClick('/poems')}>
+            <Nav.Link
+              as={Link}
+              to="/poems"
+              onClick={() => handleNavClick('/poems')}
+              className={location.pathname === '/poems' ? 'nav-link-selected' : ''}
+            >
               Poems
             </Nav.Link>
-            <Nav.Link as={Link} to="/narrative" onClick={() => handleNavClick('/narrative')}>
-            Narrative
+            <Nav.Link
+              as={Link}
+              to="/narrative"
+              onClick={() => handleNavClick('/narrative')}
+              className={location.pathname === '/narrative' ? 'nav-link-selected' : ''}
+            >
+              Narrative
             </Nav.Link>
-            <Nav.Link as={Link} to="/books" onClick={() => handleNavClick('/books')}>
+            <Nav.Link
+              as={Link}
+              to="/books"
+              onClick={() => handleNavClick('/books')}
+              className={location.pathname === '/books' ? 'nav-link-selected' : ''}
+            >
               Books
             </Nav.Link>
-            <Nav.Link as={Link} to="/courses" onClick={() => handleNavClick('/courses')}>
+            <Nav.Link
+              as={Link}
+              to="/courses"
+              onClick={() => handleNavClick('/courses')}
+              className={location.pathname === '/courses' ? 'nav-link-selected' : ''}
+            >
               Courses
             </Nav.Link>
-
           </Nav>
 
           <Nav>
