@@ -73,6 +73,7 @@ const DynamicForm = React.memo(({ formConfig,
     setFormData(prevData => ({ ...prevData, [name]: file }));
     validateField(name, file);
   };
+  
 
   const handleUploadTypeChange = (e, name) => {
     setUploadTypes(prevTypes => ({ ...prevTypes, [name]: e.value }));
@@ -230,13 +231,16 @@ const DynamicForm = React.memo(({ formConfig,
       case 'image':
         return (
           <FileUpload
-            ref={(el) => (fileUploadRefs.current[name] = el)}
-            name={name}
-            accept="image/*"
-            maxFileSize={maxFileSize}
-            onSelect={(e) => handleArrayListFileUpload(e, fieldName, index, subField.name)}
-            className="w-100"
-          />
+          ref={(el) => (fileUploadRefs.current[subField.name] = el)}
+          name={subField.name}
+          accept="image/*"
+          maxFileSize={maxFileSize}
+          onSelect={(e) => handleFileUpload(e, subField.name)}
+          className={errors[subField.name] ? 'is-invalid' : ''}
+          mode="basic"
+          auto
+          chooseLabel="Choose Image"
+        />
         );
       case 'editor':
         return (
@@ -419,13 +423,16 @@ const DynamicForm = React.memo(({ formConfig,
       case 'image':
         return (
           <FileUpload
-            ref={(el) => (fileUploadRefs.current[subField.name] = el)}
-            name={subField.name}
-            accept="image/*"
-            maxFileSize={maxFileSize}
-            onSelect={(e) => handleFileUpload(e, subField.name)}
-            className={errors[subField.name] ? 'is-invalid' : ''}
-          />
+          ref={(el) => (fileUploadRefs.current[subField.name] = el)}
+          name={subField.name}
+          accept="image/*"
+          maxFileSize={maxFileSize}
+          onSelect={(e) => handleFileUpload(e, subField.name)}
+          className={errors[subField.name] ? 'is-invalid' : ''}
+          mode="basic"
+          auto
+          chooseLabel="Choose Image"
+        />
         );
       case 'video':
         return (

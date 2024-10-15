@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Pagination, Form, Button, InputGroup, Card, Row, Col, Container, Badge, Modal } from 'react-bootstrap';
+import { Pagination, Form, Button, InputGroup, Card, Row, Col, Container, Badge, Modal, Image } from 'react-bootstrap';
 import { FaPlus, FaTrash, FaSearch, FaHeart, FaRegHeart, FaComment, FaEye } from 'react-icons/fa';
 import DOMPurify from 'dompurify';
 import DynamicForm from './DynamicForm';
@@ -124,28 +124,33 @@ const DynamicList = ({
 
   const renderTypes = () => {
     return (
-      <div className="d-flex justify-content-center flex-wrap">
-        <Button 
-          key="all"
-          className="funky-button mx-2 mb-2"
-          variant={selectedType === null ? "primary" : "outline-primary"}
-          onClick={() => handleTypeSelect(null)}
-        >
-          All Types
-        </Button>
-        {actionButtons.map((item, index) => (
-          <Button 
-            key={index} 
-            className="funky-button mx-2 mb-2"
-            variant={selectedType === item.value ? "primary" : "outline-primary"}
-            onClick={() => handleTypeSelect(item.value)}
-          >
-            {item.label}
-          </Button>
-        ))}
-      </div>
+        <>
+            {actionButtons && (
+                <div className="d-flex justify-content-center flex-wrap">
+                    <Button
+                        key="all"
+                        className="funky-button mx-2 mb-2"
+                        variant={selectedType === null ? "primary" : "outline-primary"}
+                        onClick={() => handleTypeSelect(null)}
+                    >
+                        All Types
+                    </Button>
+                    {actionButtons.map((item, index) => (
+                        <Button
+                            key={index}
+                            className="funky-button mx-2 mb-2"
+                            variant={selectedType === item.value ? "primary" : "outline-primary"}
+                            onClick={() => handleTypeSelect(item.value)}
+                        >
+                            {item.label}
+                        </Button>
+                    ))}
+                </div>
+            )}
+        </>
     );
-  };
+};
+
 
   const handleTypeSelect = (value) => {
     setSelectedType(value);
@@ -177,6 +182,8 @@ const DynamicList = ({
             <strong>{header}: </strong>
             {key === 'htmlContent' || key === 'htmlSubtitle' ? (
               <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedItem[key]) }} />
+            ) : key === 'bookImage' ? (
+              <Image src={selectedItem[key]} alt="Book cover" fluid style={{ maxHeight: '300px' }} />
             ) : key === 'likes' ? (
               <span>{selectedItem[key] ? Object.keys(selectedItem[key]).length : 0}</span>
             ) : key === 'comments' ? (

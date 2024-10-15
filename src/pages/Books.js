@@ -1,41 +1,222 @@
-import React from 'react';
-import { Button, Table } from 'react-bootstrap';
+import React, { useEffect, useState, useMemo } from 'react';
+import DynamicForm from '../components/DynamicForm';
+import { useDispatch, useSelector } from 'react-redux';
+import { addbook, fetchbook, updatebook, deletebook, addLike, removeLike, addComment } from '../redux/bookSlice';
+import DynamicList from '../components/DynamicList';
+import ConfirmDialog from '../components/ConfirmDialog';
+import { Modal, Form, Button, Image } from 'react-bootstrap';
+import Loader from '../components/Loader';
 
 const Books = () => {
-  const handleAddBook = () => {
-    // Logic to add a book
-  };
+    const dispatch = useDispatch();
+    const [editingItem, setEditingItem] = useState(null);
+    const [showForm, setShowForm] = useState(false);
+    const { book, bookLoading: loading } = useSelector((state) => ({
+        book: state.book.book,
+        bookLoading: state.book.loading,
+    }));
+    const reversedbook = [...book].reverse();
+    const auth = useSelector((state) => state.auth);
+    const user = auth.user || 'Anonymous';
+    const [hasFetched, setHasFetched] = useState(false);
+    const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedbook, setSelectedbook] = useState(null);
+    const [commentTexts, setCommentTexts] = useState({});
 
-  return (
-    <div>
-      <h2>Manage Books</h2>
-      <Button variant="primary" onClick={handleAddBook} className="mb-3">
-        Add Book
-      </Button>
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Title</th>
-            <th>Author</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {/* Example Data */}
-          <tr>
-            <td>1</td>
-            <td>Example Book</td>
-            <td>Author Name</td>
-            <td>
-              <Button variant="info" size="sm" className="me-2">Edit</Button>
-              <Button variant="danger" size="sm">Delete</Button>
-            </td>
-          </tr>
-        </tbody>
-      </Table>
-    </div>
-  );
+    useEffect(() => {
+        if (!hasFetched) {
+            dispatch(fetchbook());
+            setHasFetched(true);
+        }
+    }, [dispatch, hasFetched]);
+
+    const formConfig = useMemo(() => [
+        {
+            fields: [
+                { type: 'input', name: 'title', label: 'Title' },
+                { type: 'image', name: 'bookImage', label: 'Book Image' },
+                {
+                    type: 'editor',
+                    name: 'htmlSubtitle',
+                    label: 'Subtitle',
+                    config: {
+                        readonly: false,
+                        placeholder: 'Start typing...',
+                        autofocus: true,
+                        uploader: { insertImageAsBase64URI: true },
+                        disablePlugins: "video,about,ai-assistant,clean-html,delete-command,iframe,mobile,powered-by-jodit,source,speech-recognize,xpath,wrap-nodes,spellcheck,file",
+                        buttons: "bold,italic,underline,strikethrough,eraser,ul,ol,font,fontsize,paragraph,lineHeight,image,preview,align",
+                        askBeforePasteHTML: false,
+                        askBeforePasteFromWord: false,
+                        defaultActionOnPaste: "insert_only_text",
+                    }
+                },
+                {
+                    type: 'editor',
+                    name: 'htmlContent',
+                    label: 'Content',
+                    config: {
+                        readonly: false,
+                        placeholder: 'Start typing...',
+                        autofocus: true,
+                        uploader: { insertImageAsBase64URI: true },
+                        disablePlugins: "video,about,ai-assistant,clean-html,delete-command,iframe,mobile,powered-by-jodit,source,speech-recognize,xpath,wrap-nodes,spellcheck,file",
+                        buttons: "bold,italic,underline,strikethrough,eraser,ul,ol,font,fontsize,paragraph,lineHeight,image,preview,align",
+                        askBeforePasteHTML: false,
+                        askBeforePasteFromWord: false,
+                        defaultActionOnPaste: "insert_only_text",
+                    }
+                },
+          
+            ]
+        }
+    ], []);
+
+
+    const customHeadersAndKeys = [
+      { header: 'Title', key: 'title' },
+      { header: 'Subtitle', key: 'htmlSubtitle' },
+      { header: 'Content', key: 'htmlContent' },
+      { header: 'Image', key: 'bookImage' },
+      { header: 'Likes', key: 'likes', render: (likes) => likes ? Object.keys(likes).length : 0 },
+      { header: 'Comments', key: 'comments', render: (comments) => comments ? Object.keys(comments).length : 0 },
+    ];
+
+    const handleFormSubmit = (data, formType) => {
+        if (formType === 'add') {
+            dispatch(addbook(data));
+            setShowForm(false);
+        } else if (formType === 'edit') {
+            dispatch(updatebook({ id: data.id, bookData: data }));
+        }
+    };
+
+    const handleDelete = (item) => {
+        setItemToDelete(item);
+        setConfirmDialogVisible(true);
+    };
+
+    const confirmDelete = () => {
+        if (itemToDelete) {
+            dispatch(deletebook(itemToDelete.id));
+            setItemToDelete(null);
+        }
+        setConfirmDialogVisible(false);
+    };
+
+    const cancelDelete = () => {
+        setItemToDelete(null);
+        setConfirmDialogVisible(false);
+    };
+
+    const cancelForm = () => {
+        setSelectedbook(null);
+        setEditingItem(null);
+        setShowForm(false);
+        setShowModal(false);
+    };
+
+    const handleAddNew = () => {
+        setEditingItem(null);
+        setShowForm(true);
+    };
+
+    const handleLike = (bookId) => {
+        if (user) {
+            const book = book.find(p => p.id === bookId);
+            if (book && book.likes && book.likes[user.id]) {
+                dispatch(removeLike({ bookId, userName: user.username }));
+            } else {
+                dispatch(addLike({ bookId, userName: user.username }));
+            }
+        }
+    };
+
+    const handleCommentChange = (bookId, text) => {
+        setCommentTexts(prev => ({ ...prev, [bookId]: text }));
+    };
+
+    const handleComment = (bookId) => {
+        const commentText = commentTexts[bookId];
+        if (user && commentText && commentText.trim()) {
+            dispatch(addComment({ bookId, userName: user.username, comment: commentText }));
+            setCommentTexts(prev => ({ ...prev, [bookId]: '' }));
+        }
+    };
+
+    const renderCommentForm = (bookId) => (
+        <Form className='d-flex justify-content-between my-2 mt-4' onSubmit={(e) => { e.preventDefault(); handleComment(bookId); }}>
+            <Form.Group>
+                <Form.Control
+                    type="text"
+                    placeholder="Add a comment..."
+                    value={commentTexts[bookId] || ''}
+                    onChange={(e) => handleCommentChange(bookId, e.target.value)}
+                />
+            </Form.Group>
+            <Button type="submit" variant="primary" size="sm">
+                Post Comment
+            </Button>
+        </Form>
+    );
+
+    return (
+        <div>
+            {showForm && (
+                <div className='my-2'>
+                    <DynamicForm
+                        className="shadow-md funky-list funky-card"
+                        formConfig={formConfig}
+                        onSubmit={handleFormSubmit}
+                        editingItem={editingItem}
+                        title={editingItem ? 'Edit book' : 'Add book'}
+                        formType={editingItem ? 'edit' : 'add'}
+                        cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
+                    />
+                </div>
+            )}
+            {loading ? (
+                <Loader loadingMessage="Fetching book..." />
+            ) : (
+                <div className='my-2'>
+                    <DynamicList
+                        data={reversedbook}
+                        customHeadersAndKeys={customHeadersAndKeys}
+                        onAddNew={handleAddNew}
+                        onEdit={handleFormSubmit}
+                        onDelete={handleDelete}
+                        onLike={handleLike}
+                        renderCommentForm={renderCommentForm}
+                        noRecordMessage="No book found."
+                        className="shadow-md"
+                        formConfig={formConfig}
+                    />
+                </div>
+            )}
+            <ConfirmDialog
+                visible={confirmDialogVisible}
+                onHide={cancelDelete}
+                message={`Are you sure you want to delete the book titled "${itemToDelete?.title}"?`}
+                header="Confirm Deletion"
+                accept={confirmDelete}
+                reject={cancelDelete}
+            />
+            <Modal size='lg' show={showModal} onHide={() => setShowModal(false)}>
+                <DynamicForm
+                    className="shadow-md bg-primary-subtle"
+                    formConfig={formConfig}
+                    onSubmit={handleFormSubmit}
+                    editingItem={selectedbook}
+                    title="Edit book"
+                    formType="edit"
+                    buttonLabel="Update"
+                    cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
+                />
+            </Modal>
+        </div>
+    );
 };
 
 export default Books;

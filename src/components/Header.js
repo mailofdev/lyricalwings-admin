@@ -74,9 +74,6 @@ function Header() {
             <Nav.Link as={Link} to="/narrative" onClick={() => handleNavClick('/narrative')}>
             Narrative
             </Nav.Link>
-            <Nav.Link as={Link} to="/novels" onClick={() => handleNavClick('/novels')}>
-              Novels
-            </Nav.Link>
             <Nav.Link as={Link} to="/books" onClick={() => handleNavClick('/books')}>
               Books
             </Nav.Link>
