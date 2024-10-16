@@ -224,7 +224,7 @@ const DynamicList = ({
 
   return (
     <Container fluid className={`${className} py-4`}>
-      <Row className="mb-4">
+      <Row className="mb-4 g-3">
         <Col md={4}>
           <Button variant="success" onClick={onAddNew} className="d-flex align-items-center w-100 justify-content-center funky-button">
             <FaPlus className="me-2" /> Add New

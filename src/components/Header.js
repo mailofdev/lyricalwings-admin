@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
 import { FaUserCircle } from 'react-icons/fa';
-import logo from '../images/logo.png';
+import logo from '../images/logo1.png';
 import { useDispatch, useSelector } from 'react-redux';
 import { signoutUser } from '../redux/authSlice';
 
@@ -54,8 +54,8 @@ function Header() {
           <img
             src={logo}
             alt="Admin Portal Logo"
-            width="140"
-            height="40"
+            width="120"
+            height="50"
             className="d-inline-block align-top"
           />
         </Navbar.Brand>
