@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Pagination, Form, Button, InputGroup, Card, Row, Col, Container, Badge, Modal, Image } from 'react-bootstrap';
-import { FaPlus, FaTrash, FaSearch, FaHeart, FaRegHeart, FaComment, FaEye } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaSearch, FaHeart, FaRegHeart, FaComment, FaEye, FaDownload } from 'react-icons/fa';
 import DOMPurify from 'dompurify';
 import DynamicForm from './DynamicForm';
 
@@ -124,32 +124,32 @@ const DynamicList = ({
 
   const renderTypes = () => {
     return (
-        <>
-            {actionButtons && (
-                <div className="d-flex justify-content-center flex-wrap">
-                    <Button
-                        key="all"
-                        className="funky-button mx-2 mb-2"
-                        variant={selectedType === null ? "primary" : "outline-primary"}
-                        onClick={() => handleTypeSelect(null)}
-                    >
-                        All Types
-                    </Button>
-                    {actionButtons.map((item, index) => (
-                        <Button
-                            key={index}
-                            className="funky-button mx-2 mb-2"
-                            variant={selectedType === item.value ? "primary" : "outline-primary"}
-                            onClick={() => handleTypeSelect(item.value)}
-                        >
-                            {item.label}
-                        </Button>
-                    ))}
-                </div>
-            )}
-        </>
+      <>
+        {actionButtons && (
+          <div className="d-flex justify-content-center flex-wrap">
+            <Button
+              key="all"
+              className="funky-button mx-2 mb-2"
+              variant={selectedType === null ? "primary" : "outline-primary"}
+              onClick={() => handleTypeSelect(null)}
+            >
+              All Types
+            </Button>
+            {actionButtons.map((item, index) => (
+              <Button
+                key={index}
+                className="funky-button mx-2 mb-2"
+                variant={selectedType === item.value ? "primary" : "outline-primary"}
+                onClick={() => handleTypeSelect(item.value)}
+              >
+                {item.label}
+              </Button>
+            ))}
+          </div>
+        )}
+      </>
     );
-};
+  };
 
 
   const handleTypeSelect = (value) => {
@@ -177,23 +177,31 @@ const DynamicList = ({
 
     return (
       <>
-      <div className='border border-black p-2 my-2 rounded bg-body-tertiary'>
-        {customHeadersAndKeys.map(({ header, key }, idx) => (
-          <div key={idx} className="mb-3">
-            <strong>{header}: </strong>
-            {key === 'htmlContent' || key === 'htmlSubtitle' ? (
-              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedItem[key]) }} />
-            ) : key === 'bookImage' ? (
-              <Image src={selectedItem[key]} alt="Book cover" fluid style={{ maxHeight: '300px' }} />
-            ) : key === 'likes' ? (
-              <span>{selectedItem[key] ? Object.keys(selectedItem[key]).length : 0}</span>
-            ) : key === 'comments' ? (
-              <span>{selectedItem[key] ? Object.keys(selectedItem[key]).length : 0}</span>
-            ) : (
-              <span>{selectedItem[key]?.toString() || '-'}</span>
-            )}
-          </div>
-        ))}
+        <div className='border border-black p-2 my-2 rounded bg-body-tertiary'>
+          {customHeadersAndKeys.map(({ header, key }, idx) => (
+            <div key={idx} className="mb-3">
+              <strong>{header}: </strong>
+              {key === 'htmlContent' || key === 'htmlSubtitle' ? (
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedItem[key]) }} />
+              ) : key === 'bookImage' ? (
+                <Image src={selectedItem[key]} alt="Book cover" fluid style={{ maxHeight: '300px' }} />
+              ) : key === 'likes' ? (
+                <span>{selectedItem[key] ? Object.keys(selectedItem[key]).length : 0}</span>
+              ) : key === 'comments' ? (
+                <span>{selectedItem[key] ? Object.keys(selectedItem[key]).length : 0}</span>
+              ) : key.toLowerCase().includes('fileurl') ? (
+                selectedItem[key] ? (
+                  <Button variant="link" href={selectedItem[key]} target="_blank" rel="noopener noreferrer">
+                    <FaDownload className="me-1" /> Download File
+                  </Button>
+                ) : (
+                  <span>No file uploaded</span>
+                )
+              ) : (
+                <span>{selectedItem[key]?.toString() || '-'}</span>
+              )}
+            </div>
+          ))}
         </div>
         <h5>Comments:</h5>
         {selectedItem.comments && Object.values(selectedItem.comments).map((comment, index) => (
@@ -215,7 +223,7 @@ const DynamicList = ({
   };
 
   return (
-    <Container fluid className={`${className} py-4 funky-list`}>
+    <Container fluid className={`${className} py-4`}>
       <Row className="mb-4">
         <Col md={4}>
           <Button variant="success" onClick={onAddNew} className="d-flex align-items-center w-100 justify-content-center funky-button">

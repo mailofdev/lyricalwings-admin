@@ -1,21 +1,32 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import DynamicForm from '../components/DynamicForm';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { createSelector } from 'reselect';
+import DynamicForm from '../components/DynamicForm';
 import { addPoem, fetchnarrative, updatePoem, deletePoem, addLike, removeLike, addComment } from '../redux/narrativeSlice';
 import DynamicList from '../components/DynamicList';
 import ConfirmDialog from '../components/ConfirmDialog';
 import { Modal, Form, Button } from 'react-bootstrap';
 import Loader from '../components/Loader';
 
+// Create memoized selector
+const selectNarrativeData = createSelector(
+  state => state.narrative.narrative,
+  state => state.narrative.loading,
+  (narrative, loading) => ({
+    narrative,
+    poemLoading: loading,
+  })
+);
+
 const Narrative = () => {
     const dispatch = useDispatch();
     const [editingItem, setEditingItem] = useState(null);
     const [showForm, setShowForm] = useState(false);
-    const { narrative, poemLoading: loading } = useSelector((state) => ({
-        narrative: state.narrative.narrative,
-        poemLoading: state.narrative.loading,
-    }));
-    const reversednarrative = [...narrative].reverse();
+
+    // Use memoized selector
+    const { narrative, poemLoading: loading } = useSelector(selectNarrativeData);
+
+    const reversednarrative = useMemo(() => [...narrative].reverse(), [narrative]);
     const auth = useSelector((state) => state.auth);
     const user = auth.user || 'Anonymous';
     const [hasFetched, setHasFetched] = useState(false);
@@ -64,55 +75,56 @@ const Narrative = () => {
             ]
         }
     ], []);
-    const poemTypes = formConfig?.[0].fields?.[2]?.options;
 
-    const customHeadersAndKeys = [
+    const poemTypes = useMemo(() => formConfig[0].fields[2].options, [formConfig]);
+
+    const customHeadersAndKeys = useMemo(() => [
         { header: 'Title', key: 'title' },
         { header: 'Content', key: 'htmlContent' },
         { header: 'Likes', key: 'likes', render: (likes) => likes ? Object.keys(likes).length : 0 },
         { header: 'Comments', key: 'comments', render: (comments) => comments ? Object.keys(comments).length : 0 },
-    ];
+    ], []);
 
-    const handleFormSubmit = (data, formType) => {
+    const handleFormSubmit = useCallback((data, formType) => {
         if (formType === 'add') {
             dispatch(addPoem(data));
             setShowForm(false);
         } else if (formType === 'edit') {
             dispatch(updatePoem({ id: data.id, poemData: data }));
         }
-    };
+    }, [dispatch]);
 
-    const handleDelete = (item) => {
+    const handleDelete = useCallback((item) => {
         setItemToDelete(item);
         setConfirmDialogVisible(true);
-    };
+    }, []);
 
-    const confirmDelete = () => {
+    const confirmDelete = useCallback(() => {
         if (itemToDelete) {
             dispatch(deletePoem(itemToDelete.id));
             setItemToDelete(null);
         }
         setConfirmDialogVisible(false);
-    };
+    }, [itemToDelete, dispatch]);
 
-    const cancelDelete = () => {
+    const cancelDelete = useCallback(() => {
         setItemToDelete(null);
         setConfirmDialogVisible(false);
-    };
+    }, []);
 
-    const cancelForm = () => {
+    const cancelForm = useCallback(() => {
         setSelectedPoem(null);
         setEditingItem(null);
         setShowForm(false);
         setShowModal(false);
-    };
+    }, []);
 
-    const handleAddNew = () => {
+    const handleAddNew = useCallback(() => {
         setEditingItem(null);
         setShowForm(true);
-    };
+    }, []);
 
-    const handleLike = (poemId) => {
+    const handleLike = useCallback((poemId) => {
         if (user) {
             const poem = narrative.find(p => p.id === poemId);
             if (poem && poem.likes && poem.likes[user.id]) {
@@ -121,21 +133,21 @@ const Narrative = () => {
                 dispatch(addLike({ poemId, userName: user.username }));
             }
         }
-    };
+    }, [user, narrative, dispatch]);
 
-    const handleCommentChange = (poemId, text) => {
+    const handleCommentChange = useCallback((poemId, text) => {
         setCommentTexts(prev => ({ ...prev, [poemId]: text }));
-    };
+    }, []);
 
-    const handleComment = (poemId) => {
+    const handleComment = useCallback((poemId) => {
         const commentText = commentTexts[poemId];
         if (user && commentText && commentText.trim()) {
             dispatch(addComment({ poemId, userName: user.username, comment: commentText }));
             setCommentTexts(prev => ({ ...prev, [poemId]: '' }));
         }
-    };
+    }, [commentTexts, user, dispatch]);
 
-    const renderCommentForm = (poemId) => (
+    const renderCommentForm = useCallback((poemId) => (
         <Form className='d-flex justify-content-between my-2 mt-4' onSubmit={(e) => { e.preventDefault(); handleComment(poemId); }}>
             <Form.Group>
                 <Form.Control
@@ -149,14 +161,14 @@ const Narrative = () => {
                 Post Comment
             </Button>
         </Form>
-    );
+    ), [commentTexts, handleComment, handleCommentChange]);
 
     return (
         <div>
             {showForm && (
                 <div className='my-2'>
                     <DynamicForm
-                        className="shadow-md funky-list funky-card"
+                        className="shadow-md narrative-list funky-card"
                         formConfig={formConfig}
                         onSubmit={handleFormSubmit}
                         editingItem={editingItem}
@@ -179,7 +191,7 @@ const Narrative = () => {
                         onLike={handleLike}
                         renderCommentForm={renderCommentForm}
                         noRecordMessage="No narrative found."
-                        className="shadow-md"
+                        className="shadow-md narrative-list funky-card"
                         formConfig={formConfig}
                         actionButtons={poemTypes}
                     />

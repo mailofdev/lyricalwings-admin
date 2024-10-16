@@ -1,29 +1,33 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import DynamicForm from '../components/DynamicForm';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addPoem, fetchPoems, updatePoem, deletePoem, addLike, removeLike, addComment } from '../redux/poemSlice';
+import { Modal, Form, Button } from 'react-bootstrap';
+import DynamicForm from '../components/DynamicForm';
 import DynamicList from '../components/DynamicList';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { Modal, Form, Button } from 'react-bootstrap';
 import Loader from '../components/Loader';
+import { addPoem, fetchPoems, updatePoem, deletePoem, addLike, removeLike, addComment } from '../redux/poemSlice';
 
 const Poems = () => {
     const dispatch = useDispatch();
     const [editingItem, setEditingItem] = useState(null);
     const [showForm, setShowForm] = useState(false);
-    const { poems, poemLoading: loading } = useSelector((state) => ({
-        poems: state.poems.poems,
-        poemLoading: state.poems.loading,
-    }));
-    const reversedPoems = [...poems].reverse();
-    const auth = useSelector((state) => state.auth);
-    const user = auth.user || 'Anonymous';
     const [hasFetched, setHasFetched] = useState(false);
     const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [selectedPoem, setSelectedPoem] = useState(null);
     const [commentTexts, setCommentTexts] = useState({});
+
+    // Memoized selectors
+    const selectPoems = useCallback((state) => state.poems.poems, []);
+    const selectLoading = useCallback((state) => state.poems.loading, []);
+    const selectUser = useCallback((state) => state.auth.user || 'Anonymous', []);
+
+    const poems = useSelector(selectPoems);
+    const loading = useSelector(selectLoading);
+    const user = useSelector(selectUser);
+
+    const reversedPoems = useMemo(() => [...poems].reverse(), [poems]);
 
     useEffect(() => {
         if (!hasFetched) {
@@ -84,56 +88,57 @@ const Poems = () => {
             ]
         }
     ], []);
-    const poemTypes = formConfig?.[0].fields?.[3]?.options;
 
-    const customHeadersAndKeys = [
+    const poemTypes = useMemo(() => formConfig[0].fields[3].options, [formConfig]);
+
+    const customHeadersAndKeys = useMemo(() => [
         { header: 'Title', key: 'title' },
         { header: 'Subtitle', key: 'htmlSubtitle' },
         { header: 'Content', key: 'htmlContent' },
         { header: 'Likes', key: 'likes', render: (likes) => likes ? Object.keys(likes).length : 0 },
         { header: 'Comments', key: 'comments', render: (comments) => comments ? Object.keys(comments).length : 0 },
-    ];
+    ], []);
 
-    const handleFormSubmit = (data, formType) => {
+    const handleFormSubmit = useCallback((data, formType) => {
         if (formType === 'add') {
             dispatch(addPoem(data));
             setShowForm(false);
         } else if (formType === 'edit') {
             dispatch(updatePoem({ id: data.id, poemData: data }));
         }
-    };
+    }, [dispatch]);
 
-    const handleDelete = (item) => {
+    const handleDelete = useCallback((item) => {
         setItemToDelete(item);
         setConfirmDialogVisible(true);
-    };
+    }, []);
 
-    const confirmDelete = () => {
+    const confirmDelete = useCallback(() => {
         if (itemToDelete) {
             dispatch(deletePoem(itemToDelete.id));
             setItemToDelete(null);
         }
         setConfirmDialogVisible(false);
-    };
+    }, [itemToDelete, dispatch]);
 
-    const cancelDelete = () => {
+    const cancelDelete = useCallback(() => {
         setItemToDelete(null);
         setConfirmDialogVisible(false);
-    };
+    }, []);
 
-    const cancelForm = () => {
+    const cancelForm = useCallback(() => {
         setSelectedPoem(null);
         setEditingItem(null);
         setShowForm(false);
         setShowModal(false);
-    };
+    }, []);
 
-    const handleAddNew = () => {
+    const handleAddNew = useCallback(() => {
         setEditingItem(null);
         setShowForm(true);
-    };
+    }, []);
 
-    const handleLike = (poemId) => {
+    const handleLike = useCallback((poemId) => {
         if (user) {
             const poem = poems.find(p => p.id === poemId);
             if (poem && poem.likes && poem.likes[user.id]) {
@@ -142,21 +147,21 @@ const Poems = () => {
                 dispatch(addLike({ poemId, userName: user.username }));
             }
         }
-    };
+    }, [user, poems, dispatch]);
 
-    const handleCommentChange = (poemId, text) => {
+    const handleCommentChange = useCallback((poemId, text) => {
         setCommentTexts(prev => ({ ...prev, [poemId]: text }));
-    };
+    }, []);
 
-    const handleComment = (poemId) => {
+    const handleComment = useCallback((poemId) => {
         const commentText = commentTexts[poemId];
         if (user && commentText && commentText.trim()) {
             dispatch(addComment({ poemId, userName: user.username, comment: commentText }));
             setCommentTexts(prev => ({ ...prev, [poemId]: '' }));
         }
-    };
+    }, [commentTexts, user, dispatch]);
 
-    const renderCommentForm = (poemId) => (
+    const renderCommentForm = useCallback((poemId) => (
         <Form className='d-flex justify-content-between my-2 mt-4' onSubmit={(e) => { e.preventDefault(); handleComment(poemId); }}>
             <Form.Group>
                 <Form.Control
@@ -170,14 +175,14 @@ const Poems = () => {
                 Post Comment
             </Button>
         </Form>
-    );
+    ), [commentTexts, handleComment, handleCommentChange]);
 
     return (
         <div>
             {showForm && (
                 <div className='my-2'>
                     <DynamicForm
-                        className="shadow-md funky-list funky-card"
+                        className="shadow-md poem-list funky-card"
                         formConfig={formConfig}
                         onSubmit={handleFormSubmit}
                         editingItem={editingItem}
@@ -200,7 +205,7 @@ const Poems = () => {
                         onLike={handleLike}
                         renderCommentForm={renderCommentForm}
                         noRecordMessage="No poems found."
-                        className="shadow-md"
+                        className="shadow-md poem-list funky-card"
                         formConfig={formConfig}
                         actionButtons={poemTypes}
                     />

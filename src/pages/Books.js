@@ -1,29 +1,33 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import DynamicForm from '../components/DynamicForm';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addbook, fetchbook, updatebook, deletebook, addLike, removeLike, addComment } from '../redux/bookSlice';
+import { Modal, Form, Button } from 'react-bootstrap';
+import DynamicForm from '../components/DynamicForm';
 import DynamicList from '../components/DynamicList';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { Modal, Form, Button } from 'react-bootstrap';
 import Loader from '../components/Loader';
+import { addbook, fetchbook, updatebook, deletebook, addLike, removeLike, addComment } from '../redux/bookSlice';
 
 const Books = () => {
     const dispatch = useDispatch();
     const [editingItem, setEditingItem] = useState(null);
     const [showForm, setShowForm] = useState(false);
-    const { books, bookLoading: loading } = useSelector((state) => ({
-        books: state.book.book,
-        bookLoading: state.book.loading,
-    }));
-    const reversedBooks = [...books].reverse();
-    const auth = useSelector((state) => state.auth);
-    const user = auth.user || 'Anonymous';
     const [hasFetched, setHasFetched] = useState(false);
     const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [selectedBook, setSelectedBook] = useState(null);
     const [commentTexts, setCommentTexts] = useState({});
+
+    // Memoized selectors
+    const selectBooks = useCallback((state) => state.book.book, []);
+    const selectLoading = useCallback((state) => state.book.loading, []);
+    const selectUser = useCallback((state) => state.auth.user || 'Anonymous', []);
+
+    const books = useSelector(selectBooks);
+    const loading = useSelector(selectLoading);
+    const user = useSelector(selectUser);
+
+    const reversedBooks = useMemo(() => [...books].reverse(), [books]);
 
     useEffect(() => {
         if (!hasFetched) {
@@ -59,57 +63,56 @@ const Books = () => {
         }
     ], []);
 
-    const customHeadersAndKeys = [
+    const customHeadersAndKeys = useMemo(() => [
         { header: 'Title', key: 'title' },
-        // { header: 'Subtitle', key: 'htmlSubtitle' },
         { header: 'Content', key: 'htmlContent' },
         { header: 'Image', key: 'bookImage' },
         { header: 'Author name', key: 'authorName' },
         { header: 'Book link', key: 'bookLink' },
         { header: 'Likes', key: 'likes', render: (likes) => likes ? Object.keys(likes).length : 0 },
         { header: 'Comments', key: 'comments', render: (comments) => comments ? Object.keys(comments).length : 0 },
-    ];
+    ], []);
 
-    const handleFormSubmit = (data, formType) => {
+    const handleFormSubmit = useCallback((data, formType) => {
         if (formType === 'add') {
             dispatch(addbook(data));
             setShowForm(false);
         } else if (formType === 'edit') {
             dispatch(updatebook({ id: data.id, bookData: data }));
         }
-    };
+    }, [dispatch]);
 
-    const handleDelete = (item) => {
+    const handleDelete = useCallback((item) => {
         setItemToDelete(item);
         setConfirmDialogVisible(true);
-    };
+    }, []);
 
-    const confirmDelete = () => {
+    const confirmDelete = useCallback(() => {
         if (itemToDelete) {
             dispatch(deletebook(itemToDelete.id));
             setItemToDelete(null);
         }
         setConfirmDialogVisible(false);
-    };
+    }, [itemToDelete, dispatch]);
 
-    const cancelDelete = () => {
+    const cancelDelete = useCallback(() => {
         setItemToDelete(null);
         setConfirmDialogVisible(false);
-    };
+    }, []);
 
-    const cancelForm = () => {
+    const cancelForm = useCallback(() => {
         setSelectedBook(null);
         setEditingItem(null);
         setShowForm(false);
         setShowModal(false);
-    };
+    }, []);
 
-    const handleAddNew = () => {
+    const handleAddNew = useCallback(() => {
         setEditingItem(null);
         setShowForm(true);
-    };
+    }, []);
 
-    const handleLike = (bookId) => {
+    const handleLike = useCallback((bookId) => {
         if (user) {
             const book = books.find(p => p.id === bookId);
             if (book && book.likes && book.likes[user.id]) {
@@ -118,21 +121,21 @@ const Books = () => {
                 dispatch(addLike({ bookId, userName: user.username }));
             }
         }
-    };
+    }, [user, books, dispatch]);
 
-    const handleCommentChange = (bookId, text) => {
+    const handleCommentChange = useCallback((bookId, text) => {
         setCommentTexts(prev => ({ ...prev, [bookId]: text }));
-    };
+    }, []);
 
-    const handleComment = (bookId) => {
+    const handleComment = useCallback((bookId) => {
         const commentText = commentTexts[bookId];
         if (user && commentText && commentText.trim()) {
             dispatch(addComment({ bookId, userName: user.username, comment: commentText }));
             setCommentTexts(prev => ({ ...prev, [bookId]: '' }));
         }
-    };
+    }, [commentTexts, user, dispatch]);
 
-    const renderCommentForm = (bookId) => (
+    const renderCommentForm = useCallback((bookId) => (
         <Form className='d-flex justify-content-between my-2 mt-4' onSubmit={(e) => { e.preventDefault(); handleComment(bookId); }}>
             <Form.Group>
                 <Form.Control
@@ -146,14 +149,14 @@ const Books = () => {
                 Post Comment
             </Button>
         </Form>
-    );
+    ), [commentTexts, handleComment, handleCommentChange]);
 
     return (
         <div>
             {showForm && (
                 <div className='my-2'>
                     <DynamicForm
-                        className="shadow-md funky-list funky-card"
+                        className="shadow-md book-list funky-card"
                         formConfig={formConfig}
                         onSubmit={handleFormSubmit}
                         editingItem={editingItem}
@@ -176,7 +179,7 @@ const Books = () => {
                         onLike={handleLike}
                         renderCommentForm={renderCommentForm}
                         noRecordMessage="No books found."
-                        className="shadow-md"
+                        className="shadow-md book-list funky-card"
                         formConfig={formConfig}
                     />
                 </div>

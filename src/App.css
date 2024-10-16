@@ -8,6 +8,46 @@
   color: #0056b3 !important; 
 }
 
+/* Poems */
+.poem-list {
+  background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+  border-radius: 10px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15), 0 4px 4px rgba(0,0,0,0.12);
+  padding: 20px;
+  font-family: 'Cursive', sans-serif;
+  color: #333;
+}
+
+/* Narrative */
+.narrative-list {
+  background: radial-gradient(circle, #fbc2eb 0%, #a6c1ee 100%);
+  border-radius: 12px;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.2), 0 8px 8px rgba(0,0,0,0.18);
+  padding: 25px;
+  font-family: 'Serif', serif;
+  color: #4d4d4d;
+}
+
+/* Courses */
+.course-list {
+  background: linear-gradient(to right, #f9ecad 0%, #d2b211 100%);
+  border-radius: 8px;
+  box-shadow: 0 14px 28px rgba(0,0,0,0.22), 0 10px 10px rgba(0,0,0,0.2);
+  padding: 30px;
+  font-family: 'Sans-serif', sans-serif;
+  color: #fff;
+}
+
+/* Books */
+.book-list {
+  background: linear-gradient(60deg, #84fab0 0%, #8fd3f4 100%);
+  border-radius: 20px;
+  box-shadow: 0 16px 32px rgba(0,0,0,0.25), 0 12px 12px rgba(0,0,0,0.22);
+  padding: 35px;
+  font-family: 'Times New Roman', Times, serif;
+  color: #222;
+}
+
 
 .funky-list {
   background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);

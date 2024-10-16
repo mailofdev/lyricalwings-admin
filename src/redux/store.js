@@ -3,13 +3,14 @@ import authReducer from './authSlice';
 import poemReducer from './poemSlice';
 import narrativeReducer from './narrativeSlice';
 import bookReducer from './bookSlice';
-
+import coursesReducer from './coursesSlice';
 const store = configureStore({
   reducer: {
     auth: authReducer,
     poems: poemReducer,
     narrative: narrativeReducer,
     book: bookReducer,
+    courses: coursesReducer,
   },
 });
 
