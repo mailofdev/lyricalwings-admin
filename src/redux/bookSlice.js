@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
 import { get, ref, push, set, remove } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../common/firebase';
@@ -18,12 +18,24 @@ export const fetchbook = createAsyncThunk('book/fetchbook', async () => {
     const bookRef = ref(db, 'book');
     const snapshot = await get(bookRef);
     const book = snapshot.val() || {};
-    return Object.keys(book).map(key => ({ id: key, ...book[key] }));
+    return Object.keys(book).map(key => ({ 
+        id: key, 
+        ...book[key],
+        createdAt: Number(book[key].createdAt) || Date.now(),
+        lastUpdated: Number(book[key].lastUpdated) || Date.now()
+    }));
 });
 
 // Async thunk for adding a new book
 export const addbook = createAsyncThunk('book/addbook', async (bookData) => {
-    let updatedBookData = { ...bookData };
+    const timestamp = Date.now();
+    let updatedBookData = {
+         ...bookData,
+         createdAt: timestamp,
+         lastUpdated: timestamp,
+         likes: {},
+         comments: {}
+        };
     
     if (bookData.bookImage instanceof File) {
       const imageUrl = await uploadImage(bookData.bookImage);
@@ -38,7 +50,10 @@ export const addbook = createAsyncThunk('book/addbook', async (bookData) => {
 
 // Async thunk for updating an existing book
 export const updatebook = createAsyncThunk('book/updatebook', async ({ id, bookData }) => {
-    let updatedBookData = { ...bookData };
+    let updatedBookData = { 
+        ...bookData,
+        lastUpdated: Date.now()
+     };
   
     if (bookData.bookImage instanceof File) {
       const imageUrl = await uploadImage(bookData.bookImage);
@@ -49,6 +64,36 @@ export const updatebook = createAsyncThunk('book/updatebook', async ({ id, bookD
     await set(bookRef, updatedBookData);
     return { id, ...updatedBookData };
   });
+
+  export const selectAllBooks = state => state.book.book;
+
+  export const selectLatestBooks = createSelector(
+    [selectAllBooks],
+    (book) => {
+        return [...book]
+            .sort((a, b) => {
+                const likesA = a.likes ? Object.keys(a.likes).length : 0;
+                const likesB = b.likes ? Object.keys(b.likes).length : 0;
+                return likesB - likesA;
+            })
+            .slice(0, 3);
+    }
+);
+
+export const selectMostLikedBooks = createSelector(
+    [selectAllBooks],
+    (book) => {
+        return [...book]
+            .sort((a, b) => {
+                const likesA = a.likes ? Object.keys(a.likes).length : 0;
+                const likesB = b.likes ? Object.keys(b.likes).length : 0;
+                return likesB - likesA;
+            })
+            .slice(0, 3);
+    }
+);
+
+
 
 // Async thunk for deleting a book
 export const deletebook = createAsyncThunk('book/deletebook', async (id) => {

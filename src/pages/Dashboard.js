@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchPoems, selectLatestPoems, selectMostLikedPoems } from '../redux/poemSlice';
 import { fetchNarratives, selectLatestNarratives, selectMostLikedNarratives } from '../redux/narrativeSlice';
+import { fetchbook, selectLatestBooks, selectMostLikedBooks } from '../redux/bookSlice';
 import DynamicList from '../components/DynamicList';
 import Loader from '../components/Loader';
 
@@ -20,10 +21,16 @@ function Dashboard() {
   const loadingNarratives = useSelector(state => state.narratives.loading);
   const errorNarratives = useSelector(state => state.narratives.error);
 
+  const latestBook = useSelector(selectLatestBooks);
+  const mostLikedBook = useSelector(selectMostLikedBooks);
+  const loadingBook = useSelector(state => state.book.loading);
+  const errorBook = useSelector(state => state.book.error);
+
   useEffect(() => {
     if (!hasFetched) {
       dispatch(fetchPoems());
       dispatch(fetchNarratives());
+      dispatch(fetchbook());
       setHasFetched(true);
     }
   }, [dispatch, hasFetched]);
@@ -35,7 +42,7 @@ function Dashboard() {
     { header: 'Created', key: 'createdAt', formatter: (poem) => new Date(poem.createdAt).toLocaleDateString() }
   ];
 
-  if (error || errorNarratives) {
+  if (error || errorNarratives || errorBook) {
     return (
       <div className="container mt-4">
         <div className="alert alert-danger" role="alert">
@@ -48,11 +55,40 @@ function Dashboard() {
   return (
     <div className="container mt-4">
 
-      {loading || loadingNarratives ? (
+      {loading || loadingNarratives || loadingBook ? (
         <Loader loadingMessage="Loading data.." showFullPageLoader={true} />
       ) : (
         <>
           <div className='d-flex gap-4 flex-column'>
+
+          <div>
+              <h2 className=" mb-0">Latest Book</h2>
+              <DynamicList
+                data={latestBook}
+                customHeadersAndKeys={customHeadersAndKeys}
+                noRecordMessage="No poems found."
+                className="funky-list"
+                isShowOnDashboard={false}
+                rowXS="1"
+                rowMD="2"
+                rowLG="3"
+              />
+            </div>
+
+            <div>
+              <h2 className=" mb-0">Most Popular Book</h2>
+              <DynamicList
+                data={mostLikedBook}
+                customHeadersAndKeys={customHeadersAndKeys}
+                noRecordMessage="No poems found."
+                className="funky-list"
+                isShowOnDashboard={false}
+                rowXS="1"
+                rowMD="2"
+                rowLG="3"
+              />
+            </div>
+
             <div>
               <h2 className=" mb-0">Latest Poems</h2>
               <DynamicList
