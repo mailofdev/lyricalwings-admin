@@ -191,7 +191,7 @@ const Courses = () => {
             noRecordMessage="No courses found."
             className="shadow-md course-list funky-card"
             formConfig={formConfig}
-            isShowInfoCard={true}
+            isShowOnDashboard={true}
           />
         </div>
       )}

@@ -207,7 +207,7 @@ const Narrative = () => {
                         className="shadow-md narrative-list funky-card"
                         formConfig={formConfig}
                         actionButtons={poemTypes}
-                        isShowInfoCard={true}
+                        isShowOnDashboard={true}
                     />
                 </div>
             )}

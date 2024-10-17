@@ -208,7 +208,7 @@ const Poems = () => {
                         className="shadow-md poem-list funky-card"
                         formConfig={formConfig}
                         actionButtons={poemTypes}
-                        isShowInfoCard={true}
+                        isShowOnDashboard={true}
                     />
                 </div>
             )}
