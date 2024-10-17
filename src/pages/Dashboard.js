@@ -35,11 +35,11 @@ function Dashboard() {
     { header: 'Created', key: 'createdAt', formatter: (poem) => new Date(poem.createdAt).toLocaleDateString() }
   ];
 
-  if (error) {
+  if (error || errorNarratives) {
     return (
       <div className="container mt-4">
         <div className="alert alert-danger" role="alert">
-          Error: {error}
+          Error: {error || errorNarratives}
         </div>
       </div>
     );
@@ -48,7 +48,7 @@ function Dashboard() {
   return (
     <div className="container mt-4">
 
-      {loading ? (
+      {loading || loadingNarratives ? (
         <Loader loadingMessage="Loading data.." showFullPageLoader={true} />
       ) : (
         <>
@@ -61,6 +61,9 @@ function Dashboard() {
                 noRecordMessage="No poems found."
                 className="funky-list"
                 isShowOnDashboard={false}
+                rowXS="1"
+                rowMD="2"
+                rowLG="3"
               />
             </div>
 
@@ -72,6 +75,9 @@ function Dashboard() {
                 noRecordMessage="No poems found."
                 className="funky-list"
                 isShowOnDashboard={false}
+                rowXS="1"
+                rowMD="2"
+                rowLG="3"
               />
             </div>
 
@@ -83,6 +89,9 @@ function Dashboard() {
                 noRecordMessage="No poems found."
                 className="funky-list"
                 isShowOnDashboard={false}
+                rowXS="1"
+                rowMD="2"
+                rowLG="3"
               />
             </div>
 
@@ -94,6 +103,9 @@ function Dashboard() {
                 noRecordMessage="No poems found."
                 className="funky-list"
                 isShowOnDashboard={false}
+                rowXS="1"
+                rowMD="2"
+                rowLG="3"
               />
             </div>
           </div>

@@ -209,6 +209,9 @@ const Poems = () => {
                         formConfig={formConfig}
                         actionButtons={poemTypes}
                         isShowOnDashboard={true}
+                        rowXS="1"
+                        rowMD="2"
+                        rowLG="3"
                     />
                 </div>
             )}

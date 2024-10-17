@@ -17,7 +17,10 @@ const DynamicList = ({
   customHeadersAndKeys = [],
   formConfig,
   actionButtons,
-  isShowOnDashboard
+  isShowOnDashboard,
+  rowXS,
+  rowMD,
+  rowLG  
 
 }) => {
   const [filteredList, setFilteredList] = useState([]);
@@ -272,7 +275,7 @@ const DynamicList = ({
           </Row>
         </>
       )}
-      <Row xs={1} md={2} lg={3} className="g-4">
+      <Row xs={rowXS} md={rowMD} lg={rowLG} className="g-4">
         {currentItems.map((item, index) => (
           <Col key={index}>
             <Card className="h-100 funky-card">

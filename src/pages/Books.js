@@ -182,6 +182,9 @@ const Books = () => {
                         className="shadow-md book-list funky-card"
                         formConfig={formConfig}
                         isShowOnDashboard={true}
+                        rowXS="1"
+                        rowMD="1"
+                        rowLG="1"
                     />
                 </div>
             )}

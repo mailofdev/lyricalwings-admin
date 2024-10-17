@@ -188,6 +188,9 @@ const Narrative = () => {
                         formConfig={formConfig}
                         actionButtons={narrativeTypes}
                         isShowOnDashboard={true}
+                        rowXS="1"
+                        rowMD="1"
+                        rowLG="2"
                     />
                 </div>
             )}

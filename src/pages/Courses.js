@@ -192,6 +192,9 @@ const Courses = () => {
             className="shadow-md course-list funky-card"
             formConfig={formConfig}
             isShowOnDashboard={true}
+            rowXS="1"
+            rowMD="1"
+            rowLG="1"
           />
         </div>
       )}
