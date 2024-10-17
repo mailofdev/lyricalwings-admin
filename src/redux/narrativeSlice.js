@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
 import { get, ref, push, set, remove } from 'firebase/database';
 import { db } from '../common/firebase';
 
@@ -7,127 +7,90 @@ export const fetchNarratives = createAsyncThunk('narratives/fetchNarratives', as
     const narrativesRef = ref(db, 'narratives');
     const snapshot = await get(narrativesRef);
     const narratives = snapshot.val() || {};
-    return Object.keys(narratives).map(key => ({ id: key, ...narratives[key] }));
+    return Object.keys(narratives).map(key => ({ 
+        id: key, 
+        ...narratives[key],
+        // Ensure createdAt and lastUpdated are numbers
+        createdAt: Number(narratives[key].createdAt) || Date.now(),
+        lastUpdated: Number(narratives[key].lastUpdated) || Date.now()
+    }));
 });
 
-export const fetchTopThreeNarrativesByType = createAsyncThunk('narratives/fetchTopThreeNarrativesByType', async (type) => {
-    const topThreeRef = ref(db, `topThreeNarrativesByType/${type}`);
-    const snapshot = await get(topThreeRef);
-    return snapshot.val() || [];
-});
-
-// Updated utility function to update top three narratives by type
-const updateTopThreeNarratives = async (type) => {
-    const narrativesRef = ref(db, 'narratives');
-    const snapshot = await get(narrativesRef);
-    const narratives = snapshot.val() || {};
-
-    // Filter narratives by type and sort by lastUpdated (or createdAt if lastUpdated doesn't exist)
-    const narrativesOfType = Object.keys(narratives)
-        .map(key => ({ id: key, ...narratives[key] }))
-        .filter(narrative => narrative.type === type)
-        .sort((a, b) => (b.lastUpdated || b.createdAt) - (a.lastUpdated || a.createdAt));
-
-    // Get the top three narratives (including all data)
-    const topThreeNarratives = narrativesOfType.slice(0, 3);
-
-    // Update the "topThreeNarrativesByType" collection in Firebase
-    const topThreeRef = ref(db, `topThreeNarrativesByType/${type}`);
-    await set(topThreeRef, topThreeNarratives);
-};
-
-// Updated async thunk for adding a new narrative
+// Async thunk for adding a new narrative
 export const addNarrative = createAsyncThunk('narratives/addNarrative', async (narrativeData) => {
-    const narrativesRef = ref(db, 'narratives');
-    const newNarrativeRef = push(narrativesRef);
-    const newNarrative = {
+    const timestamp = Date.now();
+    const newNarrativeData = {
         ...narrativeData,
-        createdAt: Date.now(),
-        lastUpdated: Date.now(),
+        createdAt: timestamp,
+        lastUpdated: timestamp,
         likes: {},
         comments: {}
     };
-    await set(newNarrativeRef, newNarrative);
-
-    // Update the top three narratives by type
-    await updateTopThreeNarratives(newNarrative.type);
-
-    return { id: newNarrativeRef.key, ...newNarrative };
+    
+    const narrativesRef = ref(db, 'narratives');
+    const newNarrativeRef = push(narrativesRef);
+    await set(newNarrativeRef, newNarrativeData);
+    return { id: newNarrativeRef.key, ...newNarrativeData };
 });
 
-// Updated async thunk for updating an existing narrative
+// Async thunk for updating an existing narrative
 export const updateNarrative = createAsyncThunk('narratives/updateNarrative', async ({ id, narrativeData }) => {
-    const narrativeRef = ref(db, `narratives/${id}`);
-    const snapshot = await get(narrativeRef);
-    const existingNarrative = snapshot.val();
-    const updatedNarrative = {
-        ...existingNarrative,
+    const updatedNarrativeData = {
         ...narrativeData,
         lastUpdated: Date.now()
     };
-    await set(narrativeRef, updatedNarrative);
-
-    // Update the top three narratives by type
-    await updateTopThreeNarratives(updatedNarrative.type);
-
-    return { id, ...updatedNarrative };
+    const narrativeRef = ref(db, `narratives/${id}`);
+    await set(narrativeRef, updatedNarrativeData);
+    return { id, ...updatedNarrativeData };
 });
 
-// Updated async thunk for deleting a narrative
+// Selectors
+export const selectAllNarratives = state => state.narratives.narratives;
+
+export const selectLatestNarratives = createSelector(
+    [selectAllNarratives],
+    (narratives) => {
+        return [...narratives]
+            .sort((a, b) => Number(b.createdAt) - Number(a.createdAt))
+            .slice(0, 3);
+    }
+);
+
+export const selectMostLikedNarratives = createSelector(
+    [selectAllNarratives],
+    (narratives) => {
+        return [...narratives]
+            .sort((a, b) => {
+                const likesA = a.likes ? Object.keys(a.likes).length : 0;
+                const likesB = b.likes ? Object.keys(b.likes).length : 0;
+                return likesB - likesA;
+            })
+            .slice(0, 3);
+    }
+);
+
+// Async thunk for deleting a narrative
 export const deleteNarrative = createAsyncThunk('narratives/deleteNarrative', async (id) => {
     const narrativeRef = ref(db, `narratives/${id}`);
-    const snapshot = await get(narrativeRef);
-    const narrativeData = snapshot.val();
     await remove(narrativeRef);
-
-    // Update the top three narratives by type after deletion
-    if (narrativeData && narrativeData.type) {
-        await updateTopThreeNarratives(narrativeData.type);
-    }
-
-    // Remove the narrative from topThreeNarrativesByType if it exists
-    const topThreeRef = ref(db, `topThreeNarrativesByType/${narrativeData.type}`);
-    const topThreeSnapshot = await get(topThreeRef);
-    const topThreeNarratives = topThreeSnapshot.val() || [];
-    const updatedTopThree = topThreeNarratives.filter(narrative => narrative.id !== id);
-    await set(topThreeRef, updatedTopThree);
-
     return id;
 });
 
+// Async thunk for adding a like to a narrative
 export const addLike = createAsyncThunk('narratives/addLike', async ({ narrativeId, userName }) => {
-    console.log(userName)
     const likeRef = ref(db, `narratives/${narrativeId}/likes/${userName}`);
     await set(likeRef, true);
-
-    // Update the top three narratives by type
-    const narrativeRef = ref(db, `narratives/${narrativeId}`);
-    const snapshot = await get(narrativeRef);
-    const narrativeData = snapshot.val();
-    if (narrativeData && narrativeData.type) {
-        await updateTopThreeNarratives(narrativeData.type);
-    }
-
     return { narrativeId, userName };
 });
 
-// Updated async thunk for removing a like from a narrative
+// Async thunk for removing a like from a narrative
 export const removeLike = createAsyncThunk('narratives/removeLike', async ({ narrativeId, userName }) => {
     const likeRef = ref(db, `narratives/${narrativeId}/likes/${userName}`);
     await remove(likeRef);
-
-    // Update the top three narratives by type
-    const narrativeRef = ref(db, `narratives/${narrativeId}`);
-    const snapshot = await get(narrativeRef);
-    const narrativeData = snapshot.val();
-    if (narrativeData && narrativeData.type) {
-        await updateTopThreeNarratives(narrativeData.type);
-    }
-
     return { narrativeId, userName };
 });
 
-// Updated async thunk for adding a comment to a narrative
+// Async thunk for adding a comment to a narrative
 export const addComment = createAsyncThunk('narratives/addComment', async ({ narrativeId, userName, comment }) => {
     const commentsRef = ref(db, `narratives/${narrativeId}/comments`);
     const newCommentRef = push(commentsRef);
@@ -137,15 +100,6 @@ export const addComment = createAsyncThunk('narratives/addComment', async ({ nar
         timestamp: Date.now()
     };
     await set(newCommentRef, commentData);
-
-    // Update the top three narratives by type
-    const narrativeRef = ref(db, `narratives/${narrativeId}`);
-    const snapshot = await get(narrativeRef);
-    const narrativeData = snapshot.val();
-    if (narrativeData && narrativeData.type) {
-        await updateTopThreeNarratives(narrativeData.type);
-    }
-
     return { narrativeId, commentId: newCommentRef.key, ...commentData };
 });
 
@@ -153,7 +107,6 @@ const narrativeSlice = createSlice({
     name: 'narratives',
     initialState: {
         narratives: [],
-        topThreeNarratives: {},
         loading: false,
         error: null,
     },
@@ -162,10 +115,12 @@ const narrativeSlice = createSlice({
         builder
             .addCase(fetchNarratives.pending, (state) => {
                 state.loading = true;
+                state.error = null;
             })
             .addCase(fetchNarratives.fulfilled, (state, action) => {
                 state.loading = false;
                 state.narratives = action.payload;
+                state.error = null;
             })
             .addCase(fetchNarratives.rejected, (state, action) => {
                 state.loading = false;
@@ -206,7 +161,7 @@ const narrativeSlice = createSlice({
                     narrative.comments[commentId] = commentData;
                 }
             });
-    }
+    },
 });
 
 export default narrativeSlice.reducer;

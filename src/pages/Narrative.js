@@ -1,44 +1,33 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { createSelector } from 'reselect';
+import { Modal, Form, Button } from 'react-bootstrap';
 import DynamicForm from '../components/DynamicForm';
-import {
-    fetchNarratives, addNarrative, updateNarrative, deleteNarrative,
-    addLike, addComment,
-    removeLike,
-} from '../redux/narrativeSlice';
 import DynamicList from '../components/DynamicList';
 import ConfirmDialog from '../components/ConfirmDialog';
-import { Modal, Form, Button } from 'react-bootstrap';
 import Loader from '../components/Loader';
-
-// Create memoized selector
-const selectNarrativeData = createSelector(
-    (state) => state.narratives.narratives,  // Fix the key 'narratives'
-    (state) => state.narratives.loading,     // Fix the key 'narratives'
-    (narratives, loading) => ({
-        narratives,   // Key must match with useSelector in the component
-        poemLoading: loading,
-    })
-);
+import { addNarrative, fetchNarratives, updateNarrative, deleteNarrative, addLike, removeLike, addComment } from '../redux/narrativeSlice';
 
 const Narrative = () => {
     const dispatch = useDispatch();
     const [editingItem, setEditingItem] = useState(null);
     const [showForm, setShowForm] = useState(false);
-
-    // Use memoized selector
-    const { narratives, poemLoading: loading } = useSelector(selectNarrativeData);  // Use 'narratives' here
-
-    const reversedNarrative = useMemo(() => [...narratives].reverse(), [narratives]);
-    const auth = useSelector((state) => state.auth);
-    const user = auth.user || 'Anonymous';
     const [hasFetched, setHasFetched] = useState(false);
     const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
     const [showModal, setShowModal] = useState(false);
-    const [selectedPoem, setSelectedPoem] = useState(null);
+    const [selectedNarrative, setSelectedNarrative] = useState(null);
     const [commentTexts, setCommentTexts] = useState({});
+
+    // Memoized selectors
+    const selectNarratives = useCallback((state) => state.narratives.narratives, []);
+    const selectLoading = useCallback((state) => state.narratives.loading, []);
+    const selectUser = useCallback((state) => state.auth.user || 'Anonymous', []);
+
+    const narratives = useSelector(selectNarratives);
+    const loading = useSelector(selectLoading);
+    const user = useSelector(selectUser);
+
+    const reversedNarratives = useMemo(() => [...narratives].reverse(), [narratives]);
 
     useEffect(() => {
         if (!hasFetched) {
@@ -66,22 +55,21 @@ const Narrative = () => {
                         askBeforePasteFromWord: false,
                         defaultActionOnPaste: "insert_only_text",
                     }
-
                 },
                 {
                     type: 'dropdown',
                     name: 'type',
                     label: 'Select Type',
                     options: [
-                        { label: 'Story', value: 'story' },
-                        { label: 'Novel', value: 'novel' },
+                        { label: 'Story', value: 'Story' },
+                        { label: 'Novel', value: 'Novel' },
                     ]
                 }
             ]
         }
     ], []);
 
-    const poemTypes = useMemo(() => formConfig[0].fields[2].options, [formConfig]);
+    const narrativeTypes = useMemo(() => formConfig[0].fields[2].options, [formConfig]);
 
     const customHeadersAndKeys = useMemo(() => [
         { header: 'Title', key: 'title' },
@@ -95,7 +83,7 @@ const Narrative = () => {
             dispatch(addNarrative(data));
             setShowForm(false);
         } else if (formType === 'edit') {
-            dispatch(updateNarrative({ id: data.id, poemData: data }));
+            dispatch(updateNarrative({ id: data.id, narrativeData: data }));
         }
     }, [dispatch]);
 
@@ -118,7 +106,7 @@ const Narrative = () => {
     }, []);
 
     const cancelForm = useCallback(() => {
-        setSelectedPoem(null);
+        setSelectedNarrative(null);
         setEditingItem(null);
         setShowForm(false);
         setShowModal(false);
@@ -129,45 +117,37 @@ const Narrative = () => {
         setShowForm(true);
     }, []);
 
-    const handleLike = useCallback((poemId) => {
+    const handleLike = useCallback((narrativeId) => {
         if (user) {
-            const poem = narratives.find(p => p.id === poemId);
-            if (poem) {
-                const userLikesPoem = poem.likes && poem.likes[user.id];    
-                if (userLikesPoem) {
-                    dispatch(removeLike({ narrativeId: poemId, userName: user.username }));
-                } else {
-                    dispatch(addLike({ narrativeId: poemId, userName: user.username }));
-                }
+            const narrative = narratives.find(p => p.id === narrativeId);
+            if (narrative && narrative.likes && narrative.likes[user.id]) {
+                dispatch(removeLike({ narrativeId, userName: user.username }));
             } else {
-                console.error('Poem not found');
+                dispatch(addLike({ narrativeId, userName: user.username }));
             }
-        } else {
-            console.warn('User not logged in');
         }
     }, [user, narratives, dispatch]);
-    
 
-    const handleCommentChange = useCallback((poemId, text) => {
-        setCommentTexts(prev => ({ ...prev, [poemId]: text }));
+    const handleCommentChange = useCallback((narrativeId, text) => {
+        setCommentTexts(prev => ({ ...prev, [narrativeId]: text }));
     }, []);
 
-    const handleComment = useCallback((poemId) => {
-        const commentText = commentTexts[poemId];
+    const handleComment = useCallback((narrativeId) => {
+        const commentText = commentTexts[narrativeId];
         if (user && commentText && commentText.trim()) {
-            dispatch(addComment({ poemId, userName: user.username, comment: commentText }));
-            setCommentTexts(prev => ({ ...prev, [poemId]: '' }));
+            dispatch(addComment({ narrativeId, userName: user.username, comment: commentText }));
+            setCommentTexts(prev => ({ ...prev, [narrativeId]: '' }));
         }
     }, [commentTexts, user, dispatch]);
 
-    const renderCommentForm = useCallback((poemId) => (
-        <Form className='d-flex justify-content-between my-2 mt-4' onSubmit={(e) => { e.preventDefault(); handleComment(poemId); }}>
+    const renderCommentForm = useCallback((narrativeId) => (
+        <Form className='d-flex justify-content-between my-2 mt-4' onSubmit={(e) => { e.preventDefault(); handleComment(narrativeId); }}>
             <Form.Group>
                 <Form.Control
                     type="text"
                     placeholder="Add a comment..."
-                    value={commentTexts[poemId] || ''}
-                    onChange={(e) => handleCommentChange(poemId, e.target.value)}
+                    value={commentTexts[narrativeId] || ''}
+                    onChange={(e) => handleCommentChange(narrativeId, e.target.value)}
                 />
             </Form.Group>
             <Button type="submit" variant="primary" size="sm">
@@ -185,28 +165,28 @@ const Narrative = () => {
                         formConfig={formConfig}
                         onSubmit={handleFormSubmit}
                         editingItem={editingItem}
-                        title={editingItem ? 'Edit poem' : 'Add poem'}
+                        title={editingItem ? 'Edit narrative' : 'Add narrative'}
                         formType={editingItem ? 'edit' : 'add'}
                         cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
                     />
                 </div>
             )}
             {loading ? (
-                <Loader loadingMessage="Fetching narrative..." />
+                <Loader loadingMessage="Fetching narratives..." />
             ) : (
                 <div className='my-2'>
                     <DynamicList
-                        data={reversedNarrative}
+                        data={reversedNarratives}
                         customHeadersAndKeys={customHeadersAndKeys}
                         onAddNew={handleAddNew}
                         onEdit={handleFormSubmit}
                         onDelete={handleDelete}
                         onLike={handleLike}
                         renderCommentForm={renderCommentForm}
-                        noRecordMessage="No narrative found."
+                        noRecordMessage="No narratives found."
                         className="shadow-md narrative-list funky-card"
                         formConfig={formConfig}
-                        actionButtons={poemTypes}
+                        actionButtons={narrativeTypes}
                         isShowOnDashboard={true}
                     />
                 </div>
@@ -214,7 +194,7 @@ const Narrative = () => {
             <ConfirmDialog
                 visible={confirmDialogVisible}
                 onHide={cancelDelete}
-                message={`Are you sure you want to delete the poem titled "${itemToDelete?.title}"?`}
+                message={`Are you sure you want to delete the narrative titled "${itemToDelete?.title}"?`}
                 header="Confirm Deletion"
                 accept={confirmDelete}
                 reject={cancelDelete}
@@ -224,8 +204,8 @@ const Narrative = () => {
                     className="shadow-md bg-primary-subtle"
                     formConfig={formConfig}
                     onSubmit={handleFormSubmit}
-                    editingItem={selectedPoem}
-                    title="Edit Poem"
+                    editingItem={selectedNarrative}
+                    title="Edit Narrative"
                     formType="edit"
                     buttonLabel="Update"
                     cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
