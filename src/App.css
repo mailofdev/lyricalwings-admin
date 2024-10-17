@@ -124,6 +124,10 @@
   font-style: normal;
 }
 
+.default-cursor {
+  cursor: default !important;
+}
+
 
 .text-truncate {
   display: -webkit-box; /* Use flexbox layout */

@@ -89,15 +89,14 @@ const DynamicList = ({
     const isLiked = item.likes && Object.keys(item.likes).length > 0;
 
     return (
-      <Button
-        variant={isLiked ? "danger" : "outline-danger"}
-        size="sm"
-        onClick={() => onLike(item.id)}
-        className="d-flex align-items-center funky-button"
-      >
-        {isLiked ? <FaHeart className="me-1" /> : <FaRegHeart className="me-1" />}
-        <span>{likeCount}</span>
-      </Button>
+          <Button
+            variant={isLiked ? "danger" : "outline-danger"}
+            size="sm"
+            onClick={() => onLike(item.id)}
+            className={`d-flex align-items-center funky-button ${isShowInfoCard ? '' : 'default-cursor'}`}>
+            {isLiked ? <FaHeart className="me-1" /> : <FaRegHeart className="me-1" />}
+            <span>{likeCount}</span>
+          </Button>
     );
   };
 
@@ -278,7 +277,9 @@ const DynamicList = ({
                 <div className="mt-auto">
                   <div className='d-flex justify-content-between'>
                     {renderLikeButton(item)}
-                    <Button variant="outline-secondary" size="sm" className="d-flex align-items-center funky-button">
+                    <Button variant="outline-secondary" size="sm"
+                     className={`d-flex align-items-center funky-button ${isShowInfoCard ? '' : 'default-cursor'}`}
+                     >
                       <FaComment className="me-1" />
                       <span>{item.comments ? Object.keys(item.comments).length : 0}</span>
                     </Button>

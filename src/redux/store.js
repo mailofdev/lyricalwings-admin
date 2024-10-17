@@ -8,7 +8,7 @@ const store = configureStore({
   reducer: {
     auth: authReducer,
     poems: poemReducer,
-    narrative: narrativeReducer,
+    narratives: narrativeReducer,
     book: bookReducer,
     courses: coursesReducer,
   },

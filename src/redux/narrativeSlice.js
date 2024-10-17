@@ -2,53 +2,134 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { get, ref, push, set, remove } from 'firebase/database';
 import { db } from '../common/firebase';
 
-// Async thunk for fetching narrative from Firebase
-export const fetchnarrative = createAsyncThunk('narrative/fetchnarrative', async () => {
-    const narrativeRef = ref(db, 'narrative');
+// Async thunk for fetching narratives from Firebase
+export const fetchNarratives = createAsyncThunk('narratives/fetchNarratives', async () => {
+    const narrativesRef = ref(db, 'narratives');
+    const snapshot = await get(narrativesRef);
+    const narratives = snapshot.val() || {};
+    return Object.keys(narratives).map(key => ({ id: key, ...narratives[key] }));
+});
+
+export const fetchTopThreeNarrativesByType = createAsyncThunk('narratives/fetchTopThreeNarrativesByType', async (type) => {
+    const topThreeRef = ref(db, `topThreeNarrativesByType/${type}`);
+    const snapshot = await get(topThreeRef);
+    return snapshot.val() || [];
+});
+
+// Updated utility function to update top three narratives by type
+const updateTopThreeNarratives = async (type) => {
+    const narrativesRef = ref(db, 'narratives');
+    const snapshot = await get(narrativesRef);
+    const narratives = snapshot.val() || {};
+
+    // Filter narratives by type and sort by lastUpdated (or createdAt if lastUpdated doesn't exist)
+    const narrativesOfType = Object.keys(narratives)
+        .map(key => ({ id: key, ...narratives[key] }))
+        .filter(narrative => narrative.type === type)
+        .sort((a, b) => (b.lastUpdated || b.createdAt) - (a.lastUpdated || a.createdAt));
+
+    // Get the top three narratives (including all data)
+    const topThreeNarratives = narrativesOfType.slice(0, 3);
+
+    // Update the "topThreeNarrativesByType" collection in Firebase
+    const topThreeRef = ref(db, `topThreeNarrativesByType/${type}`);
+    await set(topThreeRef, topThreeNarratives);
+};
+
+// Updated async thunk for adding a new narrative
+export const addNarrative = createAsyncThunk('narratives/addNarrative', async (narrativeData) => {
+    const narrativesRef = ref(db, 'narratives');
+    const newNarrativeRef = push(narrativesRef);
+    const newNarrative = {
+        ...narrativeData,
+        createdAt: Date.now(),
+        lastUpdated: Date.now(),
+        likes: {},
+        comments: {}
+    };
+    await set(newNarrativeRef, newNarrative);
+
+    // Update the top three narratives by type
+    await updateTopThreeNarratives(newNarrative.type);
+
+    return { id: newNarrativeRef.key, ...newNarrative };
+});
+
+// Updated async thunk for updating an existing narrative
+export const updateNarrative = createAsyncThunk('narratives/updateNarrative', async ({ id, narrativeData }) => {
+    const narrativeRef = ref(db, `narratives/${id}`);
     const snapshot = await get(narrativeRef);
-    const narrative = snapshot.val() || {};
-    return Object.keys(narrative).map(key => ({ id: key, ...narrative[key] }));
+    const existingNarrative = snapshot.val();
+    const updatedNarrative = {
+        ...existingNarrative,
+        ...narrativeData,
+        lastUpdated: Date.now()
+    };
+    await set(narrativeRef, updatedNarrative);
+
+    // Update the top three narratives by type
+    await updateTopThreeNarratives(updatedNarrative.type);
+
+    return { id, ...updatedNarrative };
 });
 
-// Async thunk for adding a new poem
-export const addPoem = createAsyncThunk('narrative/addPoem', async (poemData) => {
-    const narrativeRef = ref(db, 'narrative');
-    const newPoemRef = push(narrativeRef);
-    await set(newPoemRef, poemData);
-    return { id: newPoemRef.key, ...poemData };
-});
+// Updated async thunk for deleting a narrative
+export const deleteNarrative = createAsyncThunk('narratives/deleteNarrative', async (id) => {
+    const narrativeRef = ref(db, `narratives/${id}`);
+    const snapshot = await get(narrativeRef);
+    const narrativeData = snapshot.val();
+    await remove(narrativeRef);
 
-// Async thunk for updating an existing poem
-export const updatePoem = createAsyncThunk('narrative/updatePoem', async ({ id, poemData }) => {
-    const poemRef = ref(db, `narrative/${id}`);
-    await set(poemRef, poemData);
-    return { id, ...poemData };
-});
+    // Update the top three narratives by type after deletion
+    if (narrativeData && narrativeData.type) {
+        await updateTopThreeNarratives(narrativeData.type);
+    }
 
-// Async thunk for deleting a poem
-export const deletePoem = createAsyncThunk('narrative/deletePoem', async (id) => {
-    const poemRef = ref(db, `narrative/${id}`);
-    await remove(poemRef);
+    // Remove the narrative from topThreeNarrativesByType if it exists
+    const topThreeRef = ref(db, `topThreeNarrativesByType/${narrativeData.type}`);
+    const topThreeSnapshot = await get(topThreeRef);
+    const topThreeNarratives = topThreeSnapshot.val() || [];
+    const updatedTopThree = topThreeNarratives.filter(narrative => narrative.id !== id);
+    await set(topThreeRef, updatedTopThree);
+
     return id;
 });
 
-// New async thunk for adding a like to a poem
-export const addLike = createAsyncThunk('narrative/addLike', async ({ poemId, userName }) => {
-    const likeRef = ref(db, `narrative/${poemId}/likes/${userName}`);
+export const addLike = createAsyncThunk('narratives/addLike', async ({ narrativeId, userName }) => {
+    console.log(userName)
+    const likeRef = ref(db, `narratives/${narrativeId}/likes/${userName}`);
     await set(likeRef, true);
-    return { poemId, userName };
+
+    // Update the top three narratives by type
+    const narrativeRef = ref(db, `narratives/${narrativeId}`);
+    const snapshot = await get(narrativeRef);
+    const narrativeData = snapshot.val();
+    if (narrativeData && narrativeData.type) {
+        await updateTopThreeNarratives(narrativeData.type);
+    }
+
+    return { narrativeId, userName };
 });
 
-// New async thunk for removing a like from a poem
-export const removeLike = createAsyncThunk('narrative/removeLike', async ({ poemId, userName }) => {
-    const likeRef = ref(db, `narrative/${poemId}/likes/${userName}`);
+// Updated async thunk for removing a like from a narrative
+export const removeLike = createAsyncThunk('narratives/removeLike', async ({ narrativeId, userName }) => {
+    const likeRef = ref(db, `narratives/${narrativeId}/likes/${userName}`);
     await remove(likeRef);
-    return { poemId, userName };
+
+    // Update the top three narratives by type
+    const narrativeRef = ref(db, `narratives/${narrativeId}`);
+    const snapshot = await get(narrativeRef);
+    const narrativeData = snapshot.val();
+    if (narrativeData && narrativeData.type) {
+        await updateTopThreeNarratives(narrativeData.type);
+    }
+
+    return { narrativeId, userName };
 });
 
-// New async thunk for adding a comment to a poem
-export const addComment = createAsyncThunk('narrative/addComment', async ({ poemId, userName, comment }) => {
-    const commentsRef = ref(db, `narrative/${poemId}/comments`);
+// Updated async thunk for adding a comment to a narrative
+export const addComment = createAsyncThunk('narratives/addComment', async ({ narrativeId, userName, comment }) => {
+    const commentsRef = ref(db, `narratives/${narrativeId}/comments`);
     const newCommentRef = push(commentsRef);
     const commentData = {
         userName,
@@ -56,67 +137,76 @@ export const addComment = createAsyncThunk('narrative/addComment', async ({ poem
         timestamp: Date.now()
     };
     await set(newCommentRef, commentData);
-    return { poemId, commentId: newCommentRef.key, ...commentData };
+
+    // Update the top three narratives by type
+    const narrativeRef = ref(db, `narratives/${narrativeId}`);
+    const snapshot = await get(narrativeRef);
+    const narrativeData = snapshot.val();
+    if (narrativeData && narrativeData.type) {
+        await updateTopThreeNarratives(narrativeData.type);
+    }
+
+    return { narrativeId, commentId: newCommentRef.key, ...commentData };
 });
 
-
 const narrativeSlice = createSlice({
-    name: 'narrative',
+    name: 'narratives',
     initialState: {
-        narrative: [],
+        narratives: [],
+        topThreeNarratives: {},
         loading: false,
         error: null,
     },
     reducers: {},
     extraReducers: (builder) => {
         builder
-            .addCase(fetchnarrative.pending, (state) => {
+            .addCase(fetchNarratives.pending, (state) => {
                 state.loading = true;
             })
-            .addCase(fetchnarrative.fulfilled, (state, action) => {
+            .addCase(fetchNarratives.fulfilled, (state, action) => {
                 state.loading = false;
-                state.narrative = action.payload;
+                state.narratives = action.payload;
             })
-            .addCase(fetchnarrative.rejected, (state, action) => {
+            .addCase(fetchNarratives.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
             })
-            .addCase(addPoem.fulfilled, (state, action) => {
-                state.narrative.push(action.payload);
+            .addCase(addNarrative.fulfilled, (state, action) => {
+                state.narratives.push(action.payload);
             })
-            .addCase(updatePoem.fulfilled, (state, action) => {
-                const index = state.narrative.findIndex(poem => poem.id === action.payload.id);
+            .addCase(updateNarrative.fulfilled, (state, action) => {
+                const index = state.narratives.findIndex(narrative => narrative.id === action.payload.id);
                 if (index !== -1) {
-                    state.narrative[index] = action.payload;
+                    state.narratives[index] = action.payload;
                 }
             })
-            .addCase(deletePoem.fulfilled, (state, action) => {
-                state.narrative = state.narrative.filter(poem => poem.id !== action.payload);
+            .addCase(deleteNarrative.fulfilled, (state, action) => {
+                state.narratives = state.narratives.filter(narrative => narrative.id !== action.payload);
             })
             .addCase(addLike.fulfilled, (state, action) => {
-                const { poemId, userName } = action.payload;
-                const poem = state.narrative.find(p => p.id === poemId);
-                if (poem) {
-                    if (!poem.likes) poem.likes = {};
-                    poem.likes[userName] = true;
+                const { narrativeId, userName } = action.payload;
+                const narrative = state.narratives.find(n => n.id === narrativeId);
+                if (narrative) {
+                    if (!narrative.likes) narrative.likes = {};
+                    narrative.likes[userName] = true;
                 }
             })
             .addCase(removeLike.fulfilled, (state, action) => {
-                const { poemId, userName } = action.payload;
-                const poem = state.narrative.find(p => p.id === poemId);
-                if (poem && poem.likes) {
-                    delete poem.likes[userName];
+                const { narrativeId, userName } = action.payload;
+                const narrative = state.narratives.find(n => n.id === narrativeId);
+                if (narrative && narrative.likes) {
+                    delete narrative.likes[userName];
                 }
             })
             .addCase(addComment.fulfilled, (state, action) => {
-                const { poemId, commentId, ...commentData } = action.payload;
-                const poem = state.narrative.find(p => p.id === poemId);
-                if (poem) {
-                    if (!poem.comments) poem.comments = {};
-                    poem.comments[commentId] = commentData;
+                const { narrativeId, commentId, ...commentData } = action.payload;
+                const narrative = state.narratives.find(n => n.id === narrativeId);
+                if (narrative) {
+                    if (!narrative.comments) narrative.comments = {};
+                    narrative.comments[commentId] = commentData;
                 }
             });
-    },
+    }
 });
 
 export default narrativeSlice.reducer;
