@@ -16,7 +16,8 @@ const DynamicList = ({
   className = '',
   customHeadersAndKeys = [],
   formConfig,
-  actionButtons
+  actionButtons,
+  isShowInfoCard
 
 }) => {
   const [filteredList, setFilteredList] = useState([]);
@@ -151,7 +152,6 @@ const DynamicList = ({
     );
   };
 
-
   const handleTypeSelect = (value) => {
     setSelectedType(value);
   };
@@ -217,69 +217,88 @@ const DynamicList = ({
             </Card.Body>
           </Card>
         ))}
-        <Button variant="primary" onClick={handleEdit} className="mt-3">Edit</Button>
+        {isShowInfoCard && (
+          <Button variant="primary" onClick={handleEdit} className="mt-3">Edit</Button>
+        )}
       </>
     );
   };
 
   return (
     <Container fluid className={`${className} py-4`}>
-      <Row className="mb-4 g-3">
-        <Col md={4}>
-          <Button variant="success" onClick={onAddNew} className="d-flex align-items-center w-100 justify-content-center funky-button">
-            <FaPlus className="me-2" /> Add New
-          </Button>
-        </Col>
-        <Col md={4} className="d-flex align-items-center justify-content-center">
-          <h5 className="mb-0">Total records: <Badge bg="primary" className="funky-badge">{filteredList.length}</Badge></h5>
-        </Col>
-        <Col md={4}>
-          <InputGroup>
-            <InputGroup.Text className="bg-primary funky-input text-white">
-              <FaSearch />
-            </InputGroup.Text>
-            <Form.Control
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="funky-input"
-            />
-          </InputGroup>
-        </Col>
-      </Row>
-      <Row className='my-4'>
-        {renderTypes()}
-      </Row>
+      {isShowInfoCard && (
+        <>
+          <Row className="mb-4 g-3">
+            <Col md={4}>
+              <Button variant="success" onClick={onAddNew} className="d-flex align-items-center w-100 justify-content-center funky-button">
+                <FaPlus className="me-2" /> Add New
+              </Button>
+            </Col>
+            <Col md={4} className="d-flex align-items-center justify-content-center">
+              <h5 className="mb-0">Total records: <Badge bg="primary" className="funky-badge">{filteredList.length}</Badge></h5>
+            </Col>
+            <Col md={4}>
+              <InputGroup>
+                <InputGroup.Text className="bg-primary funky-input text-white">
+                  <FaSearch />
+                </InputGroup.Text>
+                <Form.Control
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="funky-input"
+                />
+              </InputGroup>
+            </Col>
+          </Row>
+
+          <Row className='my-4'>
+            {renderTypes()}
+          </Row>
+        </>
+      )}
       <Row xs={1} md={2} lg={3} className="g-4">
         {currentItems.map((item, index) => (
           <Col key={index}>
             <Card className="h-100 funky-card">
-              <Card.Header className="funky-header">
-                <Card.Title className="text-truncate mb-0">
-                  {item[customHeadersAndKeys[0]?.key]?.toString() || '-'}
-                </Card.Title>
-              </Card.Header>
-              <Card.Body>
-                <div className="d-flex justify-content-between mb-2">
-                  {renderLikeButton(item)}
-                  <Button variant="outline-secondary" size="sm" className="d-flex align-items-center funky-button">
-                    <FaComment className="me-1" />
-                    <span>{item.comments ? Object.keys(item.comments).length : 0}</span>
-                  </Button>
+              {isShowInfoCard && (
+                <Card.Header className="funky-header">
+                  <Card.Title className="text-truncate mb-0">
+                    {item[customHeadersAndKeys[0]?.key]?.toString() || '-'}
+                  </Card.Title>
+                </Card.Header>
+              )}
+              <Card.Body className="d-flex flex-column">
+                {!isShowInfoCard && (
+                  <div className="flex-grow-1 mb-3">
+                    {item[customHeadersAndKeys[0]?.key]?.toString() || '-'}
+                  </div>
+                )}
+                <div className="mt-auto">
+                  <div className='d-flex justify-content-between'>
+                    {renderLikeButton(item)}
+                    <Button variant="outline-secondary" size="sm" className="d-flex align-items-center funky-button">
+                      <FaComment className="me-1" />
+                      <span>{item.comments ? Object.keys(item.comments).length : 0}</span>
+                    </Button>
+                  </div>
+                  {renderCommentForm && renderCommentForm(item.id)}
                 </div>
-                {renderCommentForm && renderCommentForm(item.id)}
               </Card.Body>
-              <Card.Footer className="bg-light">
-                <div className="d-flex justify-content-between">
-                  <Button variant="outline-primary" size="sm" onClick={() => handleViewMore(item)} className="funky-button">
-                    <FaEye className="me-1" /> View More
-                  </Button>
-                  <Button variant="outline-danger" size="sm" onClick={() => onDelete(item)} className="funky-button">
-                    <FaTrash className="me-1" /> Delete
-                  </Button>
-                </div>
-              </Card.Footer>
+              {isShowInfoCard && (
+                <Card.Footer className="bg-light">
+                  <div className="d-flex justify-content-between">
+                    <Button variant="outline-primary" size="sm" onClick={() => handleViewMore(item)} className="funky-button">
+                      <FaEye className="me-1" /> View More
+                    </Button>
+
+                    <Button variant="outline-danger" size="sm" onClick={() => onDelete(item)} className="funky-button">
+                      <FaTrash className="me-1" /> Delete
+                    </Button>
+                  </div>
+                </Card.Footer>
+              )}
             </Card>
           </Col>
         ))}

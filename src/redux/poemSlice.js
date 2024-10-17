@@ -10,43 +10,124 @@ export const fetchPoems = createAsyncThunk('poems/fetchPoems', async () => {
     return Object.keys(poems).map(key => ({ id: key, ...poems[key] }));
 });
 
-// Async thunk for adding a new poem
+export const fetchTopThreePoemsByType = createAsyncThunk('poems/fetchTopThreePoemsByType', async (type) => {
+    const topThreeRef = ref(db, `topThreePoemsByType/${type}`);
+    const snapshot = await get(topThreeRef);
+    return snapshot.val() || [];
+});
+
+// Updated utility function to update top three poems by type
+const updateTopThreePoems = async (type) => {
+    const poemsRef = ref(db, 'poems');
+    const snapshot = await get(poemsRef);
+    const poems = snapshot.val() || {};
+
+    // Filter poems by type and sort by lastUpdated (or createdAt if lastUpdated doesn't exist)
+    const poemsOfType = Object.keys(poems)
+        .map(key => ({ id: key, ...poems[key] }))
+        .filter(poem => poem.type === type)
+        .sort((a, b) => (b.lastUpdated || b.createdAt) - (a.lastUpdated || a.createdAt));
+
+    // Get the top three poems (including all data)
+    const topThreePoems = poemsOfType.slice(0, 3);
+
+    // Update the "topThreePoemsByType" collection in Firebase
+    const topThreeRef = ref(db, `topThreePoemsByType/${type}`);
+    await set(topThreeRef, topThreePoems);
+};
+
+// Updated async thunk for adding a new poem
 export const addPoem = createAsyncThunk('poems/addPoem', async (poemData) => {
     const poemsRef = ref(db, 'poems');
     const newPoemRef = push(poemsRef);
-    await set(newPoemRef, poemData);
-    return { id: newPoemRef.key, ...poemData };
+    const newPoem = {
+        ...poemData,
+        createdAt: Date.now(),
+        lastUpdated: Date.now(),
+        likes: {},
+        comments: {}
+    };
+    await set(newPoemRef, newPoem);
+
+    // Update the top three poems by type
+    await updateTopThreePoems(newPoem.type);
+
+    return { id: newPoemRef.key, ...newPoem };
 });
 
-// Async thunk for updating an existing poem
+// Updated async thunk for updating an existing poem
 export const updatePoem = createAsyncThunk('poems/updatePoem', async ({ id, poemData }) => {
     const poemRef = ref(db, `poems/${id}`);
-    await set(poemRef, poemData);
-    return { id, ...poemData };
+    const snapshot = await get(poemRef);
+    const existingPoem = snapshot.val();
+    const updatedPoem = {
+        ...existingPoem,
+        ...poemData,
+        lastUpdated: Date.now()
+    };
+    await set(poemRef, updatedPoem);
+
+    // Update the top three poems by type
+    await updateTopThreePoems(updatedPoem.type);
+
+    return { id, ...updatedPoem };
 });
 
-// Async thunk for deleting a poem
+// Updated async thunk for deleting a poem
 export const deletePoem = createAsyncThunk('poems/deletePoem', async (id) => {
     const poemRef = ref(db, `poems/${id}`);
+    const snapshot = await get(poemRef);
+    const poemData = snapshot.val();
     await remove(poemRef);
+
+    // Update the top three poems by type after deletion
+    if (poemData && poemData.type) {
+        await updateTopThreePoems(poemData.type);
+    }
+
+    // Remove the poem from topThreePoemsByType if it exists
+    const topThreeRef = ref(db, `topThreePoemsByType/${poemData.type}`);
+    const topThreeSnapshot = await get(topThreeRef);
+    const topThreePoems = topThreeSnapshot.val() || [];
+    const updatedTopThree = topThreePoems.filter(poem => poem.id !== id);
+    await set(topThreeRef, updatedTopThree);
+
     return id;
 });
 
-// New async thunk for adding a like to a poem
+// Updated async thunk for adding a like to a poem
 export const addLike = createAsyncThunk('poems/addLike', async ({ poemId, userName }) => {
     const likeRef = ref(db, `poems/${poemId}/likes/${userName}`);
     await set(likeRef, true);
+
+    // Update the top three poems by type
+    const poemRef = ref(db, `poems/${poemId}`);
+    const snapshot = await get(poemRef);
+    const poemData = snapshot.val();
+    if (poemData && poemData.type) {
+        await updateTopThreePoems(poemData.type);
+    }
+
     return { poemId, userName };
 });
 
-// New async thunk for removing a like from a poem
+// Updated async thunk for removing a like from a poem
 export const removeLike = createAsyncThunk('poems/removeLike', async ({ poemId, userName }) => {
     const likeRef = ref(db, `poems/${poemId}/likes/${userName}`);
     await remove(likeRef);
+
+    // Update the top three poems by type
+    const poemRef = ref(db, `poems/${poemId}`);
+    const snapshot = await get(poemRef);
+    const poemData = snapshot.val();
+    if (poemData && poemData.type) {
+        await updateTopThreePoems(poemData.type);
+    }
+
     return { poemId, userName };
 });
 
-// New async thunk for adding a comment to a poem
+// Updated async thunk for adding a comment to a poem
 export const addComment = createAsyncThunk('poems/addComment', async ({ poemId, userName, comment }) => {
     const commentsRef = ref(db, `poems/${poemId}/comments`);
     const newCommentRef = push(commentsRef);
@@ -56,14 +137,23 @@ export const addComment = createAsyncThunk('poems/addComment', async ({ poemId, 
         timestamp: Date.now()
     };
     await set(newCommentRef, commentData);
+
+    // Update the top three poems by type
+    const poemRef = ref(db, `poems/${poemId}`);
+    const snapshot = await get(poemRef);
+    const poemData = snapshot.val();
+    if (poemData && poemData.type) {
+        await updateTopThreePoems(poemData.type);
+    }
+
     return { poemId, commentId: newCommentRef.key, ...commentData };
 });
-
 
 const poemSlice = createSlice({
     name: 'poems',
     initialState: {
         poems: [],
+        topThreePoems: {},
         loading: false,
         error: null,
     },
@@ -115,6 +205,17 @@ const poemSlice = createSlice({
                     if (!poem.comments) poem.comments = {};
                     poem.comments[commentId] = commentData;
                 }
+            })
+            .addCase(fetchTopThreePoemsByType.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchTopThreePoemsByType.fulfilled, (state, action) => {
+                state.loading = false;
+                state.topThreePoems[action.meta.arg] = action.payload;
+            })
+            .addCase(fetchTopThreePoemsByType.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
             });
     },
 });

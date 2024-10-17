@@ -181,6 +181,7 @@ const Books = () => {
                         noRecordMessage="No books found."
                         className="shadow-md book-list funky-card"
                         formConfig={formConfig}
+                        isShowInfoCard={true}
                     />
                 </div>
             )}

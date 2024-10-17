@@ -2,11 +2,10 @@ import React from 'react';
 import { useSpring, animated, config } from '@react-spring/web';
 import { FaFeatherAlt, FaBookOpen, FaPenNib, FaScroll } from 'react-icons/fa';
 
-const Loader = ({ loadingMessage }) => {
+const Loader = ({ loadingMessage, showFullPageLoader = false }) => {
   const iconSize = 30;
-  const iconColor = "#5D3A3A"; // Rich dark brown color for a classic feel
-
-  // Animation styles
+  const iconColor = "#5D3A3A"; 
+  
   const floatAnimation = useSpring({
     loop: true,
     to: [
@@ -39,13 +38,23 @@ const Loader = ({ loadingMessage }) => {
 
   return (
     <div
-      className="loader-container d-flex justify-content-center align-items-center"
+      className={`loader-container d-flex justify-content-center align-items-center ${
+        showFullPageLoader ? 'full-page-loader' : ''
+      }`}
       style={{
-        background: 'linear-gradient(135deg, #f7ece1 0%, #f8f4eb 100%)',
-        borderRadius: '15px',
+        background: showFullPageLoader
+          ? 'rgba(255, 255, 255, 1)' 
+          : 'linear-gradient(135deg, #f7ece1 0%, #f8f4eb 100%)',
+        borderRadius: showFullPageLoader ? '0' : '15px',
         padding: '30px',
-        boxShadow: '0 10px 20px rgba(0, 0, 0, 0.15)',
-        border: '2px solid #5D3A3A',
+        boxShadow: showFullPageLoader ? 'none' : '0 10px 20px rgba(0, 0, 0, 0.15)',
+        border: showFullPageLoader ? 'none' : '2px solid #5D3A3A',
+        position: showFullPageLoader ? 'fixed' : 'relative',
+        top: showFullPageLoader ? '0' : 'auto',
+        left: showFullPageLoader ? '0' : 'auto',
+        width: showFullPageLoader ? '100vw' : 'auto',
+        height: showFullPageLoader ? '100vh' : 'auto',
+        zIndex: showFullPageLoader ? '1000' : 'auto',
       }}
     >
       <div className="loader d-flex flex-column align-items-center justify-content-center">
