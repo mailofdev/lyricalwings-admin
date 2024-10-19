@@ -112,6 +112,14 @@ function Header() {
             >
               Users
             </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to="/termsAndConditions"
+              onClick={() => handleNavClick('/termsAndConditions')}
+              className={location.pathname === '/termsAndConditions' ? 'nav-link-selected' : ''}
+            >
+              Terms and Conditions
+            </Nav.Link>
           </Nav>
 
           <Nav>

@@ -4,6 +4,7 @@ import poemReducer from './poemSlice';
 import narrativeReducer from './narrativeSlice';
 import bookReducer from './bookSlice';
 import coursesReducer from './coursesSlice';
+import termsAndConditionsReducer from './termsAndConditionsSlice';
 const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -11,6 +12,7 @@ const store = configureStore({
     narratives: narrativeReducer,
     book: bookReducer,
     courses: coursesReducer,
+    termsAndConditions: termsAndConditionsReducer
   },
 });
 

@@ -12,6 +12,7 @@ import './App.css';
 import Login from './pages/Login';
 import Narrative from './pages/Narrative';
 import Userlist from './components/Userlist';
+import TermsAndConditions from './pages/TermsAndConditions';
 
 function App() {
   return (
@@ -29,6 +30,8 @@ function App() {
               <Route path="/courses" element={<Courses />} />
               <Route path="/about" element={<About />} />
               <Route path="/userlist" element={<Userlist />} />
+              <Route path="/termsAndConditions" element={<TermsAndConditions />} />
+              
             </Routes>
           </div>
         </main>
