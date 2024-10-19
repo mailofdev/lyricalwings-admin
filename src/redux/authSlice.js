@@ -44,6 +44,17 @@ const handleFirebaseError = (error) => {
   }
 };
 
+
+
+export const fetchUser = createAsyncThunk('users/fetchUser', async () => {
+  const usersRef = ref(db, 'users');
+  const snapshot = await get(usersRef);
+  if (snapshot.exists()) {
+    return Object.entries(snapshot.val()).map(([uid, userData]) => ({ uid, ...userData }));
+  }
+  return [];
+});
+
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async ({ email, password }, { rejectWithValue }) => {
@@ -197,6 +208,20 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // fetchUser
+      .addCase(fetchUser.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.users = action.payload; // Directly set the array of users
+        state.error = null;
+      })
+      .addCase(fetchUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
       // loginUser
       .addCase(loginUser.pending, (state) => {
         state.loading = true;

@@ -1,3 +1,6 @@
+.p-password-input{
+  width: 100% !important;
+}
 .nav-link-selected {
   font-weight: bold;
   color: #007bff !important; 
@@ -6,6 +9,15 @@
 
 .nav-link-selected:hover {
   color: #0056b3 !important; 
+}
+
+.form-list {
+  background: linear-gradient(120deg, #dce5f3 0%, #a7bfca 100%);
+  border-radius: 10px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15), 0 4px 4px rgba(0,0,0,0.12);
+  padding: 20px;
+  font-family: 'Cursive', sans-serif;
+  color: #333;
 }
 
 /* Poems */

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Pagination, Form, Button, InputGroup, Card, Row, Col, Container, Badge, Modal, Image } from 'react-bootstrap';
-import { FaPlus, FaTrash, FaSearch, FaHeart, FaRegHeart, FaComment, FaEye, FaDownload } from 'react-icons/fa';
+import { Pagination, Form, Button, InputGroup, Card, Row, Col, Container, Badge, Modal, Image, Table } from 'react-bootstrap';
+import { FaPlus, FaTrash, FaSearch, FaHeart, FaRegHeart, FaComment, FaEye, FaDownload, FaThLarge, FaList } from 'react-icons/fa';
 import DOMPurify from 'dompurify';
 import DynamicForm from './DynamicForm';
 
@@ -20,8 +20,8 @@ const DynamicList = ({
   isShowOnDashboard,
   rowXS,
   rowMD,
-  rowLG  
-
+  rowLG,
+  listType = 'card'
 }) => {
   const [filteredList, setFilteredList] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,6 +30,11 @@ const DynamicList = ({
   const [selectedItem, setSelectedItem] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedType, setSelectedType] = useState(null);
+  const [viewType, setViewType] = useState(listType);
+
+  useEffect(() => {
+    setViewType(listType);
+  }, [listType]);
 
   useEffect(() => {
     let results = data;
@@ -116,7 +121,6 @@ const DynamicList = ({
       </>
     );
   };
-  
 
   const handleViewMore = (item) => {
     setSelectedItem(item);
@@ -241,106 +245,173 @@ const DynamicList = ({
     );
   };
 
-  return (
-    <Container fluid className={`${className} py-4`}>
-      {isShowOnDashboard && (
-        <>
-          <Row className="mb-4 g-3">
-            <Col md={4}>
-              <Button variant="success" onClick={onAddNew} className="d-flex align-items-center w-100 justify-content-center funky-button">
-                <FaPlus className="me-2" /> Add New
-              </Button>
-            </Col>
-            <Col md={4} className="d-flex align-items-center justify-content-center">
-              <h5 className="mb-0">Total records: <Badge bg="primary" className="funky-badge">{filteredList.length}</Badge></h5>
-            </Col>
-            <Col md={4}>
-              <InputGroup>
-                <InputGroup.Text className="bg-primary funky-input text-white">
-                  <FaSearch />
-                </InputGroup.Text>
-                <Form.Control
-                  type="text"
-                  placeholder="Search..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="funky-input"
-                />
-              </InputGroup>
-            </Col>
-          </Row>
-
-          <Row className='my-4'>
-            {renderTypes()}
-          </Row>
-        </>
-      )}
-      <Row xs={rowXS} md={rowMD} lg={rowLG} className="g-4">
-        {currentItems.map((item, index) => (
-          <Col key={index}>
-            <Card className="h-100 funky-card">
-              {isShowOnDashboard && (
-                <Card.Header className="funky-header">
-                  <Card.Title className="text-truncate mb-0">
-                    {item[customHeadersAndKeys[0]?.key]?.toString() || '-'}
-                  </Card.Title>
-                </Card.Header>
-              )}
-              <Card.Body className="d-flex flex-column">
-                {!isShowOnDashboard && (
-                  <div className="flex-grow-1 mb-3">
-                    {item[customHeadersAndKeys[0]?.key]?.toString() || '-'}
-                  </div>
-                )}
-                <div className="mt-auto">
-                  <div className='d-flex justify-content-between'>
-                    {renderLikeButton(item)}
-                    <Button variant="outline-secondary" size="sm"
-                     className={`d-flex align-items-center funky-button ${isShowOnDashboard ? '' : 'default-cursor'}`}
-                     >
-                      <FaComment className="me-1" />
-                      <span>{item.comments ? Object.keys(item.comments).length : 0}</span>
-                    </Button>
-                  </div>
-                  {renderCommentForm && renderCommentForm(item.id)}
+  const renderCardView = () => (
+    <Row xs={rowXS} md={rowMD} lg={rowLG} className="g-4">
+      {currentItems.map((item, index) => (
+        <Col key={index}>
+          <Card className="h-100 funky-card">
+            {isShowOnDashboard && (
+              <Card.Header className="funky-header">
+                <Card.Title className="text-truncate mb-0">
+                  {item[customHeadersAndKeys[0]?.key]?.toString() || '-'}
+                </Card.Title>
+              </Card.Header>
+            )}
+            <Card.Body className="d-flex flex-column">
+              {!isShowOnDashboard && (
+                <div className="flex-grow-1 mb-3">
+                  {item[customHeadersAndKeys[0]?.key]?.toString() || '-'}
                 </div>
-              </Card.Body>
-              {isShowOnDashboard && (
-                <Card.Footer className="bg-light">
-                  <div className="d-flex justify-content-between">
-                    <Button variant="outline-primary" size="sm" onClick={() => handleViewMore(item)} className="funky-button">
-                      <FaEye className="me-1" /> View More
-                    </Button>
+              )}
+              <div className="mt-auto">
+                <div className='d-flex justify-content-between'>
+                  {renderLikeButton(item)}
+                  <Button variant="outline-secondary" size="sm"
+                    className={`d-flex align-items-center funky-button ${isShowOnDashboard ? '' : 'default-cursor'}`}
+                  >
+                    <FaComment className="me-1" />
+                    <span>{item.comments ? Object.keys(item.comments).length : 0}</span>
+                  </Button>
+                </div>
+                {renderCommentForm && renderCommentForm(item.id)}
+              </div>
+            </Card.Body>
+            {isShowOnDashboard && (
+              <Card.Footer className="bg-light">
+                <div className="d-flex justify-content-between">
+                  <Button variant="outline-primary" size="sm" onClick={() => handleViewMore(item)} className="funky-button">
+                    <FaEye className="me-1" /> View More
+                  </Button>
+                  <Button variant="outline-danger" size="sm" onClick={() => onDelete(item)} className="funky-button">
+                    <FaTrash className="me-1" /> Delete
+                  </Button>
+                </div>
+              </Card.Footer>
+            )}
+          </Card>
+        </Col>
+      ))}
+    </Row>
+  );
 
-                    <Button variant="outline-danger" size="sm" onClick={() => onDelete(item)} className="funky-button">
-                      <FaTrash className="me-1" /> Delete
+  const renderGridView = () => (
+    <div className="table-responsive">
+      <Table striped bordered hover className="funky-table">
+        <thead>
+          <tr>
+            {customHeadersAndKeys.map(({ header }, index) => (
+              <th key={index}>{header}</th>
+            ))}
+            <th>Likes</th>
+            <th>Comments</th>
+            {isShowOnDashboard && <th>Actions</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {currentItems.map((item, index) => (
+            <tr key={index}>
+              {customHeadersAndKeys.map(({ key }, keyIndex) => (
+                <td key={keyIndex}>
+                  {key === 'htmlContent' || key === 'htmlSubtitle' ? (
+                    <div dangerouslySetInnerHTML={{ 
+                      __html: DOMPurify.sanitize(item[key]?.substring(0, 100) + '...') 
+                    }} />
+                  ) : key === 'bookImage' ? (
+                    <Image src={item[key]} alt="Book cover" height="50" />
+                  ) : (
+                    item[key]?.toString() || '-'
+                  )}
+                </td>
+              ))}
+              <td>{item.likes ? Object.keys(item.likes).length : 0}</td>
+              <td>{item.comments ? Object.keys(item.comments).length : 0}</td>
+              {isShowOnDashboard && (
+                <td>
+                  <div className="d-flex gap-2">
+                    <Button variant="outline-primary" size="sm" onClick={() => handleViewMore(item)}>
+                      <FaEye />
+                    </Button>
+                    <Button variant="outline-danger" size="sm" onClick={() => onDelete(item)}>
+                      <FaTrash />
                     </Button>
                   </div>
-                </Card.Footer>
+                </td>
               )}
-            </Card>
-          </Col>
-        ))}
-      </Row>
-
-      {renderPagination()}
-
-      {filteredList.length === 0 && (
-        <div className="text-center mt-4">
-          <h4 className="text-muted">{noRecordMessage}</h4>
-        </div>
-      )}
-
-      <Modal show={showModal} onHide={handleCloseModal} size="xl">
-        <Modal.Header closeButton>
-          <Modal.Title>{isEditing ? 'Edit Item' : 'View Item Details'}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {renderModalContent()}
-        </Modal.Body>
-      </Modal>
-    </Container>
-  );
-};
-
-export default DynamicList;
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+    </div>
+  );  
+    return (
+      <Container fluid className={`${className} py-4`}>
+        {isShowOnDashboard && (
+          <>
+            <Row className="mb-4 g-3">
+              <Col md={3}>
+                <Button variant="success" onClick={onAddNew} className="d-flex align-items-center w-100 justify-content-center funky-button">
+                  <FaPlus className="me-2" /> Add New
+                </Button>
+              </Col>
+              <Col md={3} className="d-flex align-items-center justify-content-center">
+                <h5 className="mb-0">Total records: <Badge bg="primary" className="funky-badge">{filteredList.length}</Badge></h5>
+              </Col>
+              <Col md={3}>
+                <InputGroup>
+                  <InputGroup.Text className="bg-primary funky-input text-white">
+                    <FaSearch />
+                  </InputGroup.Text>
+                  <Form.Control
+                    type="text"
+                    placeholder="Search..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="funky-input"
+                  />
+                </InputGroup>
+              </Col>
+              <Col md={3} className="d-flex justify-content-end">
+                <Button
+                  variant={viewType === 'card' ? 'primary' : 'outline-primary'}
+                  className="me-2"
+                  onClick={() => setViewType('card')}
+                >
+                  <FaThLarge />
+                </Button>
+                <Button
+                  variant={viewType === 'grid' ? 'primary' : 'outline-primary'}
+                  onClick={() => setViewType('grid')}
+                >
+                  <FaList />
+                </Button>
+              </Col>
+            </Row>
+  
+            <Row className='my-4'>
+              {renderTypes()}
+            </Row>
+          </>
+        )}
+  
+        {viewType === 'card' ? renderCardView() : renderGridView()}
+  
+        {renderPagination()}
+  
+        {filteredList.length === 0 && (
+          <div className="text-center mt-4">
+            <h4 className="text-muted">{noRecordMessage}</h4>
+          </div>
+        )}
+  
+        <Modal show={showModal} onHide={handleCloseModal} size="xl">
+          <Modal.Header closeButton>
+            <Modal.Title>{isEditing ? 'Edit Item' : 'View Item Details'}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {renderModalContent()}
+          </Modal.Body>
+        </Modal>
+      </Container>
+    );
+  }
+  export default DynamicList;

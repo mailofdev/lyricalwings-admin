@@ -1,196 +1,152 @@
-import React, { useState, useEffect } from 'react';
-import { ref, get } from 'firebase/database';
-import { db } from '../common/firebase';
-import NoDataMessage from '../components/NoDataMessage';
-import { addNewUser, deleteExistingUser, updateUserInfo } from '../redux/authSlice';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Card, Alert, Button } from 'react-bootstrap';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { Paginator } from 'primereact/paginator';
-import { InputText } from 'primereact/inputtext';
-import { FaPlus, FaPencilAlt, FaTrash, FaSearch } from 'react-icons/fa';
+import { Modal, Form, Button } from 'react-bootstrap';
+import DynamicForm from '../components/DynamicForm';
+import DynamicList from '../components/DynamicList';
+import ConfirmDialog from '../components/ConfirmDialog';
 import Loader from '../components/Loader';
-import AuthForm from '../components/AuthForm';
+import { addNewUser, deleteExistingUser, updateUserInfo, fetchUser } from '../redux/authSlice';
 
-const Userlist = () => {
+const UserList = () => {
     const dispatch = useDispatch();
-    const [users, setUsers] = useState([]);
-    const [filteredList, setFilteredList] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const { error } = useSelector(state => state.auth);
     const [editingItem, setEditingItem] = useState(null);
     const [showForm, setShowForm] = useState(false);
-    const [currentPage, setCurrentPage] = useState(0);
-    const [searchTerm, setSearchTerm] = useState('');
-    const itemsPerPage = 10;
+    const [hasFetched, setHasFetched] = useState(false);
+    const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
 
-    const formConfig = [
+    // Memoized selectors
+    const selectUsers = useCallback((state) => state.auth.users, []);
+    const selectLoading = useCallback((state) => state.auth.loading, []);
+    const selectCurrentUser = useCallback((state) => state.auth.user, []);
+
+    const users = useSelector(selectUsers);
+    const loading = useSelector(selectLoading);
+    const currentUser = useSelector(selectCurrentUser);
+
+    const formConfig = useMemo(() => [
         {
             fields: [
                 { type: 'input', name: 'username', label: 'Username' },
                 { type: 'email', name: 'email', label: 'Email' },
                 { type: 'password', name: 'password', label: 'Password' },
-            ],
-        },
-    ];
-
-    const fetchUsers = async () => {
-        setLoading(true);
-        try {
-            const usersRef = ref(db, 'users');
-            const snapshot = await get(usersRef);
-            if (snapshot.exists()) {
-                const usersData = snapshot.val();
-                const usersList = Object.entries(usersData).map(([key, value]) => ({
-                    uid: key,
-                    ...value,
-                }));
-                setUsers(usersList);
-                setFilteredList(usersList);
-            } else {
-                setUsers([]);
-                setFilteredList([]);
-            }
-        } catch (error) {
-            console.error('Error fetching users:', error);
-        } finally {
-            setLoading(false);
+             ]
         }
-    };
+    ], []);
+
+    const customHeadersAndKeys = useMemo(() => [
+        { header: 'Username', key: 'username' },
+        { header: 'Email', key: 'email' },
+        { header: 'Created At', key: 'createdAt', render: (date) => new Date(date).toLocaleDateString() }
+    ], []);
 
     useEffect(() => {
-    fetchUsers();
-    }, []);
+        if (!hasFetched && currentUser) {
+            setHasFetched(true);
+            dispatch(fetchUser());
+        }
+    }, [dispatch, hasFetched, currentUser]);
 
-    useEffect(() => {
-        const filtered = users.filter((user) =>
-            Object.values(user).some(val =>
-                val && val.toString().toLowerCase().includes(searchTerm.toLowerCase())
-            )
-        );
-        setFilteredList(filtered);
-        setCurrentPage(0);
-    }, [searchTerm, users]);
-
-    const handleFormSubmit = (data, formType) => {
+    const handleFormSubmit = useCallback((data, formType) => {
+        console.log(data)
         if (formType === 'add') {
             dispatch(addNewUser(data));
+            setShowForm(false);
         } else if (formType === 'edit') {
-            dispatch(updateUserInfo({ uid: editingItem.uid, ...data }));
+            dispatch(updateUserInfo({ uid: data.uid, ...data }));
         }
+    }, [dispatch]);
+
+    const handleDelete = useCallback((item) => {
+        setItemToDelete(item);
+        setConfirmDialogVisible(true);
+    }, []);
+
+    const confirmDelete = useCallback(() => {
+        if (itemToDelete) {
+            dispatch(deleteExistingUser(itemToDelete.uid));
+            setItemToDelete(null);
+        }
+        setConfirmDialogVisible(false);
+    }, [itemToDelete, dispatch]);
+
+    const cancelDelete = useCallback(() => {
+        setItemToDelete(null);
+        setConfirmDialogVisible(false);
+    }, []);
+
+    const cancelForm = useCallback(() => {
+        setSelectedUser(null);
+        setEditingItem(null);
         setShowForm(false);
-        fetchUsers();
-    };
+        setShowModal(false);
+    }, []);
 
-    const handleEdit = (item) => {
-        setEditingItem(item);
-        setShowForm(true);
-    };
-
-    const handleDelete = (item) => {
-        if (window.confirm('Are you sure you want to delete this user?')) {
-            dispatch(deleteExistingUser(item.uid));
-            fetchUsers();
-        }
-    };
-
-    const handleAddNew = () => {
+    const handleAddNew = useCallback(() => {
         setEditingItem(null);
         setShowForm(true);
-    };
-
-    const onPageChange = (e) => {
-        setCurrentPage(e.page);
-    };
-
-    const actionTemplate = (rowData) => {
-        return (
-            <div className="d-flex justify-content-center">
-                <Button variant="outline-primary" className="me-2" onClick={() => handleEdit(rowData)}>
-                    <FaPencilAlt />
-                </Button>
-                {/* <Button variant="outline-danger" onClick={() => handleDelete(rowData)}>
-                    <FaTrash />
-                </Button> */}
-            </div>
-        );
-    };
-
-    const renderHeader = () => {
-        return (
-            <div className="d-flex justify-content-between align-items-center mb-3">
-                <Button variant="primary" onClick={handleAddNew}>
-                    <FaPlus className="me-2" /> Add New User
-                </Button>
-                <div className="position-relative">
-                    <FaSearch className="position-absolute top-50 start-0 translate-middle-y ms-2" />
-                    <InputText
-                        type="text"
-                        className="form-control ps-4"
-                        placeholder="Search users..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-            </div>
-        );
-    };
+    }, []);
 
     return (
-        <div className="py-4">
-            <Card className="shadow-sm">
-                <Card.Body>
-                    {showForm && (
-                        <AuthForm
-                            formConfig={formConfig}
-                            onSubmit={handleFormSubmit}
-                            editingItem={editingItem}
-                            buttonLabel={editingItem ? 'Update User' : 'Add User'}
-                            cancelConfig={{ label: 'Cancel', onCancel: () => setShowForm(false) }}
-                        />
-                    )}
-
-                    {loading && <Loader loadingMessage="Fetching users..." />}
-
-                    {!loading && error && (
-                        <Alert variant="danger" className="mt-3">
-                            {error}
-                        </Alert>
-                    )}
-
-                    {!loading && !error && users.length === 0 && (
-                        <NoDataMessage message="No users found" onActionClick={handleAddNew} />
-                    )}
-
-                    {!loading && !error && users.length > 0 && (
-                        <>
-                            <h4 className='py-2'>Total users: {users.length}</h4>
-                            {renderHeader()}
-
-                            <DataTable
-                                value={filteredList.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage)}
-                                responsiveLayout="scroll"
-                                className="mb-3"
-                                stripedRows
-                            >
-                                <Column field="username" header="Username" sortable />
-                                <Column field="email" header="Email" sortable />
-                                <Column body={actionTemplate} header="Actions" />
-                            </DataTable>
-
-                            <Paginator
-                                first={currentPage * itemsPerPage}
-                                rows={itemsPerPage}
-                                totalRecords={filteredList.length}
-                                onPageChange={onPageChange}
-                            />
-                        </>
-                    )}
-                </Card.Body>
-            </Card>
+        <div>
+            {showForm && (
+                <div className='my-2'>
+                    <DynamicForm
+                        className="shadow-md form-list funky-card"
+                        formConfig={formConfig}
+                        onSubmit={handleFormSubmit}
+                        editingItem={editingItem}
+                        title={editingItem ? 'Edit User' : 'Add User'}
+                        formType={editingItem ? 'edit' : 'add'}
+                        cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
+                    />
+                </div>
+            )}
+            {loading ? (
+                <Loader loadingMessage="Fetching users..." />
+            ) : (
+                <div className='my-2'>
+                    <DynamicList
+                        data={users}
+                        listType='grid'
+                        customHeadersAndKeys={customHeadersAndKeys}
+                        onAddNew={handleAddNew}
+                        onEdit={handleFormSubmit}
+                        onDelete={handleDelete}
+                        noRecordMessage="No users found."
+                        className="shadow-md form-list funky-card"
+                        formConfig={formConfig}
+                        isShowOnDashboard={true}
+                        rowXS="1"
+                        rowMD="2"
+                        rowLG="3"
+                    />
+                </div>
+            )}
+            <ConfirmDialog
+                visible={confirmDialogVisible}
+                onHide={cancelDelete}
+                message={`Are you sure you want to delete the user "${itemToDelete?.username}"?`}
+                header="Confirm Deletion"
+                accept={confirmDelete}
+                reject={cancelDelete}
+            />
+            <Modal size='lg' show={showModal} onHide={() => setShowModal(false)}>
+                <DynamicForm
+                    className="shadow-md form-list funky-card"
+                    formConfig={formConfig}
+                    onSubmit={handleFormSubmit}
+                    editingItem={selectedUser}
+                    title="Edit User"
+                    formType="edit"
+                    buttonLabel="Update"
+                    cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
+                />
+            </Modal>
         </div>
     );
 };
 
-export default Userlist;
+export default UserList;
