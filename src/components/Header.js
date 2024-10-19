@@ -104,6 +104,14 @@ function Header() {
             >
               Courses
             </Nav.Link>
+            <Nav.Link
+              as={Link}
+              to="/userlist"
+              onClick={() => handleNavClick('/userlist')}
+              className={location.pathname === '/userlist' ? 'nav-link-selected' : ''}
+            >
+              Users
+            </Nav.Link>
           </Nav>
 
           <Nav>

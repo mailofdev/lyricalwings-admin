@@ -11,6 +11,7 @@ import Footer from './components/Footer';
 import './App.css'; 
 import Login from './pages/Login';
 import Narrative from './pages/Narrative';
+import Userlist from './components/Userlist';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
               <Route path="/books" element={<Books />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/about" element={<About />} />
+              <Route path="/userlist" element={<Userlist />} />
             </Routes>
           </div>
         </main>
