@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
-import { get, ref, push, set, remove } from 'firebase/database';
+import { get, ref, push, set, remove, serverTimestamp } from 'firebase/database';
 import { db } from '../common/firebase';
 
 // Async thunk for fetching poems from Firebase
@@ -11,7 +11,7 @@ export const fetchPoems = createAsyncThunk('poems/fetchPoems', async () => {
         id: key, 
         ...poems[key],
         // Ensure createdAt and lastUpdated are numbers
-        createdAt: Number(poems[key].createdAt) || Date.now(),
+        createdAt: serverTimestamp(),
         lastUpdated: Number(poems[key].lastUpdated) || Date.now()
     }));
 });

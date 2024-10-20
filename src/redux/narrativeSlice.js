@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
-import { get, ref, push, set, remove } from 'firebase/database';
+import { get, ref, push, set, remove, serverTimestamp } from 'firebase/database';
 import { db } from '../common/firebase';
 
 // Async thunk for fetching narratives from Firebase
@@ -11,7 +11,7 @@ export const fetchNarratives = createAsyncThunk('narratives/fetchNarratives', as
         id: key, 
         ...narratives[key],
         // Ensure createdAt and lastUpdated are numbers
-        createdAt: Number(narratives[key].createdAt) || Date.now(),
+        createdAt: serverTimestamp(),
         lastUpdated: Number(narratives[key].lastUpdated) || Date.now()
     }));
 });

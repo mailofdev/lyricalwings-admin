@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
-import { get, ref, push, set, remove } from 'firebase/database';
+import { get, ref, push, set, remove, serverTimestamp } from 'firebase/database';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../common/firebase';
 
@@ -21,7 +21,7 @@ export const fetchbook = createAsyncThunk('book/fetchbook', async () => {
     return Object.keys(book).map(key => ({ 
         id: key, 
         ...book[key],
-        createdAt: Number(book[key].createdAt) || Date.now(),
+        createdAt: serverTimestamp(), 
         lastUpdated: Number(book[key].lastUpdated) || Date.now()
     }));
 });

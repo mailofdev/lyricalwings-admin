@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { serverTimestamp } from 'firebase/database';
 import { 
   getAuth, 
   signInWithEmailAndPassword, 
@@ -82,15 +83,24 @@ export const loginUser = createAsyncThunk(
 
 export const addNewUser = createAsyncThunk(
   'auth/addNewUser',
-  async ({ email, password, username,  }, { rejectWithValue }) => {
+  async ({ email, password, username }, { rejectWithValue }) => {
     try {
       const auth = getAuth();
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
       const userRef = ref(db, `users/${userCredential.user.uid}`);
-      await set(userRef, { email, username,  });
+      await set(userRef, { 
+        email, 
+        username, 
+        createdAt: serverTimestamp() 
+      });
 
-      return { uid: userCredential.user.uid, email, username,  };
+      return { 
+        uid: userCredential.user.uid, 
+        email, 
+        username, 
+        createdAt: Date.now()
+      };
     } catch (error) {
       return rejectWithValue(handleFirebaseError(error));
     }

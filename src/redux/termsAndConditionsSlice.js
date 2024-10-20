@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { get, ref, push, set, remove } from 'firebase/database';
+import { get, ref, push, set, remove, serverTimestamp } from 'firebase/database';
 import { db } from '../common/firebase';
 
 // Async thunk for fetching terms and conditions from Firebase
@@ -18,7 +18,7 @@ export const fetchTermsAndConditions = createAsyncThunk('termsAndConditions/fetc
 
 // Async thunk for adding new terms and conditions
 export const addTermsAndConditions = createAsyncThunk('termsAndConditions/addTermsAndConditions', async (termsAndConditionsData) => {
-    const timestamp = Date.now();
+    const timestamp = serverTimestamp();
     const newTermsAndConditionsData = {
         ...termsAndConditionsData,
         createdAt: timestamp,
