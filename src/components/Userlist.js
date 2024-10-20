@@ -32,14 +32,16 @@ const UserList = () => {
                 { type: 'input', name: 'username', label: 'Username' },
                 { type: 'email', name: 'email', label: 'Email' },
                 { type: 'password', name: 'password', label: 'Password' },
-             ]
+            ]
         }
     ], []);
 
     const customHeadersAndKeys = useMemo(() => [
         { header: 'Username', key: 'username' },
         { header: 'Email', key: 'email' },
-        { header: 'Created At', key: 'createdAt', render: (date) => new Date(date).toLocaleDateString() }
+        { header: 'Created At', key: 'createdAt', render: (date) => new Date(date).toLocaleDateString() },
+        { header: 'Last log in', key: 'lastLogin', render: (date) => new Date(date).toLocaleDateString() }
+
     ], []);
 
     useEffect(() => {

@@ -56,6 +56,7 @@ export const fetchUser = createAsyncThunk('users/fetchUser', async () => {
   return [];
 });
 
+
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
   async ({ email, password }, { rejectWithValue }) => {
@@ -67,10 +68,14 @@ export const loginUser = createAsyncThunk(
       const snapshot = await get(userRef);
       const userData = snapshot.val();
 
+      // Update the user's login time
+      await update(userRef, { lastLogin: serverTimestamp() });
+
       const user = {
         uid: userCredential.user.uid,
         email: userCredential.user.email,
         username: userData.username,
+        lastLogin: Date.now(), // Return local timestamp for immediate use
       };
 
       localStorage.setItem('user', encrypt(user));
