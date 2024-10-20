@@ -1,20 +1,21 @@
-.p-password-input{
+.p-password-input {
   width: 100% !important;
 }
+
 .nav-link-selected {
   font-weight: bold;
-  color: #007bff !important; 
-  border-bottom: 2px solid #007bff; 
+  color: #007bff !important;
+  border-bottom: 2px solid #007bff;
 }
 
 .nav-link-selected:hover {
-  color: #0056b3 !important; 
+  color: #0056b3 !important;
 }
 
 .form-list {
   background: linear-gradient(120deg, #dce5f3 0%, #a7bfca 100%);
   border-radius: 10px;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.15), 0 4px 4px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15), 0 4px 4px rgba(0, 0, 0, 0.12);
   padding: 20px;
   font-family: 'Cursive', sans-serif;
   color: #333;
@@ -24,7 +25,7 @@
 .poem-list {
   background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
   border-radius: 10px;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.15), 0 4px 4px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15), 0 4px 4px rgba(0, 0, 0, 0.12);
   padding: 20px;
   font-family: 'Cursive', sans-serif;
   color: #333;
@@ -34,7 +35,7 @@
 .narrative-list {
   background: radial-gradient(circle, #fbc2eb 0%, #a6c1ee 100%);
   border-radius: 12px;
-  box-shadow: 0 12px 24px rgba(0,0,0,0.2), 0 8px 8px rgba(0,0,0,0.18);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2), 0 8px 8px rgba(0, 0, 0, 0.18);
   padding: 25px;
   font-family: 'Serif', serif;
   color: #4d4d4d;
@@ -44,7 +45,7 @@
 .course-list {
   background: linear-gradient(to right, #f9ecad 0%, #d2b211 100%);
   border-radius: 8px;
-  box-shadow: 0 14px 28px rgba(0,0,0,0.22), 0 10px 10px rgba(0,0,0,0.2);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.22), 0 10px 10px rgba(0, 0, 0, 0.2);
   padding: 30px;
   font-family: 'Sans-serif', sans-serif;
   color: #fff;
@@ -54,7 +55,7 @@
 .book-list {
   background: linear-gradient(60deg, #84fab0 0%, #8fd3f4 100%);
   border-radius: 20px;
-  box-shadow: 0 16px 32px rgba(0,0,0,0.25), 0 12px 12px rgba(0,0,0,0.22);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25), 0 12px 12px rgba(0, 0, 0, 0.22);
   padding: 35px;
   font-family: 'Times New Roman', Times, serif;
   color: #222;
@@ -64,23 +65,27 @@
 .funky-list {
   background: linear-gradient(45deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
   border-radius: 15px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
 }
+
 .funky-card {
   border-radius: 15px;
   overflow: hidden;
   transition: all 0.3s ease;
 }
+
 .funky-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
 }
+
 .funky-header {
   background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
   color: #ffffff;
   font-weight: bold;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 .funky-button {
   border-radius: 25px;
   text-transform: uppercase;
@@ -88,29 +93,35 @@
   font-weight: bold;
   transition: all 0.3s ease;
 }
+
 .funky-button:hover {
   transform: scale(1.05);
-  box-shadow: 0 7px 14px rgba(0,0,0,0.18), 0 5px 5px rgba(0,0,0,0.12);
+  box-shadow: 0 7px 14px rgba(0, 0, 0, 0.18), 0 5px 5px rgba(0, 0, 0, 0.12);
 }
+
 .funky-input {
   border-radius: 25px;
   border: 0.5px solid #8fd3f4;
 }
+
 .funky-badge {
   font-size: 1.2em;
   padding: 8px 15px;
   border-radius: 15px;
 }
+
 .funky-comment-card {
   border-radius: 10px;
   border-left: 5px solid #84fab0;
 }
+
 .funky-pagination .page-item .page-link {
   border-radius: 50%;
   margin: 0 5px;
   color: #8fd3f4;
   border-color: #8fd3f4;
 }
+
 .funky-pagination .page-item.active .page-link {
   background-color: #8fd3f4;
   border-color: #8fd3f4;
@@ -142,22 +153,34 @@
 
 
 .text-truncate {
-  display: -webkit-box; /* Use flexbox layout */
-  -webkit-box-orient: vertical; /* Set the orientation to vertical */
-  -webkit-line-clamp: 3; /* Limit to 3 lines */
-  overflow: hidden; /* Hide overflow */
-  text-overflow: ellipsis; /* Add ellipsis (...) at the end */
-  max-height: calc(3 * 1.2em); /* Adjust based on line height (1.2em is just an example) */
-  line-height: 1.2em; /* Set line height */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: calc(3 * 1.2em);
+  line-height: 1.2em;
 }
-.p-dropdown-panel, .p-calendar-panel {
+
+.ellipsis {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.p-dropdown-panel,
+.p-calendar-panel {
   z-index: 9999 !important;
 }
+
 .p-datepicker {
   z-index: 10000 !important;
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -165,7 +188,8 @@ html, body {
   min-height: 100vh;
 }
 
-ol, ul {
+ol,
+ul {
   padding-left: unset !important;
 }
 

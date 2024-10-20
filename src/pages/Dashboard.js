@@ -37,8 +37,6 @@ function Dashboard() {
 
   const customHeadersAndKeys = [
     { header: 'Title', key: 'title' },
-    { header: 'Type', key: 'type' },
-    { header: 'Likes', key: 'likeCount', formatter: (poem) => poem.likes ? Object.keys(poem.likes).length : 0 },
     { header: 'Created', key: 'createdAt', formatter: (poem) => new Date(poem.createdAt).toLocaleDateString() }
   ];
 

@@ -251,12 +251,28 @@ const DynamicList = ({
         <Col key={index}>
           <Card className="h-100 funky-card">
             <Card.Body className="d-flex flex-column">
-              {customHeadersAndKeys.map(({ header, key, render }, idx) => (
-                <div key={idx} className={`mb-2 ${idx === 0 ? 'h5' : ''}`}>
-                  <strong>{header}: </strong>
-                  {render ? render(item[key]) : item[key]?.toString() || '-'}
-                </div>
-              ))}
+              {customHeadersAndKeys
+                .filter(({ key }) => key !== 'likes' && key !== 'comments')
+                .map(({ header, key, render }, idx) => (
+                  <div key={idx} className={`mb-2 ${idx === 0 ? 'h5' : ''}`}>
+                    <strong>{header}: </strong>
+                    {key === 'htmlContent' || key === 'htmlSubtitle' ? (
+                      <div className='ellipsis' dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(item[key]) }} />
+                    ) : key === 'bookImage' && item[key] ? (
+                      <Image
+                        src={item[key]}
+                        alt="Book cover"
+                        fluid
+                        style={{ maxHeight: '300px' }}
+                      />
+                    ) : render ? (
+                      render(item[key])
+                    ) : (
+                      item[key]?.toString() || '-'
+                    )}
+                  </div>
+                ))}
+
               <div className="mt-auto">
                 <div className='d-flex justify-content-between'>
                   {renderLikeButton(item)}
