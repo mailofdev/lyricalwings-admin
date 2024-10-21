@@ -21,7 +21,9 @@ const DynamicList = ({
   rowXS,
   rowMD,
   rowLG,
-  listType = 'card'
+  listType = 'card',
+  isShowEditButton,
+  isShowLikeButton
 }) => {
   const [filteredList, setFilteredList] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -252,7 +254,14 @@ const DynamicList = ({
           <Card className="h-100 funky-card">
             <Card.Body className="d-flex flex-column">
               {customHeadersAndKeys
-                .filter(({ key }) => key !== 'likes' && key !== 'comments')
+                .filter(({ key }) => key !== 'likes' && key !== 'comments'
+                  && key !== 'structureOfType' && key !== 'structureFileURL'
+                  && key !== 'literatureOfType' && key !== 'literatureFileURL'
+                  && key !== 'methodologyOfType' && key !== 'methodologyFileURL'
+                  && key !== 'evalutionOfType' && key !== 'evalutionFileURL'
+                  && key !== 'conclusionOfType' && key !== 'conclusionFileURL'
+                  && key !== 'authorName' && key !== 'bookLink'
+                  && key !== 'bookImage' && key !== 'htmlSubtitle')
                 .map(({ header, key, render }, idx) => (
                   <div key={idx} className={`mb-2 ${idx === 0 ? 'h5' : ''}`}>
                     <strong>{header}: </strong>
@@ -272,28 +281,31 @@ const DynamicList = ({
                     )}
                   </div>
                 ))}
-
-              <div className="mt-auto">
-                <div className='d-flex justify-content-between'>
-                  {renderLikeButton(item)}
-                  {item.comments && (
-                    <Button variant="outline-secondary" size="sm"
-                      className={`d-flex align-items-center funky-button ${isShowOnDashboard ? '' : 'default-cursor'}`}
-                    >
-                      <FaComment className="me-1" />
-                      <span>{Object.keys(item.comments).length}</span>
-                    </Button>
-                  )}
+              {!isShowLikeButton && (
+                <div className="mt-auto">
+                  <div className='d-flex justify-content-between'>
+                    {renderLikeButton(item)}
+                    {item.comments && (
+                      <Button variant="outline-secondary" size="sm"
+                        className={`d-flex align-items-center funky-button ${isShowOnDashboard ? '' : 'default-cursor'}`}
+                      >
+                        <FaComment className="me-1" />
+                        <span>{Object.keys(item.comments).length}</span>
+                      </Button>
+                    )}
+                  </div>
+                  {renderCommentForm && renderCommentForm(item.id)}
                 </div>
-                {renderCommentForm && renderCommentForm(item.id)}
-              </div>
+              )}
             </Card.Body>
             {isShowOnDashboard && (
               <Card.Footer className="bg-light">
                 <div className="d-flex justify-content-between">
-                  <Button variant="outline-primary" size="sm" onClick={() => handleViewMore(item)} className="funky-button">
-                    <FaEye className="me-1" /> View More
-                  </Button>
+                  {!isShowEditButton && (
+                    <Button variant="outline-primary" size="sm" onClick={() => handleViewMore(item)} className="funky-button">
+                      <FaEye className="me-1" /> View More
+                    </Button>
+                  )}
                   <Button variant="outline-danger" size="sm" onClick={() => onDelete(item)} className="funky-button">
                     <FaTrash className="me-1" /> Delete
                   </Button>
@@ -338,9 +350,11 @@ const DynamicList = ({
               {isShowOnDashboard && (
                 <td>
                   <div className="d-flex gap-2">
-                    <Button variant="outline-primary" size="sm" onClick={() => handleViewMore(item)}>
-                      <FaEye />
-                    </Button>
+                    {!isShowEditButton && (
+                      <Button variant="outline-primary" size="sm" onClick={() => handleViewMore(item)}>
+                        <FaEye />
+                      </Button>
+                    )}
                     <Button variant="outline-danger" size="sm" onClick={() => onDelete(item)}>
                       <FaTrash />
                     </Button>
@@ -367,7 +381,7 @@ const DynamicList = ({
             <Col md={3} className="d-flex align-items-center justify-content-center">
               <h5 className="mb-0">Total records: <Badge bg="primary" className="funky-badge">{filteredList.length}</Badge></h5>
             </Col>
-            <Col md={3}>
+            <Col md={4}>
               <InputGroup>
                 <InputGroup.Text className="bg-primary funky-input text-white">
                   <FaSearch />
@@ -381,7 +395,7 @@ const DynamicList = ({
                 />
               </InputGroup>
             </Col>
-            <Col md={3} className="d-flex justify-content-end">
+            <Col md={2} className="d-flex justify-content-end">
               <Button
                 variant={viewType === 'card' ? 'primary' : 'outline-primary'}
                 className="me-2"

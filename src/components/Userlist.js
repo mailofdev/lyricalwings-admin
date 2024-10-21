@@ -116,6 +116,8 @@ const UserList = () => {
                         customHeadersAndKeys={customHeadersAndKeys}
                         onAddNew={handleAddNew}
                         onEdit={handleFormSubmit}
+                        isShowEditButton={true}
+                        isShowLikeButton={true}
                         onDelete={handleDelete}
                         noRecordMessage="No users found."
                         className="shadow-md form-list funky-card"

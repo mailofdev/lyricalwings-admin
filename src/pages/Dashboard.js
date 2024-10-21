@@ -37,7 +37,9 @@ function Dashboard() {
 
   const customHeadersAndKeys = [
     { header: 'Title', key: 'title' },
+    { header: 'Content', key: 'htmlContent' },
     { header: 'Created At', key: 'createdAt', render: (date) => new Date(date).toLocaleDateString() },
+    { header: 'Comments', key: 'comments', render: (comments) => comments ? Object.keys(comments).length : 0 },
   ];
 
   if (error || errorNarratives || errorBook) {
