@@ -35,17 +35,27 @@ const loadUserFromStorage = () => {
 const handleFirebaseError = (error) => {
   switch (error.code) {
     case 'auth/user-not-found':
-      return 'User not found. Please check your email.';
+      return 'Oops! We couldn’t find an author with that email. Please check your notebook and try again.';
     case 'auth/wrong-password':
-      return 'Incorrect password. Please try again.';
+      return 'That password doesn’t seem to fit. Try again to unlock your poetic journey!';
     case 'auth/email-already-in-use':
-      return 'Email is already in use. Please choose another.';
+      return 'This email is already linked to a book. Maybe you can log in to continue writing?';
+    case 'auth/invalid-email':
+      return 'Hmm, that email doesn’t seem quite right. Please enter a valid one to start your literary adventure.';
+    case 'auth/user-disabled':
+      return 'Your account has been closed, like a book left on the shelf. Please contact support for help.';
+    case 'auth/weak-password':
+      return 'Your password is a bit too fragile. Make sure it’s at least 6 characters long, like a good stanza.';
+    case 'auth/missing-email':
+      return 'Email is required to create an account. Please provide one to begin filling your notebook!';
+    case 'auth/operation-not-allowed':
+      return 'It seems we can’t open the door to email/password sign-in at the moment. Please try again later.';
+    case 'auth/too-many-requests':
+      return 'Whoa! You’re trying too many times. Take a moment to breathe, and then try again to share your words.';
     default:
-      return 'An unexpected error occurred. Please try again.';
+      return 'Something went awry. Please try again, and let your creativity flow onto the pages!';
   }
 };
-
-
 
 export const fetchUser = createAsyncThunk('users/fetchUser', async () => {
   const usersRef = ref(db, 'users');
@@ -55,7 +65,6 @@ export const fetchUser = createAsyncThunk('users/fetchUser', async () => {
   }
   return [];
 });
-
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
@@ -341,6 +350,8 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
+
+    // Add other async thunk cases like addNewUser, updateUserInfo, deleteExistingUser, etc.
   },
 });
 
