@@ -163,6 +163,7 @@ const Books = () => {
                         title={editingItem ? 'Edit book' : 'Add book'}
                         formType={editingItem ? 'edit' : 'add'}
                         cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
+                        requiredFields={['title', 'authorName']}
                     />
                 </div>
             )}
@@ -206,6 +207,7 @@ const Books = () => {
                     formType="edit"
                     buttonLabel="Update"
                     cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
+                    requiredFields={['title', 'authorName']}
                 />
             </Modal>
         </div>

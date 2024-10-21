@@ -168,6 +168,7 @@ const Narrative = () => {
                         title={editingItem ? 'Edit narrative' : 'Add narrative'}
                         formType={editingItem ? 'edit' : 'add'}
                         cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
+                        requiredFields={['title', 'type']}
                     />
                 </div>
             )}
@@ -212,6 +213,7 @@ const Narrative = () => {
                     formType="edit"
                     buttonLabel="Update"
                     cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
+                    requiredFields={['title', 'type']}
                 />
             </Modal>
         </div>

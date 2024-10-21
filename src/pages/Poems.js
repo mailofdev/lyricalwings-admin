@@ -39,7 +39,7 @@ const Poems = () => {
     const formConfig = useMemo(() => [
         {
             fields: [
-                { type: 'input', name: 'title', label: 'Title' },
+                { type: 'input', name: 'title', label: 'Title',  required: true },
                 {
                     type: 'editor',
                     name: 'htmlSubtitle',
@@ -189,6 +189,7 @@ const Poems = () => {
                         title={editingItem ? 'Edit poem' : 'Add poem'}
                         formType={editingItem ? 'edit' : 'add'}
                         cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
+                        requiredFields={['title', 'type']}
                     />
                 </div>
             )}
@@ -233,6 +234,7 @@ const Poems = () => {
                     formType="edit"
                     buttonLabel="Update"
                     cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
+                    requiredFields={['title', 'type']}
                 />
             </Modal>
         </div>

@@ -175,6 +175,7 @@ const Courses = () => {
             title={editingItem ? 'Edit courses' : 'Add courses'}
             formType={editingItem ? 'edit' : 'add'}
             cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
+            requiredFields={['title', 'introductionOfType']}
           />
         </div>
       )}
@@ -216,6 +217,7 @@ const Courses = () => {
           formType="edit"
           buttonLabel="Update"
           cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
+          requiredFields={['title', 'introductionOfType']}
         />
       </Modal>
     </div>

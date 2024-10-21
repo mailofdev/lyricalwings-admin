@@ -103,6 +103,7 @@ const UserList = () => {
                         title={editingItem ? 'Edit User' : 'Add User'}
                         formType={editingItem ? 'edit' : 'add'}
                         cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
+                        requiredFields={['username', 'email', 'password']}
                     />
                 </div>
             )}
@@ -147,6 +148,7 @@ const UserList = () => {
                     formType="edit"
                     buttonLabel="Update"
                     cancelConfig={{ label: 'Cancel', onCancel: cancelForm }}
+                    requiredFields={['username', 'email', 'password']}
                 />
             </Modal>
         </div>

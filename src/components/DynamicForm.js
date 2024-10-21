@@ -430,8 +430,8 @@ const DynamicForm = React.memo(({ formConfig,
           maxFileSize={maxFileSize}
           onSelect={(e) => handleFileUpload(e, subField.name)}
           className={errors[subField.name] ? 'is-invalid' : ''}
-          mode="basic"
-          auto
+          // mode="basic"
+          // auto
           chooseLabel="Choose Image"
         />
         );
