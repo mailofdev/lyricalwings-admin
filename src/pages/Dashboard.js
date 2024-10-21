@@ -37,7 +37,7 @@ function Dashboard() {
 
   const customHeadersAndKeys = [
     { header: 'Title', key: 'title' },
-    { header: 'Created', key: 'createdAt', formatter: (poem) => new Date(poem.createdAt).toLocaleDateString() }
+    { header: 'Created At', key: 'createdAt', render: (date) => new Date(date).toLocaleDateString() },
   ];
 
   if (error || errorNarratives || errorBook) {

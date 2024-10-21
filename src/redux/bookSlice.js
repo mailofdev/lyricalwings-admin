@@ -21,7 +21,7 @@ export const fetchbook = createAsyncThunk('book/fetchbook', async () => {
     return Object.keys(book).map(key => ({ 
         id: key, 
         ...book[key],
-        createdAt: serverTimestamp(), 
+        createdAt: Date.now(), 
         lastUpdated: Number(book[key].lastUpdated) || Date.now()
     }));
 });

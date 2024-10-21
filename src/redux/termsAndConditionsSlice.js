@@ -18,7 +18,7 @@ export const fetchTermsAndConditions = createAsyncThunk('termsAndConditions/fetc
 
 // Async thunk for adding new terms and conditions
 export const addTermsAndConditions = createAsyncThunk('termsAndConditions/addTermsAndConditions', async (termsAndConditionsData) => {
-    const timestamp = serverTimestamp();
+    const timestamp = Date.now();
     const newTermsAndConditionsData = {
         ...termsAndConditionsData,
         createdAt: timestamp,

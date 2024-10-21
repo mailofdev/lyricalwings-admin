@@ -11,7 +11,7 @@ export const fetchNarratives = createAsyncThunk('narratives/fetchNarratives', as
         id: key, 
         ...narratives[key],
         // Ensure createdAt and lastUpdated are numbers
-        createdAt: serverTimestamp(),
+        createdAt: Date.now(),
         lastUpdated: Number(narratives[key].lastUpdated) || Date.now()
     }));
 });
